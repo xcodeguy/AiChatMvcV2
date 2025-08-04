@@ -1,0 +1,314 @@
+/* 3rd parety CSS */
+:root {
+
+  --BodyBackgroundColor: rgb(0, 48, 138);
+  --ChatBackgroundColor: rgb(0, 29, 63);
+  --ChatBorderColor: rgb(0, 229, 255);
+
+  --ModelLabelColor: rgb(185, 219, 253);
+  --ModelStatColor: rgb(255, 255, 255);
+
+  --NavBarBackgroundColor: var(--BodyBackgroundColor);
+  --NavBarTextColor: rgb(255, 255, 255);
+
+  --BrandColor: var(--ChatBorderColor);
+  --BrandMvcColor: rgb(255, 255, 255);
+
+  --MsgSentBackgroundColor: rgb(238, 168, 253);
+  --MsgSentBorderColor: var(--MsgSentBackgroundColor);
+  --MsgSentTextColor: rgb(0, 0, 0);
+  --MsgSentEllipseColor: var(--MsgSentTextColor);
+  --MsgSentElipseBackgroundColor: var(--MsgSentBackgroundColor);
+
+  --MsgRcvdBackgroundColor: rgb(255, 157, 165);
+  --MsgRcvdBorderColor: var(--MsgRcvdBackgroundColor);
+  --MsgRcvdTextColor: rgb(0, 0, 0);
+  --MsgRcvdElipseColor: var(--MsgRcvdTextColor);
+  --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
+
+  --PromptBackgroundColor: var(--ChatBackgroundColor);
+  --PromptTextColor: var(--BrandMvcColor);
+
+  --BubbleTitleTextColor: rgb(255, 255, 255);
+}
+
+nav {
+  background-color: var(--NavBarBackgroundColor);
+  color: var(--NavBarTextColor);
+}
+
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+  background-color: var(--BodyBackgroundColor);
+}
+
+.form-floating>.form-control-plaintext::placeholder,
+.form-floating>.form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating>.form-control-plaintext:focus::placeholder,
+.form-floating>.form-control:focus::placeholder {
+  text-align: start;
+}
+
+p {
+  text-align: left;
+}
+
+
+/* QuickReset */
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.chat {
+  --rad: 20px;
+  --rad-sm: 3px;
+  font: 20px/1.5 sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  /*max-width: 1000px;*/
+  margin: auto;
+}
+
+.msg {
+  position: relative;
+  max-width: 75%;
+  padding: 7px 15px;
+  margin-bottom: 2px;
+}
+
+.msg.sent {
+  border-radius: var(--rad) var(--rad-sm) var(--rad-sm) var(--rad);
+  border-color: var(--MsgSentBorderColor);
+  background: var(--MsgSentBackgroundColor);
+  color: var(--MsgSentTextColor);
+  /* moves it to the right */
+  margin-left: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.msg.rcvd {
+  border-radius: var(--rad-sm) var(--rad) var(--rad) var(--rad-sm);
+  border-color: var(--MsgRcvdBorderColor);
+  background: var(--MsgRcvdBackgroundColor);
+  color: var(--MsgRcvdTextColor);
+  /* moves it to the left */
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Improve radius for messages group */
+
+.msg.sent:first-child,
+.msg.rcvd+.msg.sent {
+  border-top-right-radius: var(--rad);
+}
+
+.msg.rcvd:first-child,
+.msg.sent+.msg.rcvd {
+  border-top-left-radius: var(--rad);
+}
+
+
+/* time */
+
+.msg::before {
+  content: attr(data-time);
+  /*font-size: 0.8rem;*/
+  font-size: 20px/1.5 sans-serif;
+  position: absolute;
+  bottom: 100%;
+  color: var(--BubbleTitleTextColor);
+  white-space: nowrap;
+  /* Hidden by default */
+  display: none;
+}
+
+.msg.sent::before {
+  right: 15px;
+}
+
+.msg.rcvd::before {
+  left: 15px;
+}
+
+
+/* Show time only for first message in group */
+
+.msg:first-child::before,
+.msg.sent+.msg.rcvd::before,
+.msg.rcvd+.msg.sent::before {
+  /* Show only for first message in group */
+  display: block;
+}
+
+/* END 3rd party CSS */
+
+
+
+
+
+/* custom from developer */
+.seed_prompt {
+  width: 97vw;
+  margin-left: 0px;
+  padding-left: 10px;
+  background-color: var(--PromptBackgroundColor);
+  color: var(--PromptTextColor);
+  font-size: 22px;
+  border-color: var(--ChatBorderColor);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.bright_links {
+  color: rgb(255, 255, 255);
+}
+
+.privacy_policy {
+  color: rgb(172, 172, 172);
+  font-size: 12pt;
+}
+
+.ChatContainer {
+  width: 97vw;
+  height: 80vh;
+  margin: auto;
+  padding: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--ChatBorderColor);
+  background-color: var(--ChatBackgroundColor);
+}
+
+.chat_scrollable {
+  height: 79vh;
+  width: 70vw;
+  overflow: auto;
+  float: left;
+  margin-left: -5px;
+}
+
+.chat_dashboard {
+  height: 79vh;
+  width: 25vw;
+  padding-top: 10px;
+  padding-right: 25px;
+  padding-left: 20px;
+  float: left;
+  overflow: auto;
+  border-left: 1px solid var(--ChatBorderColor);
+}
+
+.model_stats_label {
+  font-weight: normal;
+  color: var(--ModelLabelColor);
+  font-size: 18px;
+  text-align: left;
+}
+
+.model_stats {
+  font-weight: normal;
+  color: var(--ModelStatColor);
+  font-size: 16px;
+  text-align: left;
+  text-decoration: none;
+  font-weight: normal;
+}
+
+.ModelStatsTable {
+  border: 1px solid var(--ChatBorderColor);
+  width: 23.5vw;
+}
+
+.ModelStatsTableHeading {
+  padding: 0px 10px 0px 10px;
+  color: var(--ModelLabelColor);
+  text-decoration: underline;
+}
+
+.ModelStatsTableRow {
+  padding: 0px 10px 0px 0px;
+}
+
+.ModelStatsTableCell {
+  padding: 0px 10px 0px 10px;
+  border: 1px solid var(--ChatBorderColor);
+  text-align: right;
+}
+
+/* END custom from developer */
+
+
+
+/* 3rd party CSS */
+/* HTML: <div class="loader"></div> */
+.loader_white {
+  width: 60px;
+  aspect-ratio: 4;
+  --_g: no-repeat radial-gradient(circle closest-side, var(--MsgSentEllipseColor) 90%, var(--MsgSentElipseBackgroundColor));
+  background:
+    var(--_g) 0% 50%,
+    var(--_g) 50% 50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100%/3) 100%;
+  animation: l7 1s infinite linear;
+}
+
+.loader_black {
+  width: 60px;
+  aspect-ratio: 4;
+  --_g: no-repeat radial-gradient(circle closest-side, var(--MsgRcvdElipseColor) 90%, var(--MsgRcvdElipseBackgroundColor));
+  background:
+    var(--_g) 0% 50%,
+    var(--_g) 50% 50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100%/3) 100%;
+  animation: l7 1s infinite linear;
+}
+
+@keyframes l7 {
+  33% {
+    background-size: calc(100%/3) 0%, calc(100%/3) 100%, calc(100%/3) 100%
+  }
+
+  50% {
+    background-size: calc(100%/3) 100%, calc(100%/3) 0%, calc(100%/3) 100%
+  }
+
+  66% {
+    background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%
+  }
+}
+
+/* END 3rd party CSS */
