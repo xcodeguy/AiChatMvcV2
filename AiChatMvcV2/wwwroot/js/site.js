@@ -26,8 +26,12 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = "Do not respond with anything else.";
-    const OriginalPrompt = "Count to 5.";
+    const NegativePrompt = "Never repeat a topic. Never reply " + 
+    "to a topic if it is in the prompt. Only new random topics can be generated. "  +
+    "Only one paragraph. Not too wordy.";
+
+    const OriginalPrompt = "Randomly choose a topic and generate " + \
+    "a short description of the topic.";
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
@@ -36,7 +40,6 @@ $(document).ready(function () {
     var ModelNameString;
     var JustificationPointer = 0;
     var ModelPointer = 0;
-    var CurrentDateString;
     var bubble_title;
     var GlobalCallCount = 0;
     var GlobalErrorCount = 0;
@@ -267,6 +270,8 @@ $(document).ready(function () {
         console.log("Making AJAX call");
         $.ajax({
             //make the call
+            //the OriginalPrompt, promnpt, and NegativePrompt
+            //get concatenated in the MakeApiCall endpoint
             url: 'http://localhost:5022/Home/MakeApiCall',
             type: 'POST',
             data: {
@@ -286,12 +291,11 @@ $(document).ready(function () {
                 ModelNameString = data.chatNonStreamingList[0].modelName;
                 var TimeString = data.chatNonStreamingList[0].timeStamp;
 
-                //build the bubble title/who its from string
-                CurrentDateString = new Date();
+                //build the bubble title
                 bubble_title = ModelNameString + ": " + TimeString;
 
                 //remove the elipse div with the ... animation
-                //remove any chat stopped bubbles for good
+                //remove any 'chat stopped' bubbles for good
                 //measure
                 $("[id='elipse']").remove();
                 $("[id='ChatStopped']").remove();

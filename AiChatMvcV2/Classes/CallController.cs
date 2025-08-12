@@ -33,6 +33,7 @@ namespace AiChatMvcV2.Classes
             var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
             //data = "{\"model\": \"" + Model + "\",\"messages\":[{\"role\":\"system\",\"content\":\"" + SystemContent + "\"},{\"role\": \"user\", \"content\": \"" + UserContent + "\"}],\"stream\": false}";
             /*
+                EXAMPLE:
                 {
                     "model": "gemma3",
                     "prompt": "Simulate a Model UN session regarding global nutrition.",
