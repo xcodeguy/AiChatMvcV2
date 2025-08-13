@@ -28,10 +28,11 @@ $(document).ready(function () {
 
     const NegativePrompt = "Never repeat a topic. Never reply " + 
     "to a topic if it is in the prompt. Only new random topics can be generated. "  +
-    "Only one paragraph. Not too wordy.";
+    "Only one paragraph. Not too wordy. Only respond in Mandarin and Hindu and Emojis.";
 
-    const OriginalPrompt = "Randomly choose a topic and generate " + \
-    "a short description of the topic.";
+    const OriginalPrompt = "Randomly choose a topic and generate " + 
+    "a short description of the topic. Respond in Mandarin and Hindu and Emojis.";
+    
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
@@ -97,7 +98,8 @@ $(document).ready(function () {
     }
 
     //display the seed prompt
-    $("#gPrompt").text(OriginalPrompt);
+    $("#OriginalPromptLabel").text("Original Prompt: " + OriginalPrompt);
+    $("#NegativePromptLabel").text("Negative Prompt: " + NegativePrompt);
 
     //elapsed time clock on web page
     setInterval(function () {

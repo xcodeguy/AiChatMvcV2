@@ -178,18 +178,45 @@ p {
 
 
 
-/* custom from developer */
-.seed_prompt {
-  width: 97vw;
-  margin-left: 0px;
+/* custom css */
+.OriginalPromptStyle {
+  width: 100vw;
+  margin: auto;
   padding-left: 10px;
   background-color: var(--PromptBackgroundColor);
   color: var(--PromptTextColor);
-  font-size: 22px;
+  font-size: 18px;
   border-color: var(--ChatBorderColor);
   border-width: 1px;
   border-style: solid;
 }
+
+.NegativePromptStyle {
+  width: 100vw;
+  padding-left: 10px;
+  background-color: var(--PromptBackgroundColor);
+  color: var(--PromptTextColor);
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+
+.flex-container {
+  display: flex; /* Makes the container a flex container */
+  justify-content: space-around; /* Distributes space between items */
+  align-items: center; /* Aligns items vertically in the center */
+}
+
+.flex-item {
+  /* Styles for individual div elements */
+  width: 45%; /* Example width, adjust as needed */
+  padding: 10px;
+  border-color: var(--ChatBorderColor);
+  border-width: 1px;
+  border-style: solid;
+}
+
+
 
 .bright_links {
   color: rgb(255, 255, 255);

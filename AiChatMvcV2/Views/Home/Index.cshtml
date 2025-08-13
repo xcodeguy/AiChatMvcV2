@@ -4,7 +4,11 @@
 @model AiChatMvcV2.Models.HomeViewModel
 
 <body>
-    <div id="gPrompt" class="seed_prompt"></div>
+    <div class="flex-container">
+        <div id="OriginalPromptLabel" class="flex-item OriginalPromptStyle"></div>
+        <div id="NegativePromptLabel" class="flex-item NegativePromptStyle"></div>
+    </div>
+
     <div class="ChatContainer">
 
         <div class="chat_scrollable">
