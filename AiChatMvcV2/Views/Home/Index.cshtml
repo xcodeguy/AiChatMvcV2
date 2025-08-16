@@ -1,12 +1,26 @@
 ﻿@{
     ViewData["Title"] = "AiChatMvcV2";
 }
-@model AiChatMvcV2.Models.HomeViewModel
+
 
 <body>
-    <div class="flex-container">
-        <div id="OriginalPromptLabel" class="flex-item OriginalPromptStyle"></div>
-        <div id="NegativePromptLabel" class="flex-item NegativePromptStyle"></div>
+    <div class="PromptContainer">
+        <table id="" class="PromptTable">
+            <thead>
+                <tr class="">
+                    <th id="" class="PromptTableHeading">Prompt</th>
+                    <th id="" class="PromptTableHeading">Negative Prompt</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="OriginalPromptLabel" class="PromptTableData">
+                    </td>
+                    <td id="NegativePromptLabel" class="PromptTableData">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <div class="ChatContainer">
@@ -24,41 +38,46 @@
             <div id="RealTimeClock" class="model_stats">
                 00:00:00
             </div>
-            <br>
 
             <div class="model_stats">
                 <button id="btnApiCallToggle" type="button" class="btn btn-success">Started</button>
                 <button id="btnClearChatWindow" type="button" class="btn btn-primary">Clear</button>
             </div>
-            <br>
 
             <div id="ModelStatsLabel" class="model_stats_label">
-                Waiting on model 1 of 10:
+                <div class="container" style="padding: 0px; marging: 0px;">
+                    Model Iteration
+                    <div class="progress" style="width:50%; height: 25px;">
+                        <div id="ProgressBar" class="progress-bar bg-info">
+                        </div>
+                    </div>
+                </div>
             </div>
+
             <div id="ModelStats" class="model_stats">
                 some model
             </div>
-            <br>
 
-            <table>
-                <tr>
-                    <td style="padding-right: 100px;" class="model_stats_label">Round Trips:</td>
-                    <td class="model_stats_label">Exceptions:</td>
-                </tr>
-                <tr>
-                    <td>
-                        <div id="ModelRT" class="model_stats">
-                            000000
-                        </div>
-                    </td>
-                    <td>
-                        <div id="ModelEceptions" class="model_stats">
-                            0
-                        </div>
-                    </td>
-                </tr>
-            </table>
-            <br>
+            <div class=" model_stats_label">
+                <table>
+                    <tr>
+                        <td style="padding-right: 100px;" class="model_stats_label">Round Trips:</td>
+                        <td class="model_stats_label">Exceptions:</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div id="ModelRT" class="model_stats">
+                                000000
+                            </div>
+                        </td>
+                        <td>
+                            <div id="ModelEceptions" class="model_stats">
+                                0
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
             <div class=" model_stats_label">
                 Model stats:

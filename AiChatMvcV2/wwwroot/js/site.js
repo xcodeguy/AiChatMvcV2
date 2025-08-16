@@ -8,7 +8,6 @@
 $(document).ready(function () {
 
     //set some variables
-    const VersionName = "Luminous";
     const ResponseBubbleJustify = new Array("msg sent", "msg rcvd");
     const ModelName = new Array(
         "gemma3",
@@ -26,13 +25,10 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = "Never repeat a topic. Never reply " + 
-    "to a topic if it is in the prompt. Only new random topics can be generated. "  +
-    "Only one paragraph. Not too wordy. Only respond in Mandarin and Hindu and Emojis.";
+    const NegativePrompt = "";
 
-    const OriginalPrompt = "Randomly choose a topic and generate " + 
-    "a short description of the topic. Respond in Mandarin and Hindu and Emojis.";
-    
+    const OriginalPrompt = "Hi.";
+
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
@@ -60,7 +56,7 @@ $(document).ready(function () {
     });
 
     //navbar brand name stylea
-    $("#navbar-brand_id").html("<span style='color:var(--BrandColor);'>AiChat<span style='font-weight: bold; color:var(--BrandMvcColor);'>Mvc</span>&nbsp;&nbsp;<span style='font-size: 12pt;'>(" + VersionName + ")</span></span>");
+    //$("#navbar-brand_id").html("<span style='color:var(--BrandColor);'>AiChat<span style='font-weight: bold; color:var(--BrandMvcColor);'>Mvc</span>&nbsp;&nbsp;<span style='font-size: 12pt;'>(" + VersionName + ")</span></span>");
 
     function sortTable(n) {
         var table, rows, switching, i, x, y, shouldSwitch;
@@ -98,8 +94,8 @@ $(document).ready(function () {
     }
 
     //display the seed prompt
-    $("#OriginalPromptLabel").text("Original Prompt: " + OriginalPrompt);
-    $("#NegativePromptLabel").text("Negative Prompt: " + NegativePrompt);
+    $("#OriginalPromptLabel").text(OriginalPrompt);
+    $("#NegativePromptLabel").text(NegativePrompt);
 
     //elapsed time clock on web page
     setInterval(function () {
@@ -257,7 +253,9 @@ $(document).ready(function () {
         //which at this time is 6 elements. When the pointer is greater than max
         //it gets reset to 0
         ModelNameString = ModelName[ModelPointer];   //ModelPointer comes in as 0
-        $("#ModelStatsLabel").text("Waiting on model " + (ModelPointer + 1) + " of " + (ModelName.length - 1) + ":");
+        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
+        $("#ProgressBar").text(Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
+
         $("#ModelStats").text(ModelNameString);
         ModelPointer++;
         console.log("Updated ModelPointer");

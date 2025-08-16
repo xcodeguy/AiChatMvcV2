@@ -1,9 +1,11 @@
 /* 3rd parety CSS */
 :root {
-
+  /* DELPHI THEME */
+  /*
   --BodyBackgroundColor: rgb(0, 48, 138);
   --ChatBackgroundColor: rgb(0, 29, 63);
   --ChatBorderColor: rgb(0, 229, 255);
+  --ChatContainerViewHeight: 74vh;
 
   --ModelLabelColor: rgb(185, 219, 253);
   --ModelStatColor: rgb(255, 255, 255);
@@ -26,10 +28,57 @@
   --MsgRcvdElipseColor: var(--MsgRcvdTextColor);
   --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
 
-  --PromptBackgroundColor: var(--ChatBackgroundColor);
-  --PromptTextColor: var(--BrandMvcColor);
+  --PromptBackgroundColor: rgb(159, 255, 166);
+  --PromptTextColor: rgb(0, 0, 0);
+  --PromptHeadingtBackgroundColor: rgb(56, 105, 60);
+  --PromptHeadingTextColor: rgb(255, 255, 255);
+  --PromptTablePadding: 3px;
 
   --BubbleTitleTextColor: rgb(255, 255, 255);
+
+  --ChatDashboardBackgroundColor: var(--ChatBackgroundColor);
+  --PrivacyLinkColor: var(255,255,255);
+*/
+
+  /* LIGHT THEME */
+  --BodyBackgroundColor: rgb(209, 207, 255);
+  --ChatBackgroundColor: rgb(255, 255, 255);
+  --ChatBorderColor: rgb(0, 0, 0);
+  --ChatContainerViewHeight: 74vh;
+
+  --ModelLabelColor: rgb(0, 0, 0);
+  --ModelStatColor: rgb(0, 0, 0);
+
+  --NavBarBackgroundColor: var(--BodyBackgroundColor);
+  --NavBarTextColor: rgb(0, 0, 0);
+
+  --BrandColor: var(--ChatBorderColor);
+  --BrandMvcColor: rgb(139, 62, 163);
+
+  --MsgSentBackgroundColor: rgb(0, 69, 208);
+  --MsgSentBorderColor: var(--MsgSentBackgroundColor);
+  --MsgSentTextColor: rgb(255, 255, 255);
+  --MsgSentEllipseColor: var(--MsgSentTextColor);
+  --MsgSentElipseBackgroundColor: var(--MsgSentBackgroundColor);
+
+  --MsgRcvdBackgroundColor: rgb(177, 177, 177);
+  --MsgRcvdBorderColor: var(--MsgRcvdBackgroundColor);
+  --MsgRcvdTextColor: rgb(0, 0, 0);
+  --MsgRcvdElipseColor: var(--MsgRcvdTextColor);
+  --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
+
+  --PromptHeadingtBackgroundColor: rgba(0, 0, 0, 0.644);
+  --PromptHeadingTextColor: rgb(255, 255, 255);
+  --PromptBackgroundColor: rgba(0, 0, 0, 0.379);
+  --PromptTextColor: rgb(255, 255, 255);
+  --PromptTablePadding: 3px;
+
+  --BubbleTitleTextColor: rgb(0, 0, 0);
+
+  /* NEW 08-15-2025 */
+  --ChatDashboardBackgroundColor: rgb(255, 246, 200);
+  --PrivacyLinkColor: rgb(0, 0, 0);
+  --ProgressBarColor: "progress-bar bg-warning";
 }
 
 nav {
@@ -175,51 +224,44 @@ p {
 /* END 3rd party CSS */
 
 
-
-
-
 /* custom css */
-.OriginalPromptStyle {
-  width: 100vw;
-  margin: auto;
-  padding-left: 10px;
-  background-color: var(--PromptBackgroundColor);
-  color: var(--PromptTextColor);
-  font-size: 18px;
+.navbar-brand {
+  font-weight: bold;
+}
+
+.PromptTable {
+  width: 100%;
+}
+
+.PromptContainer {
+  width: 97vw;
   border-color: var(--ChatBorderColor);
   border-width: 1px;
   border-style: solid;
+  padding: var(--PromptTablePadding);
 }
 
-.NegativePromptStyle {
-  width: 100vw;
-  padding-left: 10px;
+.PromptTableHeading {
+  background-color: var(--PromptHeadingtBackgroundColor);
+  color: var(--PromptHeadingTextColor);
+  padding: var(--PromptTablePadding);
+  font-weight: normal;
+  font-size: 16;
+  border: 1px solid black;
+  width: 50%;
+}
+
+.PromptTableData {
   background-color: var(--PromptBackgroundColor);
   color: var(--PromptTextColor);
-  font-size: 18px;
-  margin-bottom: 10px;
+  padding: var(--PromptTablePadding);
+  font-weight: bold;
+  border: 1px solid black;
+  width: 50%;
 }
-
-
-.flex-container {
-  display: flex; /* Makes the container a flex container */
-  justify-content: space-around; /* Distributes space between items */
-  align-items: center; /* Aligns items vertically in the center */
-}
-
-.flex-item {
-  /* Styles for individual div elements */
-  width: 45%; /* Example width, adjust as needed */
-  padding: 10px;
-  border-color: var(--ChatBorderColor);
-  border-width: 1px;
-  border-style: solid;
-}
-
-
 
 .bright_links {
-  color: rgb(255, 255, 255);
+  color: var(--PrivacyLinkColor);
 }
 
 .privacy_policy {
@@ -229,9 +271,9 @@ p {
 
 .ChatContainer {
   width: 97vw;
-  height: 80vh;
+  height: var(--ChatContainerViewHeight);
   margin: auto;
-  padding: 10px;
+  padding: 0px;
   border-width: 1px;
   border-style: solid;
   border-color: var(--ChatBorderColor);
@@ -239,7 +281,7 @@ p {
 }
 
 .chat_scrollable {
-  height: 79vh;
+  height: 72vh;
   width: 70vw;
   overflow: auto;
   float: left;
@@ -247,14 +289,19 @@ p {
 }
 
 .chat_dashboard {
-  height: 79vh;
-  width: 25vw;
-  padding-top: 10px;
-  padding-right: 25px;
-  padding-left: 20px;
+  height: 73vh;
+  width: 27vw;
+  padding-top: 0px;
+  padding-right: 10px;
+  padding-left: 10px;
   float: left;
   overflow: auto;
   border-left: 1px solid var(--ChatBorderColor);
+  background-color: var(--ChatDashboardBackgroundColor);
+}
+
+.ProgressBarColor {
+  background-color: var(--ProgressBarColor);
 }
 
 .model_stats_label {
@@ -265,12 +312,12 @@ p {
 }
 
 .model_stats {
-  font-weight: normal;
   color: var(--ModelStatColor);
   font-size: 16px;
   text-align: left;
   text-decoration: none;
-  font-weight: normal;
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
 .ModelStatsTable {
