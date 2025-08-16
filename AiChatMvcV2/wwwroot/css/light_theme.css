@@ -1,0 +1,41 @@
+:root {
+  /* LIGHT THEME */
+  --BodyBackgroundColor: rgb(209, 207, 255);
+  --ChatBackgroundColor: rgb(255, 255, 255);
+  --ChatBorderColor: rgb(0, 0, 0);
+  --ChatContainerViewHeight: 74vh;
+
+  --ModelLabelColor: rgb(0, 0, 0);
+  --ModelStatColor: rgb(0, 0, 0);
+
+  --NavBarBackgroundColor: var(--BodyBackgroundColor);
+  --NavBarTextColor: rgb(0, 0, 0);
+
+  --BrandColor: var(--ChatBorderColor);
+  --BrandMvcColor: rgb(139, 62, 163);
+
+  --MsgSentBackgroundColor: rgb(0, 69, 208);
+  --MsgSentBorderColor: var(--MsgSentBackgroundColor);
+  --MsgSentTextColor: rgb(255, 255, 255);
+  --MsgSentEllipseColor: var(--MsgSentTextColor);
+  --MsgSentElipseBackgroundColor: var(--MsgSentBackgroundColor);
+
+  --MsgRcvdBackgroundColor: rgb(177, 177, 177);
+  --MsgRcvdBorderColor: var(--MsgRcvdBackgroundColor);
+  --MsgRcvdTextColor: rgb(0, 0, 0);
+  --MsgRcvdElipseColor: var(--MsgRcvdTextColor);
+  --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
+
+  --PromptHeadingtBackgroundColor: rgba(0, 0, 0, 0.644);
+  --PromptHeadingTextColor: rgb(255, 255, 255);
+  --PromptBackgroundColor: rgba(0, 0, 0, 0.379);
+  --PromptTextColor: rgb(255, 255, 255);
+  --PromptTablePadding: 3px;
+
+  --BubbleTitleTextColor: rgb(0, 0, 0);
+
+  /* NEW 08-15-2025 */
+  --ChatDashboardBackgroundColor: rgb(255, 246, 200);
+  --PrivacyLinkColor: rgb(0, 0, 0);
+  --ProgressBarTextColor: rgb(0, 0, 0);
+}

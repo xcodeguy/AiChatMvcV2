@@ -254,7 +254,7 @@ $(document).ready(function () {
         //it gets reset to 0
         ModelNameString = ModelName[ModelPointer];   //ModelPointer comes in as 0
         $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
-        $("#ProgressBar").text(Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
+        $("#ProgressBarText").text(Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
 
         $("#ModelStats").text(ModelNameString);
         ModelPointer++;
