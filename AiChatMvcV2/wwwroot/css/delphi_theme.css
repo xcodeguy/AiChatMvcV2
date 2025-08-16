@@ -46,7 +46,8 @@
 }
 
 .ProgressBar {
-    background-color: var(--ModelStatColor); 
-    width:var(--ModelStatsTableWidth); 
+    background-color: rgb(255, 255, 255);
+    width: 100%;
     height: 25px;
+    border: 1px solid var(--ModelLabelColor);
 }
