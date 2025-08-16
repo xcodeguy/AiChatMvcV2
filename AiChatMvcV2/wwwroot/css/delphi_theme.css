@@ -26,15 +26,27 @@
     --MsgRcvdElipseColor: var(--MsgRcvdTextColor);
     --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
 
-    --PromptBackgroundColor: rgb(159, 255, 166);
+    --PromptHeadingtBackgroundColor: var(--ModelLabelColor);
+    --PromptHeadingTextColor: rgb(0, 0, 0);
+    --PromptBackgroundColor: rgb(255, 255, 255);
     --PromptTextColor: rgb(0, 0, 0);
-    --PromptHeadingtBackgroundColor: rgb(56, 105, 60);
-    --PromptHeadingTextColor: rgb(255, 255, 255);
     --PromptTablePadding: 3px;
 
     --BubbleTitleTextColor: rgb(255, 255, 255);
 
     --ChatDashboardBackgroundColor: var(--ChatBackgroundColor);
     --PrivacyLinkColor: var(255, 255, 255);
-    --ProgressBarTextColor: rgb(255, 255, 255);
+    --ProgressBarTextColor: rgb(0, 0, 0);
+    --ModelStatsTableWidth: 100%;
+    --HeaderFooterBorderBottomColor: rgb(179, 240, 254);
+}
+
+.ProgressBarColor {
+    background-color: var(--ModelLabelColor);
+}
+
+.ProgressBar {
+    background-color: var(--ModelStatColor); 
+    width:var(--ModelStatsTableWidth); 
+    height: 25px;
 }

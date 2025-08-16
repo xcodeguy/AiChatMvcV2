@@ -1,4 +1,3 @@
-
 nav {
   background-color: var(--NavBarBackgroundColor);
   color: var(--NavBarTextColor);
@@ -163,8 +162,8 @@ p {
   background-color: var(--PromptHeadingtBackgroundColor);
   color: var(--PromptHeadingTextColor);
   padding: var(--PromptTablePadding);
-  font-weight: normal;
-  font-size: 16;
+  font-weight: normal !important;
+  font-size: 18px !important;
   border: 1px solid black;
   width: 50%;
 }
@@ -173,7 +172,8 @@ p {
   background-color: var(--PromptBackgroundColor);
   color: var(--PromptTextColor);
   padding: var(--PromptTablePadding);
-  font-weight: bold;
+  font-weight: normal !important;
+  font-size: 18px !important;
   border: 1px solid black;
   width: 50%;
 }
@@ -226,9 +226,9 @@ p {
 }
 
 .model_stats_label {
-  font-weight: normal;
+  font-weight: bold;
   color: var(--ModelLabelColor);
-  font-size: 18px;
+  font-size: 18px !important;
   text-align: left;
 }
 
@@ -237,13 +237,13 @@ p {
   font-size: 16px;
   text-align: left;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: bold !important;
   margin-bottom: 15px;
 }
 
 .ModelStatsTable {
   border: 1px solid var(--ChatBorderColor);
-  width: 23.5vw;
+  width: var(--ModelStatsTableWidth);
 }
 
 .ModelStatsTableHeading {
@@ -260,6 +260,11 @@ p {
   padding: 0px 10px 0px 10px;
   border: 1px solid var(--ChatBorderColor);
   text-align: right;
+}
+
+.header-footer-border-color {
+  border-bottom-color: var(--HeaderFooterBorderBottomColor) !important;
+  border-top-color: var(--HeaderFooterBorderBottomColor) !important;
 }
 
 /* END custom from developer */

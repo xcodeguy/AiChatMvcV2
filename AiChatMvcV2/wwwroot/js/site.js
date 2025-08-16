@@ -25,9 +25,8 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = "";
-
-    const OriginalPrompt = "Hi.";
+    const NegativePrompt = "Do not repeat a topic found in the prompt. Do not generate a response that is longer than 100 words.";
+    const OriginalPrompt = "Choose a random topic and generate a short paragraph about that topic. Be concise.";
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
@@ -54,9 +53,6 @@ $(document).ready(function () {
     $("#ThWordColumn").click(function () {
         sortTable(2);
     });
-
-    //navbar brand name stylea
-    //$("#navbar-brand_id").html("<span style='color:var(--BrandColor);'>AiChat<span style='font-weight: bold; color:var(--BrandMvcColor);'>Mvc</span>&nbsp;&nbsp;<span style='font-size: 12pt;'>(" + VersionName + ")</span></span>");
 
     function sortTable(n) {
         var table, rows, switching, i, x, y, shouldSwitch;
@@ -93,7 +89,7 @@ $(document).ready(function () {
         }
     }
 
-    //display the seed prompt
+    //display the prompts
     $("#OriginalPromptLabel").text(OriginalPrompt);
     $("#NegativePromptLabel").text(NegativePrompt);
 
@@ -227,7 +223,7 @@ $(document).ready(function () {
 
         ApiCallStartTime = new Date();
 
-        //this code accomodates two element arrays
+        //this code accomodates a two element array
         //it's used to toggle the chat bubble justification
         boolXor = xor(true, boolXor);       //comes in as 0 then the Xor sets it
         JustificationPointer = ((boolXor) ? 0 : 1);
@@ -240,7 +236,6 @@ $(document).ready(function () {
         if (JustificationPointer == 0) {
             thisLoader = "<div class=\"loader_white\"></div>";
         }
-        console.log("Showing elipse");
 
         var e = CreateDivChatNode("", JustifyClass, thisLoader);
         $('#divChat').append(e);

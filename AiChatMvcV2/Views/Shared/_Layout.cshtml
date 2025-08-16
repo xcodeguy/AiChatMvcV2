@@ -7,7 +7,22 @@
     <title>@ViewData["Title"]</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/delphi_theme.css" asp-append-version="true" />
+
+    <!-- THEME CSS -->
+    @{
+        var test = 0;
+        switch (test)
+        {
+            case 0:
+                <link rel="stylesheet" href="~/css/light_theme.css" asp-append-version="true" />
+                break;
+            case 1:
+                <link rel="stylesheet" href="~/css/delphi_theme.css" asp-append-version="true" />
+                break;
+        }
+    }
+    <!-- END THEME CSS -->
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AiChatMvcV2.styles.css" asp-append-version="true" />
 </head>
@@ -76,15 +91,17 @@ feel.
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
-            <div class="container-fluid" style="padding-left: 50px;">
+        <nav
+            class="header-footer-border-color navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
+            <div class="container-fluid" style="padding-left: 30px;">
                 <a id="navbar-brand_id" class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <span style='color:var(--BrandColor);'>
+                    <span style='color: var(--BrandColor); padding: 0px;'>
                         AiChat
-                        <span style='font-weight: bold; color:var(--BrandMvcColor);'>Mvc</span>
+                        <span
+                            style='font-weight: bold; font-size: 18pt; color: var(--BrandMvcColor); padding: 0px;'>Mvc</span>
                         V2
-                        &nbsp;&nbsp;
-                        <span style='font-size: 12pt;'>(Veridian)</span>
+                        &nbsp;
+                        <span style='font-weight: bold; font-size: 18pt; padding: 0px;''>(Veridian)</span>
                     </span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
@@ -101,7 +118,7 @@ feel.
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="header-footer-border-color border-top footer text-muted">
         <div class="container bright_links">
             Powered by <a target="_blank" href="https://ollama.com">OLlama Server</a>&nbsp;&nbsp;|&nbsp;&nbsp;Developed
             with <a target="_blank" href="https://code.visualstudio.com">VS Code</a> and <a target="_blank"
