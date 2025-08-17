@@ -46,6 +46,9 @@ $(document).ready(function () {
     var TimeElapsedCalculatedSeconds;
     var lastElapsedTime;
 
+    $("#btnLlmSettings").click(function () {
+    });
+
     $("#ThFasterColumn").click(function () {
         sortTable(1);
     });
@@ -207,7 +210,9 @@ $(document).ready(function () {
             $('#divChat').append(e);
             e.attr('id', 'ChatStopped');
             const element = document.getElementById("divChat");
-            element.scrollIntoView(false);
+            if (!(element === null) && !(element === undefined)) {
+                element.scrollIntoView(false);
+            }
         }
     });
 
@@ -241,15 +246,17 @@ $(document).ready(function () {
         $('#divChat').append(e);
         e.attr('id', 'elipse');
         var element = document.getElementById("divChat");
-        element.scrollIntoView(false);
-        console.log("Created DIV chat node for the elipse");
+        if (!(element === null) && !(element === undefined)) {
+            element.scrollIntoView(false);
+            console.log("Created DIV chat node for the elipse");
+        }
 
         //this code accomodates the model array
         //which at this time is 6 elements. When the pointer is greater than max
         //it gets reset to 0
         ModelNameString = ModelName[ModelPointer];   //ModelPointer comes in as 0
-        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
-        $("#ProgressBarText").text(Math.round((((ModelPointer + 1)/(ModelName.length - 1)) * 100)) + '%');
+        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
+        $("#ProgressBarText").text(Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
 
         $("#ModelStats").text(ModelNameString);
         ModelPointer++;
@@ -302,8 +309,10 @@ $(document).ready(function () {
                 $('#divChat').append(e);
                 e.attr('id', 'ChatBubble' + GlobalCallCount);
                 element = document.getElementById("divChat");
-                element.scrollIntoView(false);
-                console.log("Created DIV chat node for response");
+                if (!(element === null) && !(element === undefined)) {
+                    element.scrollIntoView(false);
+                    console.log("Created DIV chat node for response");
+                }
 
                 //increment and format the global call count
                 GlobalCallCount++;

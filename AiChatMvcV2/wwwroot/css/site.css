@@ -178,6 +178,17 @@ p {
   width: 50%;
 }
 
+.LlmSettingsDialog {
+  width: 650px;
+}
+
+.LlmSettingsItem {
+  font-weight: bold;
+  font-size: 18px;
+  padding-bottom: 5px;
+  padding-right: 5px;
+}
+
 .bright_links {
   color: var(--PrivacyLinkColor);
 }

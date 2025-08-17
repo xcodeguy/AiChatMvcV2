@@ -34,8 +34,9 @@
 
     --BubbleTitleTextColor: rgb(255, 255, 255);
 
+    /* NEW 08-15-2025 */
     --ChatDashboardBackgroundColor: var(--ChatBackgroundColor);
-    --PrivacyLinkColor: var(255, 255, 255);
+    --PrivacyLinkColor: rgb(255, 255, 255);
     --ProgressBarTextColor: rgb(0, 0, 0);
     --ModelStatsTableWidth: 100%;
     --HeaderFooterBorderBottomColor: rgb(179, 240, 254);

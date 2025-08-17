@@ -2,103 +2,194 @@
     ViewData["Title"] = "AiChatMvcV2";
 }
 
-<body>
-    <div class="PromptContainer">
-        <table id="" class="PromptTable">
-            <thead>
-                <tr class="">
-                    <th id="" class="PromptTableHeading">Prompt</th>
-                    <th id="" class="PromptTableHeading">Negative Prompt</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td id="OriginalPromptLabel" class="PromptTableData">
-                    </td>
-                    <td id="NegativePromptLabel" class="PromptTableData">
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+
+<div class="PromptContainer">
+    <table id="" class="PromptTable">
+        <thead>
+            <tr class="">
+                <th id="" class="PromptTableHeading">Prompt</th>
+                <th id="" class="PromptTableHeading">Negative Prompt</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="OriginalPromptLabel" class="PromptTableData">
+                </td>
+                <td id="NegativePromptLabel" class="PromptTableData">
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="ChatContainer">
+    <div class="chat_scrollable">
+        <div class="chat" id="divChat">
+
+        </div>
     </div>
 
-    <div class="ChatContainer">
-
-        <div class="chat_scrollable">
-            <div class="chat" id="divChat">
-
-            </div>
+    <div class="chat_dashboard">
+        <div class="model_stats_label">
+            Elapsed time:
+        </div>
+        <div id="RealTimeClock" class="model_stats">
+            00:00:00
         </div>
 
-        <div class="chat_dashboard">
-            <div class="model_stats_label">
-                Elapsed time:
-            </div>
-            <div id="RealTimeClock" class="model_stats">
-                00:00:00
-            </div>
+        <div class="model_stats">
+            <button id="btnApiCallToggle" type="button" class="btn btn-success">Started</button>
+            <button id="btnClearChatWindow" type="button" class="btn btn-primary">Clear</button>
+            <button id="btnLlmSettings" type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                data-bs-target="#LlmSettingsDialog">Settings</button>
+        </div>
 
-            <div class="model_stats">
-                <button id="btnApiCallToggle" type="button" class="btn btn-success">Started</button>
-                <button id="btnClearChatWindow" type="button" class="btn btn-primary">Clear</button>
-                <button id="btnLlmSettings" type="button" class="btn text-bg-warning">Settings</button>
-            </div>
-
-            <div id="ModelStatsLabel" class="model_stats_label">
-                <div class="container" style="padding: 0px; marging: 0px;">
-                    Model Iteration
-                    <div class="progress ProgressBar">
-                        <div id="ProgressBar" class="progress-bar ProgressBarColor">
-                            <span id="ProgressBarText" class="ProgressBarTextColor"></span>
-                        </div>
+        <div id="ModelStatsLabel" class="model_stats_label">
+            <div class="container" style="padding: 0px; marging: 0px;">
+                Model Iteration
+                <div class="progress ProgressBar">
+                    <div id="ProgressBar" class="progress-bar ProgressBarColor">
+                        <span id="ProgressBarText" class="ProgressBarTextColor"></span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="ModelStats" class="model_stats">
-                some model
+        <div id="ModelStats" class="model_stats">
+            some model
+        </div>
+
+        <div class=" model_stats_label">
+            <table>
+                <tr>
+                    <td style="padding-right: 100px;" class="model_stats_label">Round Trips:</td>
+                    <td class="model_stats_label">Exceptions:</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="ModelRT" class="model_stats">
+                            000000
+                        </div>
+                    </td>
+                    <td>
+                        <div id="ModelExceptions" class="model_stats">
+                            0
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class=" model_stats_label">
+            Model stats:
+        </div>
+        <div class="model_stats">
+            <table id="ModelStatsTable" class="ModelStatsTable">
+                <thead>
+                    <tr class="ModelStatsTableRow">
+                        <th class="ModelStatsTableHeading"></th>
+                        <th id="ThFasterColumn" class="ModelStatsTableHeading">Fastest</th>
+                        <th id="ThWordColumn" class="ModelStatsTableHeading">Words</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <ul id="ModelNameList">
+
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<!-- LLM Settings Modal -->
+
+<div class="modal fade" id="LlmSettingsDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content LlmSettingsDialog">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">LLM Settings</h5>
             </div>
-
-            <div class=" model_stats_label">
+            <div class="modal-body">
                 <table>
                     <tr>
-                        <td style="padding-right: 100px;" class="model_stats_label">Round Trips:</td>
-                        <td class="model_stats_label">Exceptions:</td>
+                        <td><img src="/assets/temperature.jpg" width="55px" height="55px"></td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Temperature
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                            In essence:
+                            Temperature influences how the model weighs different possible next words when generating
+                            text.
+                            Lowering the temperature favors the most likely next word, making the output more
+                            predictable.
+                            Raising the temperature allows the model to consider less likely options, increasing the
+                            chance of novel or unexpected outputs.
+                        </td>
                     </tr>
+
                     <tr>
+                        <td><img src="/assets/context.jpg" width="55px" height="55px"></td>
                         <td>
-                            <div id="ModelRT" class="model_stats">
-                                000000
+                            <div class="dropdown">
+                                <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Context Window
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                </ul>
                             </div>
                         </td>
+
                         <td>
-                            <div id="ModelEceptions" class="model_stats">
-                                0
+                            The context window is the maximum number of tokens (words, parts of words, or punctuation)
+                            that an LLM can take into account when generating a new token.
+                            A larger num_ctx means the model can remember more of the previous conversation or input,
+                            potentially improving the quality of its responses, especially in longer or more complex
+                            interactions.
+                            However, larger context windows can also increase the computational cost and processing
+                            time.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><img src="/assets/predict.avif" width="55px" height="55px"></td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Prediction
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                </ul>
                             </div>
                         </td>
                     </tr>
+
                 </table>
             </div>
-
-            <div class=" model_stats_label">
-                Model stats:
-            </div>
-            <div class="model_stats">
-                <table id="ModelStatsTable" class="ModelStatsTable">
-                    <thead>
-                        <tr class="ModelStatsTableRow">
-                            <th class="ModelStatsTableHeading"></th>
-                            <th id="ThFasterColumn" class="ModelStatsTableHeading">Fastest</th>
-                            <th id="ThWordColumn" class="ModelStatsTableHeading">Words</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <ul id="ModelNameList">
-
-                </ul>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
             </div>
         </div>
     </div>
-</body>
+</div>
