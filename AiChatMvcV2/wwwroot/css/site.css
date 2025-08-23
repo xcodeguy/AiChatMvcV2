@@ -184,10 +184,15 @@ p {
 
 .LlmSettingsItem th, .LlmSettingsItem td {
   font-weight: bold !important;
-  font-size: 18px !important;
+  font-size: 14px !important;
   padding: 25px 25px 25px 25px !important;
   border: 1px solid black !important;
   width: 300px;
+}
+
+.LlmSettingDivSpinner {
+  text-align: center !important;
+  white-space: nowrap; margin: 0 auto;
 }
 
 .bright_links {

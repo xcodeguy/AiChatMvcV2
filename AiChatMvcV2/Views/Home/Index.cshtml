@@ -2,7 +2,6 @@
     ViewData["Title"] = "AiChatMvcV2";
 }
 
-
 <div class="PromptContainer">
     <table id="" class="PromptTable">
         <thead>
@@ -115,11 +114,14 @@
             <div class="modal-body">
                 <table class="LlmSettingsItem">
                     <tr>
-                        <td><img src="/assets/temperature.jpg" width="55px" height="55px"></td>
-                        <td>
-                            <div class="input-group inline-group">
-                                <i class="fa-solid fa-house">Hi</i>
+                        <td style="width: 5%;">
+                            <!--<img src="/assets/temperature.jpg" width="55px" height="55px">-->
+                            <span class="fa-solid fa-house fa-2x">Fuck OFF</span>
+                        </td>
+                        <td style="width: 25%;">
+                            <div class="input-group inline-group LlmSettingDivSpinner">
                                 <div class="input-group-prepend">
+
                                     <button class="btn btn-outline-secondary btn-minus">
                                         <i class="fa fa-minus"></i>
                                     </button>
@@ -132,7 +134,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td>
+                        <td style="width: 80%;">
                             In essence:
                             Temperature influences how the model weighs different possible next words when generating
                             text.
@@ -140,26 +142,43 @@
                             predictable.
                             Raising the temperature allows the model to consider less likely options, increasing the
                             chance of novel or unexpected outputs.
+                            Low temperature (e.g., 0.2): This makes the output more deterministic and conservative. The
+                            model is more likely to choose high-probability words, leading to predictable, consistent,
+                            and factual responses. A temperature of 0 will produce the same output for the same prompt
+                            every time.
+                            Best for: Summarization, technical documentation, and question-answering where precision is
+                            critical.
+                            High temperature (e.g., 0.8 or 1.0): This increases randomness and diversity by giving more
+                            weight to less likely words. The output becomes more creative, varied, and potentially
+                            surprising.
+                            Best for: Creative writing, brainstorming, and storytelling.
+                            Default temperature (typically 1.0): This balances predictability and creativity, allowing
+                            the model to generate a variety of responses while remaining coherent.
                         </td>
                     </tr>
-                    <!--
+
                     <tr>
-                        <td><img src="/assets/context.jpg" width="55px" height="55px"></td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Context Window
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
+                        <td style="width: 5%;">
+                            <img src="/assets/temperature.jpg" width="55px" height="55px">
+                        </td>
+                        <td style="width: 25%;">
+                            <div class="input-group inline-group LlmSettingDivSpinner">
+                                <div class="input-group-prepend">
+
+                                    <button class="btn btn-outline-secondary btn-minus">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input class="form-control quantity" min="0" name="quantity" value="1" type="number">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-plus">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
                             </div>
                         </td>
 
-                        <td>
+                        <td style="width: 80%;">
                             The context window is the maximum number of tokens (words, parts of words, or punctuation)
                             that an LLM can take into account when generating a new token.
                             A larger num_ctx means the model can remember more of the previous conversation or input,
@@ -171,22 +190,112 @@
                     </tr>
 
                     <tr>
-                        <td><img src="/assets/predict.avif" width="55px" height="55px"></td>
                         <td>
-                            <div class="dropdown">
-                                <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Prediction
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
+                            <img src="/assets/temperature.jpg" width="55px" height="55px">
+                        </td>
+                        <td>
+                            <div class="input-group inline-group LlmSettingDivSpinner">
+                                <div class="input-group-prepend">
+
+                                    <button class="btn btn-outline-secondary btn-minus">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input class="form-control quantity" min="0" name="quantity" value="1" type="number">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-plus">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
                             </div>
                         </td>
+                        <td width: 80%;>
+                            Top P (Nucleus Sampling)
+                            Top P, or nucleus sampling, controls randomness by choosing the smallest set of words whose
+                            cumulative probability exceeds a certain threshold, p.
+                            Low Top P (e.g., 0.1): This restricts the model to a very small set of high-probability
+                            words, producing predictable and focused responses.
+                            High Top P (e.g., 0.9): This allows the model to choose from a wider range of words,
+                            including those with lower probability, which leads to more diverse and creative outputs.
+                            When to use: It's generally recommended to adjust either Temperature or Top P, but not both
+                            at the same time, as they can interfere with each other. ƒ
+                        </td>
                     </tr>
--->
+
+                    <tr>
+                        <td>
+                            <img src="/assets/temperature.jpg"  width="55px" height="55px">
+                        </td>
+                        <td>
+                            <div class="input-group inline-group LlmSettingDivSpinner">
+                                <div class="input-group-prepend">
+
+                                    <button class="btn btn-outline-secondary btn-minus">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input class="form-control quantity" min="0" name="quantity" value="1" type="number">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-plus">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td width: 80%;>
+                            Top P (Nucleus Sampling)
+                            Top P, or nucleus sampling, controls randomness by choosing the smallest set of words whose
+                            cumulative probability exceeds a certain threshold, p.
+                            Low Top P (e.g., 0.1): This restricts the model to a very small set of high-probability
+                            words, producing predictable and focused responses.
+                            High Top P (e.g., 0.9): This allows the model to choose from a wider range of words,
+                            including those with lower probability, which leads to more diverse and creative outputs.
+                            When to use: It's generally recommended to adjust either Temperature or Top P, but not both
+                            at the same time, as they can interfere with each other. ƒ
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <img src="/assets/temperature.jpg" width="55px" height="55px">
+                        </td>
+                        <td>
+                            <div class="input-group inline-group LlmSettingDivSpinner">
+                                <div class="input-group-prepend">
+
+                                    <button class="btn btn-outline-secondary btn-minus">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input class="form-control quantity" min="0" name="quantity" value="1" type="number">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-plus">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td width: 80%;>
+                            Other techniques to improve predictability
+                            Beyond the main settings, other techniques can make an LLM's output more reliable.
+                            Few-shot prompting: Providing the model with a few examples of your desired output style
+                            helps it emulate that behavior consistently.
+                            Retrieval-Augmented Generation (RAG): For knowledge-intensive tasks, a RAG system provides
+                            the LLM with relevant documents to reference. This grounding in external information can
+                            significantly reduce made-up "hallucinations" and improve factual accuracy.
+                            Prompt design: Crafting clear, specific, and well-structured prompts is a simple yet
+                            powerful way to guide the model toward the desired output.
+                            Repetition penalties: Settings like the Frequency Penalty or Presence Penalty discourage the
+                            model from repeating the same phrases, which helps create more varied responses at any
+                            temperature setting.
+                        </td>
+                    </tr>
+
+
+
+
+
+
                 </table>
             </div>
             <div class="modal-footer">
