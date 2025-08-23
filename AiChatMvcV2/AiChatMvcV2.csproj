@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="NLog" Version="6.0.3" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="6.0.3" />
   </ItemGroup>

@@ -179,14 +179,15 @@ p {
 }
 
 .LlmSettingsDialog {
-  width: 650px;
+  width: 1050px;
 }
 
-.LlmSettingsItem {
-  font-weight: bold;
-  font-size: 18px;
-  padding-bottom: 5px;
-  padding-right: 5px;
+.LlmSettingsItem th, .LlmSettingsItem td {
+  font-weight: bold !important;
+  font-size: 18px !important;
+  padding: 25px 25px 25px 25px !important;
+  border: 1px solid black !important;
+  width: 300px;
 }
 
 .bright_links {
@@ -323,3 +324,20 @@ p {
 }
 
 /* END 3rd party CSS */
+
+
+/* Input Spinner */
+.inline-group {
+  max-width: 9rem;
+  padding: .5rem;
+}
+
+.inline-group .form-control {
+  text-align: right;
+}
+
+.form-control[type="number"]::-webkit-inner-spin-button,
+.form-control[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

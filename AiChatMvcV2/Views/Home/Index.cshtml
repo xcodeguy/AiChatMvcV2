@@ -113,20 +113,23 @@
                 <h5 class="modal-title" id="exampleModalLabel">LLM Settings</h5>
             </div>
             <div class="modal-body">
-                <table>
+                <table class="LlmSettingsItem">
                     <tr>
                         <td><img src="/assets/temperature.jpg" width="55px" height="55px"></td>
                         <td>
-                            <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Temperature
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
+                            <div class="input-group inline-group">
+                                <i class="fa-solid fa-house">Hi</i>
+                                <div class="input-group-prepend">
+                                    <button class="btn btn-outline-secondary btn-minus">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input class="form-control quantity" min="0" name="quantity" value="1" type="number">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-plus">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
                             </div>
                         </td>
                         <td>
@@ -139,7 +142,7 @@
                             chance of novel or unexpected outputs.
                         </td>
                     </tr>
-
+                    <!--
                     <tr>
                         <td><img src="/assets/context.jpg" width="55px" height="55px"></td>
                         <td>
@@ -183,7 +186,7 @@
                             </div>
                         </td>
                     </tr>
-
+-->
                 </table>
             </div>
             <div class="modal-footer">
