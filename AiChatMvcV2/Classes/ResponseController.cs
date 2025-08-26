@@ -17,6 +17,29 @@ namespace AiChatMvcV2.Controllers
             _settings = settings.Value;
             _logger.LogInformation("ResponseController class initialized.");
         }
+
+        public String GetTopicFromResponse(string TheResponse)
+        {
+            string[] words = TheResponse.Split("|");
+            if (words.Length > 0)
+            {
+                for (int i = words.Length; i >= 0; i--)
+                {
+                    if (words[i-1].Trim() != String.Empty)
+                    {
+                        return words[i-1];
+                    }
+                }
+            }
+
+            return String.Empty;
+        }
+
+        public int GetWordCount(string TheResponse)
+        {
+            string[] a = TheResponse.Split(" ");
+            return a.Length;
+        }
         public Task<string> ParseJsonForObject(string json)
         {
 
@@ -32,7 +55,7 @@ namespace AiChatMvcV2.Controllers
             var ReturnString = item!["response"];
             String s = String.Format("{0}", ReturnString);
             ReturnString = ReturnString.ToString()!.Replace("\n", String.Empty);
-            ReturnString = ReturnString.ToString()!.Replace("\"","");
+            ReturnString = ReturnString.ToString()!.Replace("\"", "");
             Console.WriteLine(ReturnString);
 
 

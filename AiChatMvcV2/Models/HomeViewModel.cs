@@ -1,24 +1,22 @@
 namespace AiChatMvcV2.Models
 {
-    public class HomeViewModelListItem
+    public class ResponseItem
     {
         public string? TimeStamp { get; set; } = null;
-        public string? ModelName { get; set; } = null;
-        public string? Prompt { get; set; } = null;
         public string? Response { get; set; } = null;
-        public float? Iteration { get; set; } = null;
-
-        /*        public HomeViewModelListItem()
-                {
-                    TimeStamp = DateTime.Now.ToString();
-                    ModelName = String.Empty;
-                    Prompt = String.Empty;
-                    Response = String.Empty;
-                    Iteration = 0;
-                }*/
+        public string? Model { get; set; } = null;
+        public string? Topic { get; set; } = null;
+        public string? Prompt { get; set; } = null;
+        public string? NegativePrompt { get; set; } = null;
+        public int? Active { get; set; } = null;
+        public string? LastUpdated { get; set; } = null;
+        public int? Exceptions { get; set; } = null;
+        public string? ResponseTime { get; set; } = null;
+        public int? WordCount { get; set; } = null;
     }
+
     public class HomeViewModel
     {
-        public List<HomeViewModelListItem>? ChatNonStreamingList { get; set; } = null;
+        public List<ResponseItem>? ResponseItemList { get; set; } = null;
     }
 }

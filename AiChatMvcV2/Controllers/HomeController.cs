@@ -24,25 +24,37 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> MakeApiCall(string model, String SystemContent, string UserContent, string NegativePrompt)
+    public async Task<IActionResult> MakeApiCall(string model,
+                                                string SystemContent,
+                                                string UserContent,
+                                                string NegativePrompt)
     {
         try
         {
+            DateTime StartTime = DateTime.Now;
             HomeViewModel ViewModel = new HomeViewModel();
-            ViewModel.ChatNonStreamingList = new List<HomeViewModelListItem>();
-            HomeViewModelListItem ChatItem;
+            ViewModel.ResponseItemList = new List<ResponseItem>();
+            ResponseItem Item;
 
             _logger.LogInformation("Calling API async for model {ModelName}", model);
             var Json = await _callController.CallApiAsync(model, SystemContent, UserContent, NegativePrompt);
             var Response = await _responseController.ParseJsonForObject(Json.ToString()!);
+            TimeSpan TimeSpent = (DateTime.Now - StartTime);
 
-            ChatItem = new HomeViewModelListItem();
-            ChatItem.Iteration = 1;
-            ChatItem.TimeStamp = DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss tt");
-            ChatItem.ModelName = model;
-            ChatItem.Prompt = SystemContent + UserContent + NegativePrompt;
-            ChatItem.Response = Response.ToString();
-            ViewModel.ChatNonStreamingList?.Add(ChatItem);
+            Item = new ResponseItem();
+            Item.TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+            Item.Response = Response;
+            Item.Model = model;
+            Item.Topic = _responseController.GetTopicFromResponse(Response);
+            Item.Prompt = SystemContent + UserContent;
+            Item.NegativePrompt = NegativePrompt;
+            Item.Active = 1;
+            Item.LastUpdated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+            Item.Exceptions = 0;
+            Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+            Item.WordCount = _responseController.GetWordCount(Response);
+            
+            ViewModel.ResponseItemList?.Add(Item);
 
             _logger.LogInformation("Returning a response for model {ModelName}", model);
             return  Ok(ViewModel);

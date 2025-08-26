@@ -25,8 +25,8 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = "Do not repeat a topic found in the prompt. Do not generate a response that is longer than 100 words.";
-    const OriginalPrompt = "Choose a random topic and generate a short paragraph about that topic. Be concise.";
+    const NegativePrompt = "Do not repeat a topic found in the prompt. Do not pick Bioluminescence as a topic. Do not generate a response that is longer than 100 words.";
+    const OriginalPrompt = "Pick a random topic and generate a short summary on the topic. Put a one or two word description of the topic at the end of the response. Proceed the topic with a | character. A template might be [Summary]|[Topic]";
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
@@ -297,12 +297,14 @@ $(document).ready(function () {
                 //get the text response from the data object that
                 //contains the ChatNonStreamingList list. We access
                 //element 0 and get our properties from the json
-                var TheResponse = data.chatNonStreamingList[0].response;
-                ModelNameString = data.chatNonStreamingList[0].modelName;
-                var TimeString = data.chatNonStreamingList[0].timeStamp;
+                var TheResponse = data.responseItemList[0].response;
+                ModelNameString = data.responseItemList[0].model;
+                var TimeString = data.responseItemList[0].timeStamp;
+                var ElapsedCallTime = data.responseItemList[0].responseTime;
+                var TheTopic = data.responseItemList[0].topic;
 
                 //build the bubble title
-                bubble_title = ModelNameString + ": " + TimeString;
+                bubble_title = TheTopic + " ~~ " + ModelNameString + ": " + TimeString;
 
                 //remove the elipse div with the ... animation
                 //remove any 'chat stopped' bubbles for good
@@ -332,10 +334,8 @@ $(document).ready(function () {
                 //update td to the right with seconds
                 //update td right and right again with word count
                 const wordsArray = TheResponse.trim().split(/\s+/).filter(word => word.length > 0);
-                var thisTime = ZeroPad(GetElapsedTimeSeconds(ApiCallStartTime), 3) + 's';
                 var thisWord = ZeroPad(wordsArray.length, 4);
-                var lastTime = $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text();
-
+  
                 //update the word count for the model
                 $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
                 console.log("Updated word count stat for model: " + ModelName);
@@ -343,7 +343,7 @@ $(document).ready(function () {
                 //if the new stats are better than the old stats then update
                 //if (parseInt(thisTime) < parseInt(lastTime) || ($("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text() == "")) {
 
-                $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(thisTime);
+                $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
                 console.log("Updating time stat for model: " + ModelName);
                 //}
 
