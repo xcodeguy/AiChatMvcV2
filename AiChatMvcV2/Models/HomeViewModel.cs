@@ -10,7 +10,6 @@ namespace AiChatMvcV2.Models
         public string? NegativePrompt { get; set; } = null;
         public int? Active { get; set; } = null;
         public string? LastUpdated { get; set; } = null;
-        public int? Exceptions { get; set; } = null;
         public string? ResponseTime { get; set; } = null;
         public int? WordCount { get; set; } = null;
     }

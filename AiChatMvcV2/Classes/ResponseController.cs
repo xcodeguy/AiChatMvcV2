@@ -20,19 +20,48 @@ namespace AiChatMvcV2.Controllers
 
         public String GetTopicFromResponse(string TheResponse)
         {
-            string[] words = TheResponse.Split("|");
-            if (words.Length > 0)
+            try
             {
-                for (int i = words.Length; i >= 0; i--)
+                string[] PossibleTopics = TheResponse.Split("|");
+                if (PossibleTopics.Length > 0)
                 {
-                    if (words[i-1].Trim() != String.Empty)
+                    string[] WordsInTopic;
+
+                    if (PossibleTopics.Length == 1)
                     {
-                        return words[i-1];
+                        //only one block of text. take a chance that the
+                        //first word in the block will suffice as as topic
+                        //description
+                        WordsInTopic = PossibleTopics[0].Split(" ");
+                        return WordsInTopic[0];
+                    }
+
+                    //there are multiple possibilities for a topic
+                    //loop through the possible topics from last to first
+                    //(because this is the pattern we have in the prompt)
+                    //return up to a 3 word topic
+                    for (int i = PossibleTopics.Length - 1; i >= 0; i--)
+                    {
+                        if (PossibleTopics[i].Trim() != String.Empty)
+                        {
+                            //return up to a 3 word description
+                            WordsInTopic = PossibleTopics[i].Split(" ");
+                            if (WordsInTopic.Length <= 5)
+                            {
+                                return PossibleTopics[i];
+                            }
+                        }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                _logger.LogCritical("Exception: ResponseController->GetTopicFromResponse, {ExMessage}", e.Message);
+                throw;
+            }
 
-            return String.Empty;
+            return "Unknown";
+
         }
 
         public int GetWordCount(string TheResponse)

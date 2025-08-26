@@ -41,29 +41,41 @@ public class HomeController : Controller
             var Response = await _responseController.ParseJsonForObject(Json.ToString()!);
             TimeSpan TimeSpent = (DateTime.Now - StartTime);
 
+            _logger.LogInformation("Calling API async for Topic summary.");
+            var JsonTopic = await _callController.CallApiAsync("gemma3",
+            "Summarize the following text into a one to two word description and put a | in front of the first word of the description and a | after the last word of the description. Put the description at the end of the response.",
+            Response,
+            "");
+            var ResponseTopic = await _responseController.ParseJsonForObject(JsonTopic.ToString()!);
+
             Item = new ResponseItem();
             Item.TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
             Item.Response = Response;
             Item.Model = model;
-            Item.Topic = _responseController.GetTopicFromResponse(Response);
+            Item.Topic = _responseController.GetTopicFromResponse(ResponseTopic);
             Item.Prompt = SystemContent + UserContent;
             Item.NegativePrompt = NegativePrompt;
             Item.Active = 1;
             Item.LastUpdated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-            Item.Exceptions = 0;
-            Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+
+            Item.ResponseTime =
+            DateTime.Now.ToString("yyyy-MM-dd ") +
+            String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+
             Item.WordCount = _responseController.GetWordCount(Response);
-            
+
             ViewModel.ResponseItemList?.Add(Item);
 
+            bool success = _callController.InsertResponse(Item);
+
             _logger.LogInformation("Returning a response for model {ModelName}", model);
-            return  Ok(ViewModel);
+            return Ok(ViewModel);
         }
         catch (Exception e)
         {
             String ExceptionMessageString = String.Format("Exception in HomeController::MakeApiCall() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
             _logger.LogCritical(ExceptionMessageString);
-            throw new Exception(ExceptionMessageString);
+            throw;
         }
     }
 

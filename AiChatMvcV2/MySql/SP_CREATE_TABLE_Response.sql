@@ -12,15 +12,15 @@ CREATE PROCEDURE sp_create_table_response (a  VARCHAR(10), b  VARCHAR(10))
         END IF;
         
         CREATE TABLE Response (
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            timestamp DATETIME NOT NULL,
             response LONGTEXT NOT NULL,
             model VARCHAR(100),
             topic VARCHAR(100),
             prompt TEXT,
             negative_prompt TEXT,
             active BOOLEAN,
-            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            response_time INT UNSIGNED NOT NULL,
+            last_updated DATETIME NOT NULL,
+            response_time DATETIME NOT NULL,
             word_count INT UNSIGNED NOT NULL
         );
     END

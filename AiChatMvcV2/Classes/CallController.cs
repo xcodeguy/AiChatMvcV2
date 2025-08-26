@@ -26,7 +26,7 @@ namespace AiChatMvcV2.Classes
 
         private const string sp_insert_table_response = "sp_insert_table_response";
 
-        private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=amputee2025!";
+        private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
 
 
         public CallController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger)
@@ -63,12 +63,11 @@ namespace AiChatMvcV2.Classes
                     command.Parameters.AddWithValue("timestamp", TheResponse.TimeStamp);
                     command.Parameters.AddWithValue("response", TheResponse.Response);
                     command.Parameters.AddWithValue("model", TheResponse.Model);
-                    command.Parameters.AddWithValue("topic", TheResponse.Prompt);
+                    command.Parameters.AddWithValue("topic", TheResponse.Topic);
                     command.Parameters.AddWithValue("prompt", TheResponse.Prompt);
                     command.Parameters.AddWithValue("negative_prompt", TheResponse.NegativePrompt);
-                    command.Parameters.AddWithValue("active", 1);
-                    command.Parameters.AddWithValue("last_updated", new DateTime());
-                    command.Parameters.AddWithValue("exceptions", TheResponse.Exceptions);
+                    command.Parameters.AddWithValue("active", TheResponse.Active);
+                    command.Parameters.AddWithValue("last_updated", TheResponse.LastUpdated);
                     command.Parameters.AddWithValue("response_time", TheResponse.ResponseTime);
                     command.Parameters.AddWithValue("word_count", TheResponse.WordCount);
 
@@ -92,31 +91,12 @@ namespace AiChatMvcV2.Classes
 
         public async Task<string> CallApiAsync(string Model, string SystemContent, string UserContent, string NegativePrompt)
         {
-            MySqlConnection? conn = GetConnection();
-            if (conn != null)
-            {
-                conn.Close();
-            }
-
-
+            
             string? url = _settings.Url;
             string data;
             UserContent = SystemContent + " " + UserContent + " " + NegativePrompt;
             var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
-            //data = "{\"model\": \"" + Model + "\",\"messages\":[{\"role\":\"system\",\"content\":\"" + SystemContent + "\"},{\"role\": \"user\", \"content\": \"" + UserContent + "\"}],\"stream\": false}";
-            /*
-                EXAMPLE:
-                {
-                    "model": "gemma3",
-                    "prompt": "Simulate a Model UN session regarding global nutrition.",
-                    "stream": false,
-                    "options": {
-                        "temperature": 2,
-                        "num_ctx": 2048,
-                        "num_predict": -1
-                    }
-                }
-            */
+
             data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, UserContent);
             _logger.LogInformation("Built data string");
 

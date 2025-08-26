@@ -25,8 +25,11 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = "Do not repeat a topic found in the prompt. Do not pick Bioluminescence as a topic. Do not generate a response that is longer than 100 words.";
-    const OriginalPrompt = "Pick a random topic and generate a short summary on the topic. Put a one or two word description of the topic at the end of the response. Proceed the topic with a | character. A template might be [Summary]|[Topic]";
+    const NegativePrompt = `Do not repeat a topic found in the prompt. Do not pick Bioluminescence as a topic. Do not generate a response that is longer than 100 words.`;
+
+    const OriginalPrompt = `Pick a random topic and generate a short paragraph explaining the topic.`;
+
+    const TopicPrompt = `Summarize the parapgraph into a one to two word description and put a | in front of the first word of the description and a | after the last word of the description.`;
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
@@ -304,7 +307,7 @@ $(document).ready(function () {
                 var TheTopic = data.responseItemList[0].topic;
 
                 //build the bubble title
-                bubble_title = TheTopic + " ~~ " + ModelNameString + ": " + TimeString;
+                bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "]";
 
                 //remove the elipse div with the ... animation
                 //remove any 'chat stopped' bubbles for good
@@ -335,7 +338,7 @@ $(document).ready(function () {
                 //update td right and right again with word count
                 const wordsArray = TheResponse.trim().split(/\s+/).filter(word => word.length > 0);
                 var thisWord = ZeroPad(wordsArray.length, 4);
-  
+
                 //update the word count for the model
                 $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
                 console.log("Updated word count stat for model: " + ModelName);

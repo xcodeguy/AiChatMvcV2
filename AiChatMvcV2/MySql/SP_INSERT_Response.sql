@@ -10,7 +10,7 @@ CREATE PROCEDURE sp_insert_table_response(
     negative_prompt TEXT,
     active BIT,
     last_updated DATETIME,
-    response_time INT,
+    response_time DATETIME,
     word_count INT
 )
 

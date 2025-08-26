@@ -35,8 +35,13 @@ CALL sp_insert_table_response(
     'negative_prompt',
     1,
     NOW(),
-    78,
+    '2025-08-26 00:00:02',
     450
 );
 
 SELECT COUNT(*) FROM Response;
+
+
+SELECT *
+FROM `Response`
+ORDER BY timestamp DESC

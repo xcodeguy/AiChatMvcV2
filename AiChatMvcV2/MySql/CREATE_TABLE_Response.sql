@@ -21,7 +21,7 @@ CREATE TABLE Response (
             active BOOLEAN,
             last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             exceptions INT UNSIGNED NOT NULL,
-            response_time INT UNSIGNED NOT NULL,
+            response_time DATETIME,
             word_count INT UNSIGNED NOT NULL
             );
 
