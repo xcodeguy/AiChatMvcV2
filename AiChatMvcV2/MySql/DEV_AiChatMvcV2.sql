@@ -41,7 +41,15 @@ CALL sp_insert_table_response(
 
 SELECT COUNT(*) FROM Response;
 
+TRUNCATE TABLE Response;
 
 SELECT *
 FROM `Response`
-ORDER BY timestamp DESC
+ORDER BY timestamp DESC;
+
+SELECT COUNT(*)
+FROM `Response`;
+
+SELECT * FROM Response WHERE timestamp >= '2025-08-26 01:00:00'
+
+SELECT COUNT(topic), topic FROM Response GROUP BY topic ORDER BY topic ASC

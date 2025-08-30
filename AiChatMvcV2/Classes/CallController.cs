@@ -68,7 +68,8 @@ namespace AiChatMvcV2.Classes
                     command.Parameters.AddWithValue("negative_prompt", TheResponse.NegativePrompt);
                     command.Parameters.AddWithValue("active", TheResponse.Active);
                     command.Parameters.AddWithValue("last_updated", TheResponse.LastUpdated);
-                    command.Parameters.AddWithValue("response_time", TheResponse.ResponseTime);
+                    command.Parameters.AddWithValue("response_time", DateTime.Now.ToString("yyyy-MM-dd ") +
+                    TheResponse.ResponseTime);
                     command.Parameters.AddWithValue("word_count", TheResponse.WordCount);
 
                     try
@@ -82,6 +83,7 @@ namespace AiChatMvcV2.Classes
                     catch (MySqlException ex)
                     {
                         _logger.LogCritical("Exception: CallController->InsertResponse: {exMessage}, {TheResponse}", ex.Message, TheResponse);
+                        throw new Exception(ex.Message);
                     }
                 }
             }
@@ -91,7 +93,7 @@ namespace AiChatMvcV2.Classes
 
         public async Task<string> CallApiAsync(string Model, string SystemContent, string UserContent, string NegativePrompt)
         {
-            
+
             string? url = _settings.Url;
             string data;
             UserContent = SystemContent + " " + UserContent + " " + NegativePrompt;

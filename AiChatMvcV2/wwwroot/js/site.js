@@ -25,11 +25,11 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = `Do not repeat a topic found in the prompt. Do not pick Bioluminescence as a topic. Do not generate a response that is longer than 100 words.`;
+    const NegativePrompt = `Do not generate a response that is longer than 100 words.`;
 
-    const OriginalPrompt = `Pick a random topic and generate a short paragraph explaining the topic.`;
-
-    const TopicPrompt = `Summarize the parapgraph into a one to two word description and put a | in front of the first word of the description and a | after the last word of the description.`;
+    //const OriginalPrompt = `Pick a random topic and generate a short paragraph explaining the topic.`;
+    //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
+    const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
@@ -49,13 +49,14 @@ $(document).ready(function () {
     var TimeElapsedCalculatedSeconds;
     var lastElapsedTime;
 
-    $('.btn-plus, .btn-minus').on('click', function (e) {
-        const isNegative = $(e.target).closest('.btn-minus').is('.btn-minus');
-        const input = $(e.target).closest('.input-group').find('input');
-        if (input.is('input')) {
-            input[0][isNegative ? 'stepDown' : 'stepUp']()
-        }
-    });
+    /*
+    for (let i = 0.5; i <= 1.5; i+= 0.1) {
+        $('#ModalSettingsTemperature').append($('<option>', {
+            value: i,
+            text: '          ' + i
+        }));
+    }
+*/
 
     $("#btnLlmSettings").click(function () {
     });
@@ -104,8 +105,8 @@ $(document).ready(function () {
     }
 
     //display the prompts
-    $("#OriginalPromptLabel").text(OriginalPrompt);
-    $("#NegativePromptLabel").text(NegativePrompt);
+    $("#OriginalPromptLabel").text(OriginalPrompt.substring(0, 75) + (OriginalPrompt.length >= 150 ? "..." : ""));
+    $("#NegativePromptLabel").text(NegativePrompt.substring(0, 75) + (NegativePrompt.length >= 150 ? "..." : ""));
 
     //elapsed time clock on web page
     setInterval(function () {
@@ -306,6 +307,8 @@ $(document).ready(function () {
                 var ElapsedCallTime = data.responseItemList[0].responseTime;
                 var TheTopic = data.responseItemList[0].topic;
 
+                $("#TopicLabel").text(TheTopic);
+
                 //build the bubble title
                 bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "]";
 
@@ -318,14 +321,16 @@ $(document).ready(function () {
                 //create a chat div with the current title
                 //justification and, chat bubble text
                 //var e = CreateDivChatNode(bubble_title, just, getSubstringByWordCount(data,100)); //100 words or less
+                var ChatDivId = 'ChatBubble' + GlobalCallCount;
                 e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse);
                 $('#divChat').append(e);
-                e.attr('id', 'ChatBubble' + GlobalCallCount);
+                e.attr('id', ChatDivId);
                 element = document.getElementById("divChat");
                 if (!(element === null) && !(element === undefined)) {
                     element.scrollIntoView(false);
                     console.log("Created DIV chat node for response");
                 }
+                
 
                 //increment and format the global call count
                 GlobalCallCount++;
@@ -393,4 +398,18 @@ $(document).ready(function () {
 
         return e;
     }
+
+//does not work in Safari - not worth the effort
+    function CopyChatTextToClipboard(ChatDivId) {
+        e = $(ChatDivId);
+        navigator.clipboard.writeText(e.html).then(function () {
+            console.log('Async: Copying to clipboard was successful!');
+        }, function (err) {
+            console.error('Async: Could not copy text: ', err);
+        });
+    }
 });
+
+
+
+

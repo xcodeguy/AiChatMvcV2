@@ -52,15 +52,13 @@ public class HomeController : Controller
             Item.TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
             Item.Response = Response;
             Item.Model = model;
-            Item.Topic = _responseController.GetTopicFromResponse(ResponseTopic);
+            Item.Topic = _responseController.GetTopicFromResponse(ResponseTopic).Trim();
             Item.Prompt = SystemContent + UserContent;
             Item.NegativePrompt = NegativePrompt;
             Item.Active = 1;
             Item.LastUpdated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
 
-            Item.ResponseTime =
-            DateTime.Now.ToString("yyyy-MM-dd ") +
-            String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+            Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
 
             Item.WordCount = _responseController.GetWordCount(Response);
 

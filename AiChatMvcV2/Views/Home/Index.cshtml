@@ -6,8 +6,11 @@
     <table id="" class="PromptTable">
         <thead>
             <tr class="">
-                <th id="" class="PromptTableHeading">Prompt</th>
-                <th id="" class="PromptTableHeading">Negative Prompt</th>
+                <th id="" class="PromptTableHeading"><i class="fa-solid fa-lg fa-terminal"></i>&nbsp;&nbsp;Prompt</th>
+                <th id="" class="PromptTableHeading"><i
+                        class="fa-solid fa-lg fa-user-minus"></i></i>&nbsp;&nbsp;Negative Prompt</th>
+                <th id="" class="PromptTableHeading"><i class="fa-regular fa-lg fa-comments"></i></i>&nbsp;&nbsp;Topic
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -15,6 +18,8 @@
                 <td id="OriginalPromptLabel" class="PromptTableData">
                 </td>
                 <td id="NegativePromptLabel" class="PromptTableData">
+                </td>
+                <td id="TopicLabel" class="PromptTableData"></td>
                 </td>
             </tr>
         </tbody>
@@ -58,11 +63,11 @@
             some model
         </div>
 
-        <div class=" model_stats_label">
+        <div class="model_stats_label">
             <table>
                 <tr>
                     <td style="padding-right: 100px;" class="model_stats_label">Round Trips:</td>
-                    <td class="model_stats_label">Exceptions:</td>
+                    <td class="model_stats_label fa-home">Exceptions:</td>
                 </tr>
                 <tr>
                     <td>
@@ -111,8 +116,123 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">LLM Settings</h5>
             </div>
+
             <div class="modal-body">
-                            </div>
+                <div style="width: 100%; display: table;">
+                    <div style="display: table-row; padding-bottom: 25px;">
+                        <div class="ModalSettingsLabel">
+                            <i class="fa-solid fa-temperature-high"></i>&nbsp;&nbsp;Temperature
+                        </div>
+
+                        <div class="ModalSettingsDropdown">
+                            <select id="ModalSettingsTemperature" class="ModealSettingsDropdownPadding">
+                                <option value="0.5">0.5</option>
+                                <option value="0.5">0.6</option>
+                                <option value="0.5">0.7</option>
+                                <option value="0.5">0.8</option>
+                                <option value="0.5">0.9</option>
+                                <option value="0.5" selected>1.0</option>
+                                <option value="0.5">1.1</option>
+                                <option value="0.5">1.2</option>
+                                <option value="0.5">1.3</option>
+                                <option value="0.5">1.4</option>
+                                <option value="0.5">1.5</option>
+                            </select>
+                        </div>
+
+                        <div class="ModalSettingsScrollableText">
+                            <p>Temperature influences how the model weighs different possible next words when generating
+                                text. Lowering the temperature favors the most likely next word, making the output more
+                                predictable. Raising the temperature allows the model to consider less likely options,
+                                increasing the
+                                chance of novel or unexpected outputs.</p>
+                            <p>Low temperature (e.g., 0.2): This makes the output more deterministic and conservative.
+                                The
+                                model is more likely to choose high-probability words, leading to predictable,
+                                consistent,
+                                and factual responses. A temperature of 0 will produce the same output for the same
+                                prompt
+                                every time.
+                                Best for: Summarization, technical documentation, and question-answering where precision
+                                is
+                                critical.</p>
+                            <p>High temperature (e.g., 0.8 or 1.0): This increases randomness and diversity by giving
+                                more
+                                weight to less likely words. The output becomes more creative, varied, and potentially
+                                surprising.
+                                Best for: Creative writing, brainstorming, and storytelling.
+                                Default temperature (typically 1.0): This balances predictability and creativity,
+                                allowing
+                                the model to generate a variety of responses while remaining coherent.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: table-row">
+                        <div class="ModalSettingsLabel">
+                            <i class="fa-solid fa-square-binary"></i>&nbsp;&nbsp;Context (CTX)
+                        </div>
+
+                        <div class="ModalSettingsDropdown">
+                            <select id="ModalSettingsTemperature" class="ModealSettingsDropdownPadding">
+                                <option value="1024" selected>1024</option>
+                                <option value="2048">2048</option>
+                                <option value="4096">4096</option>
+                            </select>
+                        </div>
+
+                        <div class="ModalSettingsScrollableText">
+                            <p>TThe context window is the maximum number of tokens (words, parts of words, or
+                                punctuation)
+                                that an LLM can take into account when generating a new token.
+                                A larger num_ctx means the model can remember more of the previous conversation or
+                                input,
+                                potentially improving the quality of its responses, especially in longer or more complex
+                                interactions.
+                                However, larger context windows can also increase the computational cost and processing
+                                time.</p>
+                        </div>
+                    </div>
+
+
+                    <div style="display: table-row">
+                        <div class="ModalSettingsLabel">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>&nbsp;&nbsp;Predict
+                        </div>
+
+                        <div class="ModalSettingsDropdown">
+                            <select id="ModalSettingsTemperature" class="ModealSettingsDropdownPadding">
+                                <option value="-1" selected>-1</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+
+                        <div class="ModalSettingsScrollableText">
+                            <p>Top P, or nucleus sampling, controls randomness by choosing the smallest set of words
+                                whose cumulative probability exceeds a certain threshold, p.</p>
+                            <p>Low Top P (e.g., 0.1): This restricts the model to a very small set of high-probability
+                                words, producing predictable and focused responses.</p>
+                            <p>High Top P (e.g., 0.9): This allows the model to choose from a wider range of words,
+                                including those with lower probability, which leads to more diverse and creative
+                                outputs. When to use: It's generally recommended to adjust either Temperature or Top P, but not
+                                both at the same time, as they can interfere with each other.</p>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary">Save changes</button>
