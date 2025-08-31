@@ -25,11 +25,11 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = `Do not generate a response that is longer than 100 words.`;
+    const NegativePrompt = `Do not generate a response that is longer than 100 words. Do not discuss Bioluminescence.`;
 
-    //const OriginalPrompt = `Pick a random topic and generate a short paragraph explaining the topic.`;
+    const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 100 words or less.`;
     //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
-    const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
+    //const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
@@ -48,6 +48,7 @@ $(document).ready(function () {
     var ApiCallStartTime;
     var TimeElapsedCalculatedSeconds;
     var lastElapsedTime;
+    var GlobalChatDivId;
 
     /*
     for (let i = 0.5; i <= 1.5; i+= 0.1) {
@@ -105,8 +106,8 @@ $(document).ready(function () {
     }
 
     //display the prompts
-    $("#OriginalPromptLabel").text(OriginalPrompt.substring(0, 75) + (OriginalPrompt.length >= 150 ? "..." : ""));
-    $("#NegativePromptLabel").text(NegativePrompt.substring(0, 75) + (NegativePrompt.length >= 150 ? "..." : ""));
+    $("#OriginalPromptLabel").text(OriginalPrompt.substring(0, 1000) + (OriginalPrompt.length >= 1000 ? "..." : ""));
+    $("#NegativePromptLabel").text(NegativePrompt.substring(0, 1000) + (NegativePrompt.length >= 1000 ? "..." : ""));
 
     //elapsed time clock on web page
     setInterval(function () {
@@ -318,19 +319,41 @@ $(document).ready(function () {
                 $("[id='elipse']").remove();
                 $("[id='ChatStopped']").remove();
 
+                //add a <script></script> tag to implement the
+                //javascript function that copies the chat text
+                //to the clipboard.
+                var JsClipboardImplementation = '';
+                JsClipboardImplementation += "<script>";
+                JsClipboardImplementation += "  function copyDivToClipboard() {";
+                JsClipboardImplementation += "      var range = document.createRange();";
+                JsClipboardImplementation += "      range.selectNode(document.getElementById('"+ GlobalChatDivId + "'));";
+                JsClipboardImplementation += "      window.getSelection().removeAllRanges();";
+                JsClipboardImplementation += "      window.getSelection().addRange(range);";
+                JsClipboardImplementation += "document.execCommand(\"copy\");";
+                JsClipboardImplementation += "window.getSelection().removeAllRanges();";
+                JsClipboardImplementation += "}";
+                JsClipboardImplementation += "</script>";
+
                 //create a chat div with the current title
                 //justification and, chat bubble text
-                //var e = CreateDivChatNode(bubble_title, just, getSubstringByWordCount(data,100)); //100 words or less
-                var ChatDivId = 'ChatBubble' + GlobalCallCount;
-                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse);
+                GlobalChatDivId = 'ChatBubble' + GlobalCallCount;   
+                
+                //create a link that copies the div chat text to the clipboard
+                var CopyTextToClipboardButton = "<a href=\"#\" onclick=\"copyDivToClipboard();\"><i class=\"fa-solid fa-copy\"></i></a>";             
+                CopyTextToClipboardButton += JsClipboardImplementation;
+
+                //create the chat bubble
+                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse + CopyTextToClipboardButton);
                 $('#divChat').append(e);
-                e.attr('id', ChatDivId);
+                e.attr('id', GlobalChatDivId);
+
+                //scroll div chart window to the bottom so
+                //that the latest post is visible
                 element = document.getElementById("divChat");
                 if (!(element === null) && !(element === undefined)) {
                     element.scrollIntoView(false);
                     console.log("Created DIV chat node for response");
                 }
-                
 
                 //increment and format the global call count
                 GlobalCallCount++;
@@ -399,15 +422,6 @@ $(document).ready(function () {
         return e;
     }
 
-//does not work in Safari - not worth the effort
-    function CopyChatTextToClipboard(ChatDivId) {
-        e = $(ChatDivId);
-        navigator.clipboard.writeText(e.html).then(function () {
-            console.log('Async: Copying to clipboard was successful!');
-        }, function (err) {
-            console.error('Async: Could not copy text: ', err);
-        });
-    }
 });
 
 

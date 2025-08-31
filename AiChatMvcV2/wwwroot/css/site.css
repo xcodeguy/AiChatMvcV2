@@ -166,6 +166,7 @@ p {
   font-size: 18px !important;
   border: 1px solid black;
   width: 33%;
+  vertical-align: middle;
 }
 
 .PromptTableData {
@@ -176,6 +177,7 @@ p {
   font-size: 18px !important;
   border: 1px solid black;
   width: 33%;
+  vertical-align: top;
 }
 
 .LlmSettingsDialog {
@@ -259,13 +261,12 @@ p {
 }
 
 .ModalSettingsScrollableText {
-  height: 200px;
+  height: 100px;
   float: left;
   overflow: auto;
   width: 100% !important;
   display: table-cell;
   font-size: 12pt;
-  scroll-padding: 20px;
 }
 
 .ProgressBarTextColor {
