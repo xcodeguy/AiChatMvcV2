@@ -1,0 +1,55 @@
+:root {
+    /* LIGHT THEME */
+    --BodyBackgroundColor: rgb(73, 73, 73);
+    --ChatBackgroundColor: rgb(90, 90, 90);
+    --ChatBorderColor: rgb(255, 255, 255);
+    --ChatContainerViewHeight: 74vh;
+
+    --NavBarBackgroundColor: var(--BodyBackgroundColor);
+    --NavBarTextColor: rgb(0, 0, 0);
+
+    --BrandColor: var(--ChatBorderColor);
+    --BrandMvcColor: rgb(31, 159, 210);
+
+    --MsgSentBackgroundColor: rgb(0, 171, 228);
+    --MsgSentBorderColor: var(--MsgSentBackgroundColor);
+    --MsgSentTextColor: rgb(0, 0, 0);
+    --MsgSentEllipseColor: var(--MsgSentTextColor);
+    --MsgSentElipseBackgroundColor: var(--MsgSentBackgroundColor);
+
+    --MsgRcvdBackgroundColor: rgb(212, 103, 103);
+    --MsgRcvdBorderColor: var(--MsgRcvdBackgroundColor);
+    --MsgRcvdTextColor: rgb(0, 0, 0);
+    --MsgRcvdElipseColor: var(--MsgRcvdTextColor);
+    --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
+
+    --PromptHeadingtBackgroundColor: rgba(0, 0, 0, 0.644);
+    --PromptHeadingTextColor: rgb(255, 255, 255);
+    --PromptBackgroundColor: rgb(194, 226, 255);
+    --PromptTextColor: rgb(0, 0, 0);
+    --PromptTablePadding: 3px;
+
+    --BubbleTitleTextColor: rgb(255, 255, 255);
+
+    /* NEW 08-15-2025 */
+    --ChatDashboardBackgroundColor: rgb(90, 90, 90);
+    --PrivacyLinkColor: rgb(255, 255, 255);
+    --ProgressBarTextColor: rgb(0, 0, 0);
+    --ModelStatsTableWidth: 100%;
+    --HeaderFooterBorderBottomColor: rgba(0, 0, 0, 0.644);
+
+    /* MOVED 08-31-2025 */
+    --ModelLabelColor: rgba(194, 226, 255);
+    --ModelStatColor: rgb(180, 180, 180);
+}
+
+.ProgressBarColor {
+    background-color: var(--ModelLabelColor);
+}
+
+.ProgressBar {
+    background-color: rgb(255, 255, 255);
+    width: 100%;
+    height: 25px;
+    border: 1px solid var(--ModelLabelColor);
+}

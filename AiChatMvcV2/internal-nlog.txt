@@ -4381,3 +4381,138 @@
 2025-08-30 22:36:32.0917 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
 2025-08-30 22:36:32.0927 Info AutoReload Config File Monitor starting
 2025-08-30 22:36:32.1741 Info Configuration initialized.
+2025-08-30 22:39:36.8544 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-30 22:39:36.8770 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-30 22:39:36.8790 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-30 22:39:36.8800 Info AutoReload Config File Monitor starting
+2025-08-30 22:39:36.9685 Info Configuration initialized.
+2025-08-31 09:49:24.5099 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 09:49:24.5267 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 09:49:24.5288 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 09:49:24.5297 Info AutoReload Config File Monitor starting
+2025-08-31 09:49:24.5925 Info Configuration initialized.
+2025-08-31 10:29:54.6096 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:29:54.6316 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:29:54.6349 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:29:54.6358 Info AutoReload Config File Monitor starting
+2025-08-31 10:29:54.7236 Info Configuration initialized.
+2025-08-31 10:30:47.1410 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:30:47.1531 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:30:47.1551 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:30:47.1562 Info AutoReload Config File Monitor starting
+2025-08-31 10:30:47.2415 Info Configuration initialized.
+2025-08-31 10:31:03.3785 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:31:03.3908 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:31:03.3930 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:31:03.3940 Info AutoReload Config File Monitor starting
+2025-08-31 10:31:03.4837 Info Configuration initialized.
+2025-08-31 10:31:24.0690 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:31:24.0822 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:31:24.0843 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:31:24.0853 Info AutoReload Config File Monitor starting
+2025-08-31 10:31:24.1741 Info Configuration initialized.
+2025-08-31 10:32:55.1587 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:32:55.1841 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:32:55.1862 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:32:55.1872 Info AutoReload Config File Monitor starting
+2025-08-31 10:32:55.3539 Info Configuration initialized.
+2025-08-31 10:35:02.9347 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:35:02.9596 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:35:02.9618 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:35:02.9628 Info AutoReload Config File Monitor starting
+2025-08-31 10:35:03.0503 Info Configuration initialized.
+2025-08-31 10:35:25.4962 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:35:25.5095 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:35:25.5116 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:35:25.5125 Info AutoReload Config File Monitor starting
+2025-08-31 10:35:25.5961 Info Configuration initialized.
+2025-08-31 10:35:50.8808 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:35:50.8939 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:35:50.8961 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:35:50.8972 Info AutoReload Config File Monitor starting
+2025-08-31 10:35:50.9827 Info Configuration initialized.
+2025-08-31 10:36:08.2160 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:36:08.2296 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:36:08.2317 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:36:08.2326 Info AutoReload Config File Monitor starting
+2025-08-31 10:36:08.2952 Info Configuration initialized.
+2025-08-31 10:37:15.4764 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:37:15.4979 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:37:15.5001 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:37:15.5011 Info AutoReload Config File Monitor starting
+2025-08-31 10:37:15.5966 Info Configuration initialized.
+2025-08-31 10:37:56.1625 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:37:56.1882 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:37:56.1904 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:37:56.1966 Info AutoReload Config File Monitor starting
+2025-08-31 10:37:56.2882 Info Configuration initialized.
+2025-08-31 10:38:13.4604 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:38:13.4725 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:38:13.4747 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:38:13.4757 Info AutoReload Config File Monitor starting
+2025-08-31 10:38:13.5678 Info Configuration initialized.
+2025-08-31 10:38:47.3488 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:38:47.3612 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:38:47.3632 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:38:47.3642 Info AutoReload Config File Monitor starting
+2025-08-31 10:38:47.4519 Info Configuration initialized.
+2025-08-31 10:39:37.8743 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:39:37.8986 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:39:37.9011 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:39:37.9022 Info AutoReload Config File Monitor starting
+2025-08-31 10:39:37.9658 Info Configuration initialized.
+2025-08-31 10:40:02.5338 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:40:02.5463 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:40:02.5484 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:40:02.5494 Info AutoReload Config File Monitor starting
+2025-08-31 10:40:02.6315 Info Configuration initialized.
+2025-08-31 10:40:57.8325 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:40:57.8577 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:40:57.8599 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:40:57.8610 Info AutoReload Config File Monitor starting
+2025-08-31 10:40:57.9469 Info Configuration initialized.
+2025-08-31 10:41:36.8975 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:41:36.9221 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:41:36.9242 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:41:36.9252 Info AutoReload Config File Monitor starting
+2025-08-31 10:41:37.0093 Info Configuration initialized.
+2025-08-31 10:41:47.2693 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:41:47.2822 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:41:47.2844 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:41:47.2854 Info AutoReload Config File Monitor starting
+2025-08-31 10:41:47.3765 Info Configuration initialized.
+2025-08-31 10:41:58.1375 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:41:58.1504 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:41:58.1527 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:41:58.1537 Info AutoReload Config File Monitor starting
+2025-08-31 10:41:58.2284 Info Configuration initialized.
+2025-08-31 10:42:25.4443 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:42:25.4578 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:42:25.4600 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:42:25.4610 Info AutoReload Config File Monitor starting
+2025-08-31 10:42:25.5433 Info Configuration initialized.
+2025-08-31 10:43:18.5298 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:43:18.5538 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:43:18.5560 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:43:18.5571 Info AutoReload Config File Monitor starting
+2025-08-31 10:43:18.6492 Info Configuration initialized.
+2025-08-31 10:43:32.5313 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:43:32.5441 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:43:32.5464 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:43:32.5475 Info AutoReload Config File Monitor starting
+2025-08-31 10:43:32.6317 Info Configuration initialized.
+2025-08-31 10:45:23.0080 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:45:23.0318 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:45:23.0339 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:45:23.0349 Info AutoReload Config File Monitor starting
+2025-08-31 10:45:23.1222 Info Configuration initialized.
+2025-08-31 10:48:06.4605 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:48:06.4852 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:48:06.4872 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:48:06.4882 Info AutoReload Config File Monitor starting
+2025-08-31 10:48:06.5533 Info Configuration initialized.
+2025-08-31 10:48:59.4189 Info Registered target NLog.Targets.ConsoleTarget(Name=console)
+2025-08-31 10:48:59.4446 Info Registered target NLog.Targets.FileTarget(Name=file)
+2025-08-31 10:48:59.4469 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.0.3.4402. Product version: 6.0.3+e276e1969a52b8ecc5cc84c1670a516efea0cb19. GlobalAssemblyCache: False
+2025-08-31 10:48:59.4479 Info AutoReload Config File Monitor starting
+2025-08-31 10:48:59.5346 Info Configuration initialized.

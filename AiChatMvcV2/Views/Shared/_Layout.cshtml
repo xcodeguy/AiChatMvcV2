@@ -11,7 +11,7 @@
 
     <!-- THEME CSS -->
     @{
-        var test = 0;
+        var test = 2;
         switch (test)
         {
             case 0:
@@ -19,6 +19,9 @@
                 break;
             case 1:
                 <link rel="stylesheet" href="~/css/delphi_theme.css" asp-append-version="true" />
+                break;
+            case 2:
+                <link rel="stylesheet" href="~/css/solaris.css" asp-append-version="true" />
                 break;
         }
     }
