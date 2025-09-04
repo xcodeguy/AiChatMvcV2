@@ -7,6 +7,17 @@
 
 $(document).ready(function () {
 
+
+    $(document).ready(function () {
+        $('#menu-icon').click(function () {
+            $('.sub-nav').toggleClass('visible');
+        });
+    });
+
+
+
+
+
     //set some variables
     const ResponseBubbleJustify = new Array("msg sent", "msg rcvd");
     const ModelName = new Array(
@@ -326,7 +337,7 @@ $(document).ready(function () {
                 JsClipboardImplementation += "<script>";
                 JsClipboardImplementation += "  function copyDivToClipboard() {";
                 JsClipboardImplementation += "      var range = document.createRange();";
-                JsClipboardImplementation += "      range.selectNode(document.getElementById('"+ GlobalChatDivId + "'));";
+                JsClipboardImplementation += "      range.selectNode(document.getElementById('" + GlobalChatDivId + "'));";
                 JsClipboardImplementation += "      window.getSelection().removeAllRanges();";
                 JsClipboardImplementation += "      window.getSelection().addRange(range);";
                 JsClipboardImplementation += "document.execCommand(\"copy\");";
@@ -336,10 +347,10 @@ $(document).ready(function () {
 
                 //create a chat div with the current title
                 //justification and, chat bubble text
-                GlobalChatDivId = 'ChatBubble' + GlobalCallCount;   
-                
+                GlobalChatDivId = 'ChatBubble' + GlobalCallCount;
+
                 //create a link that copies the div chat text to the clipboard
-                var CopyTextToClipboardButton = "<a href=\"#\" onclick=\"copyDivToClipboard();\"><i class=\"fa-solid fa-copy\"></i></a>";             
+                var CopyTextToClipboardButton = "<a href=\"#\" onclick=\"copyDivToClipboard();\"><i class=\"fa-solid fa-copy\"></i></a>";
                 CopyTextToClipboardButton += JsClipboardImplementation;
 
                 //create the chat bubble

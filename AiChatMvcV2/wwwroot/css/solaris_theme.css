@@ -1,6 +1,6 @@
 :root {
     /* LIGHT THEME */
-    --BodyBackgroundColor: rgb(73, 73, 73);
+    --BodyBackgroundColor: rgb(36, 36, 36);
     --ChatBackgroundColor: rgb(90, 90, 90);
     --ChatBorderColor: rgb(255, 255, 255);
     --ChatContainerViewHeight: 74vh;
@@ -24,9 +24,9 @@
     --MsgRcvdElipseBackgroundColor: var(--MsgRcvdBackgroundColor);
 
     --PromptHeadingtBackgroundColor: rgba(0, 0, 0, 0.644);
-    --PromptHeadingTextColor: rgb(255, 255, 255);
+    --PromptHeadingTextColor: var(--PromptBackgroundColor);
     --PromptBackgroundColor: rgb(194, 226, 255);
-    --PromptTextColor: rgb(0, 0, 0);
+    --PromptTextColor: var(--PromptHeadingtBackgroundColor);
     --PromptTablePadding: 3px;
 
     --BubbleTitleTextColor: rgb(255, 255, 255);
@@ -40,7 +40,7 @@
 
     /* MOVED 08-31-2025 */
     --ModelLabelColor: rgba(194, 226, 255);
-    --ModelStatColor: rgb(180, 180, 180);
+    --ModelStatColor: rgb(157, 255, 203);
 }
 
 .ProgressBarColor {

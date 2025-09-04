@@ -8,111 +8,32 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/all.min.css" />
-
-    <!-- THEME CSS -->
-    @{
-        var test = 2;
-        switch (test)
-        {
-            case 0:
-                <link rel="stylesheet" href="~/css/light_theme.css" asp-append-version="true" />
-                break;
-            case 1:
-                <link rel="stylesheet" href="~/css/delphi_theme.css" asp-append-version="true" />
-                break;
-            case 2:
-                <link rel="stylesheet" href="~/css/solaris.css" asp-append-version="true" />
-                break;
-        }
-    }
-    <!-- END THEME CSS -->
-
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AiChatMvcV2.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/css/solaris_theme.css" id="pageStyle">
 </head>
-<!--
-**1. Evocative & Mysterious:**
-
-* **Nyx:** (Greek goddess of the night) -  Suggests stealth, darkness, secrets, and powerful intelligence. Great for 
-security, AI, or a system dealing with hidden data.
-* **Veridian:** (A shade of green) -  Implies growth, renewal, and potentially a connection to nature or technology.  
-Good for environmental apps, biotech, or a system focused on data analysis.
-* **Obsidian:** (Volcanic glass) -  Sharp, resilient, and dark.  Works well for security tools, data analytics, or 
-projects with a strong foundation.
-* **Aether:** (The classical element thought to fill the upper regions of space) -  Suggests boundless potential, 
-connection, and a futuristic feel. Perfect for network projects, cloud solutions, or a project involving interconnected 
-systems.
-* **Rift:**  Implies breaking through barriers, accessing hidden information, or a disruptive technology. Good for 
-cybersecurity, blockchain, or a project focused on challenges.
-
-
-**2. Bold & Powerful:**
-
-* **Valhalla:** (Norse mythology - hall of the slain) -  Strength, victory, legacy. Excellent for a project with 
-ambitious goals, a competitive edge, or a focus on performance.
-* **Phoenix:** (Mythological bird) - Rebirth, resilience, transformation. Ideal for projects involving innovation, 
-recovery, or rebuilding.
-* **Titan:** (Greek mythology - powerful deities) -  Immense power, scale, and dominance.  Great for a large-scale 
-system, a powerful engine, or a project with a central, influential role.
-* **Stormbreaker:** (Marvel character) -  Breaking through obstacles, powerful disruption. Good for security, AI, or a 
-project that challenges the status quo.
-
-
-
-**3. Modern & Technological:**
-
-* **Kryptos:** (Greek for "hidden") - Directly related to encryption and security.
-* **Pulse:**  Rapid, dynamic, energetic. Suitable for real-time systems, data streaming, or anything involving quick 
-responsiveness.
-* **Nexus:**  A central connection point – ideal for networking, collaboration tools, or a system acting as a hub.
-* **Vector:** Direction, precision, and a strong sense of purpose. Good for data analysis, optimization, or a system 
-focused on guiding users.
-* **Quantus:**  Relates to quantum physics –  suggests advanced technology, complex calculations, and a cutting-edge 
-feel.
-
-
-
-**4. Short & Punchy (Good for Internal Use):**
-
-* **Zenith:** (Highest point) -  Achieving peak performance.
-* **Core:**  The fundamental essence of the project.
-* **Flux:**  Constant change, adaptability.
-* **Echo:**  Represents feedback, communication, and potentially replication.
-
-**How to Choose the BEST Code Name:**
-
-1. **Consider the Project's Core Function:** Does the name align with what the software *does*?
-2. **Target Audience:** Will the name resonate with your users or stakeholders?
-3. **Availability:** (For internal use - make sure it's not already used within your team)
-4. **Memorability:** Is it easy to remember and pronounce?
-
-**My Top 3 Recommendations (Based on general coolness and versatility):**
-
-1. **Nyx:**  It's mysterious, powerful, and works across many project types.
-2. **Obsidian:** Solid, reliable, and has a strong tech association.
-3. **Aether:**  Modern, expansive, and suggests a pioneering spiritF
--->
 
 <body>
     <header>
-        <nav
+        <nav style="height:50px;"
             class="header-footer-border-color navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
-            <div class="container-fluid" style="padding-left: 30px;">
+            <div class="NavBarStyle" style="text-align: left;">
                 <a id="navbar-brand_id" class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <span style='color: var(--BrandColor); padding: 0px; margin: 0px;'>
                         AiChat
                         <span
-                            style='font-weight: bold; font-size: 18pt; color: var(--BrandMvcColor); padding: 0px; margin: 0px;'>Mvc</span>
-                        V2
-                        &nbsp;
-                        <span
+                            style='font-weight: bold; font-size: 18pt; color: var(--BrandMvcColor); padding: 0px; margin: 0px;'>Mvc</span>V2&nbsp;<span
                             style='font-style: italic; font-weight: normal; font-size: 12pt; padding: 0px; margin: 0px;''>(Flux)</span>
                     </span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+            </div>
+
+            <div class="NavBarStyle" style="text-align: right;"></div>
+                <select id="ThemeDropdown" class="ThemeDropdownStyle">
+                    <option value="~/css/light_theme.css">Light</option>
+                    <option value="~/css/delphi_theme.css">Delphi</option>
+                    <option value="~/css/solaris_theme.css">Solaris</option>
+                </select>
             </div>
         </nav>
     </header>
@@ -139,4 +60,5 @@ feel.
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

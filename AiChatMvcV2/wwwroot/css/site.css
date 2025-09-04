@@ -199,8 +199,36 @@ p {
   margin: 0 auto;
 }
 
+.NavBarStyle {
+  vertical-align: middle;
+  width: 50%;
+  padding-right: 35px;
+  padding-left: 25px;
+  color: white;
+}
+
+select.ThemeDropdownStyle {
+  content: "\25AE";
+  /* this is your text. You can also use UTF-8 character codes as I do here */
+  margin-right: 25px;
+  margin-top: 15px;
+  width: 250px;
+  font-size: 16px;
+  color: var(--PromptHeadingTextColor);
+  border: 1px solid #CCC;
+  height: 25px;
+  background-color: var(--BodyBackgroundColor);
+  /*-webkit-appearance: none;
+  -moz-appearance: none;*/
+  /* appearance: none; */
+  /* background: url(~/assets/down_arrow.ico.png) 96% / 15% no-repeat #EEE; */
+}
+
 .bright_links {
   color: var(--PrivacyLinkColor);
+  vertical-align: middle !important;
+  align-content: center !important;
+  text-align: center;
 }
 
 .privacy_policy {
@@ -360,6 +388,28 @@ p {
   66% {
     background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%
   }
+}
+
+
+
+/* drop down menu */
+.styled select {
+  background: transparent;
+  width: 150px;
+  font-size: 16px;
+  border: 1px solid #CCC;
+  height: 34px;
+}
+
+.styled {
+  margin: 50px;
+  width: 120px;
+  height: 34px;
+  border: 1px solid #111;
+  border-radius: 3px;
+  /*overflow: hidden;*/
+  /*background: url(https://stackoverflow.com/favicon.ico) 96% / 20% no-repeat #EEE;*/
+  background-color: #686868;
 }
 
 /* END 3rd party CSS */
