@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="~/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AiChatMvcV2.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="/css/solaris_theme.css" id="pageStyle">
+    <link rel="stylesheet" href="/css/solaris_theme.css" id="ThemeStyleSheetId">
 </head>
 
 <body>
     <header>
-        <nav style="height:50px;"
+        <nav style="height:40px;"
             class="header-footer-border-color navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
             <div class="NavBarStyle" style="text-align: left;">
                 <a id="navbar-brand_id" class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
@@ -29,10 +29,10 @@
             </div>
 
             <div class="NavBarStyle" style="text-align: right;"></div>
-                <select id="ThemeDropdown" class="ThemeDropdownStyle">
-                    <option value="~/css/light_theme.css">Light</option>
-                    <option value="~/css/delphi_theme.css">Delphi</option>
-                    <option value="~/css/solaris_theme.css">Solaris</option>
+                <select id="ThemeDropdownId" class="ThemeDropdownStyle">
+                    <option value="/css/light_theme.css">Light</option>
+                    <option value="/css/delphi_theme.css">Delphi</option>
+                    <option value="/css/solaris_theme.css">Solaris</option>
                 </select>
             </div>
         </nav>

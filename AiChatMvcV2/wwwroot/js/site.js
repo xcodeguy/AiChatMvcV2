@@ -7,17 +7,6 @@
 
 $(document).ready(function () {
 
-
-    $(document).ready(function () {
-        $('#menu-icon').click(function () {
-            $('.sub-nav').toggleClass('visible');
-        });
-    });
-
-
-
-
-
     //set some variables
     const ResponseBubbleJustify = new Array("msg sent", "msg rcvd");
     const ModelName = new Array(
@@ -61,14 +50,13 @@ $(document).ready(function () {
     var lastElapsedTime;
     var GlobalChatDivId;
 
-    /*
-    for (let i = 0.5; i <= 1.5; i+= 0.1) {
-        $('#ModalSettingsTemperature').append($('<option>', {
-            value: i,
-            text: '          ' + i
-        }));
-    }
-*/
+    $("#ThemeDropdownId").change(function () {
+        var selectedValue = $(this).val(); // Get the value of the selected option
+        var selectedText = $(this).find('option:selected').text(); // Get the text of the selected option
+        console.log("Selected Value: " + selectedValue);
+        console.log("Selected Text: " + selectedText);
+        $('#ThemeStyleSheetId').attr('href', selectedValue);
+    });
 
     $("#btnLlmSettings").click(function () {
     });

@@ -210,7 +210,7 @@ p {
 select.ThemeDropdownStyle {
   content: "\25AE";
   /* this is your text. You can also use UTF-8 character codes as I do here */
-  margin-right: 25px;
+  margin-right: 38px;
   margin-top: 15px;
   width: 250px;
   font-size: 16px;
