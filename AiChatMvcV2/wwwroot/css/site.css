@@ -208,20 +208,14 @@ p {
 }
 
 select.ThemeDropdownStyle {
-  content: "\25AE";
-  /* this is your text. You can also use UTF-8 character codes as I do here */
   margin-right: 38px;
-  margin-top: 15px;
+  margin-top: 0px;
   width: 250px;
   font-size: 16px;
-  color: var(--PromptHeadingTextColor);
+  color: #ffffff;
   border: 1px solid #CCC;
   height: 25px;
   background-color: var(--BodyBackgroundColor);
-  /*-webkit-appearance: none;
-  -moz-appearance: none;*/
-  /* appearance: none; */
-  /* background: url(~/assets/down_arrow.ico.png) 96% / 15% no-repeat #EEE; */
 }
 
 .bright_links {

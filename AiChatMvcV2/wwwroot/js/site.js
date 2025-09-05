@@ -49,13 +49,26 @@ $(document).ready(function () {
     var TimeElapsedCalculatedSeconds;
     var lastElapsedTime;
     var GlobalChatDivId;
+    var ClipboardFaIconColor;
 
     $("#ThemeDropdownId").change(function () {
         var selectedValue = $(this).val(); // Get the value of the selected option
         var selectedText = $(this).find('option:selected').text(); // Get the text of the selected option
         console.log("Selected Value: " + selectedValue);
         console.log("Selected Text: " + selectedText);
-        $('#ThemeStyleSheetId').attr('href', selectedValue);
+        $("#ThemeStyleSheetId").attr('href', selectedValue);
+
+        switch (selectedText) {
+            case "Light":
+                $(".ThemeDropdownStyle").css("color", "#000000");
+                break;
+            case "Delphi":
+                $(".ThemeDropdownStyle").css("color", "#ffffff");
+                break;
+            case "Solaris":
+                $(".ThemeDropdownStyle").css("color", "#ffffff");
+                break;
+        }
     });
 
     $("#btnLlmSettings").click(function () {
@@ -318,6 +331,10 @@ $(document).ready(function () {
                 $("[id='elipse']").remove();
                 $("[id='ChatStopped']").remove();
 
+                //create a chat div with the current title
+                //justification and, chat bubble text
+                GlobalChatDivId = 'ChatBubble' + GlobalCallCount;
+
                 //add a <script></script> tag to implement the
                 //javascript function that copies the chat text
                 //to the clipboard.
@@ -328,17 +345,22 @@ $(document).ready(function () {
                 JsClipboardImplementation += "      range.selectNode(document.getElementById('" + GlobalChatDivId + "'));";
                 JsClipboardImplementation += "      window.getSelection().removeAllRanges();";
                 JsClipboardImplementation += "      window.getSelection().addRange(range);";
-                JsClipboardImplementation += "document.execCommand(\"copy\");";
-                JsClipboardImplementation += "window.getSelection().removeAllRanges();";
-                JsClipboardImplementation += "}";
+                JsClipboardImplementation += "      document.execCommand(\"copy\");";
+                JsClipboardImplementation += "      window.getSelection().removeAllRanges();";
+                JsClipboardImplementation += "      var toastLiveExample = document.getElementById('CopyToClipboardAlert');";
+                JsClipboardImplementation += "      var toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);";
+                JsClipboardImplementation += "      toastBootstrap.show();";
+                JsClipboardImplementation += "  }";
                 JsClipboardImplementation += "</script>";
 
-                //create a chat div with the current title
-                //justification and, chat bubble text
-                GlobalChatDivId = 'ChatBubble' + GlobalCallCount;
-
-                //create a link that copies the div chat text to the clipboard
-                var CopyTextToClipboardButton = "<a href=\"#\" onclick=\"copyDivToClipboard();\"><i class=\"fa-solid fa-copy\"></i></a>";
+                //create a link that calls the copy to clipboard function
+                //and set the correct color of the font-awesome icon
+                if(JustificationPointer == 0) {
+                    var FaIcon = "<i style=\"color: var(--MsgSentTextColor);\" class=\"fa-solid fa-copy\"></i>";
+                } else {
+                    var FaIcon = "<i style=\"color: var(--MsgRcvdTextColor);\" class=\"fa-solid fa-copy\"></i>";
+                }
+                var CopyTextToClipboardButton = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"copyDivToClipboard();\">" + FaIcon + "</a>";
                 CopyTextToClipboardButton += JsClipboardImplementation;
 
                 //create the chat bubble

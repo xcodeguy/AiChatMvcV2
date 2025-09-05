@@ -36,11 +36,11 @@
     --PrivacyLinkColor: rgb(255, 255, 255);
     --ProgressBarTextColor: rgb(0, 0, 0);
     --ModelStatsTableWidth: 100%;
-    --HeaderFooterBorderBottomColor: rgba(0, 0, 0, 0.644);
+    --HeaderFooterBorderBottomColor: rgba(200, 200, 200, 0.644);
 
     /* MOVED 08-31-2025 */
     --ModelLabelColor: rgba(194, 226, 255);
-    --ModelStatColor: rgb(157, 255, 203);
+    --ModelStatColor: rgb(33, 225, 255);
 }
 
 .ProgressBarColor {
