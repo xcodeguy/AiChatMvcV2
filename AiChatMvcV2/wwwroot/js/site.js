@@ -30,6 +30,7 @@ $(document).ready(function () {
     const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 100 words or less.`;
     //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
     //const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
+    //const OriginalPrompt = `Discuss the topic of shopping at the mall and response in a Valley Girl  dialet. Use lots of emojis too!`;
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
@@ -350,17 +351,17 @@ $(document).ready(function () {
                 JsClipboardImplementation += "      var toastLiveExample = document.getElementById('CopyToClipboardAlert');";
                 JsClipboardImplementation += "      var toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);";
                 JsClipboardImplementation += "      toastBootstrap.show();";
-                JsClipboardImplementation += "  }";
+                JsClipboardImplementation += "}";
                 JsClipboardImplementation += "</script>";
 
                 //create a link that calls the copy to clipboard function
-                //and set the correct color of the font-awesome icon
+                //and sets the correct color of the font-awesome icon
                 if(JustificationPointer == 0) {
                     var FaIcon = "<i style=\"color: var(--MsgSentTextColor);\" class=\"fa-solid fa-copy\"></i>";
                 } else {
                     var FaIcon = "<i style=\"color: var(--MsgRcvdTextColor);\" class=\"fa-solid fa-copy\"></i>";
                 }
-                var CopyTextToClipboardButton = "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"copyDivToClipboard();\">" + FaIcon + "</a>";
+                var CopyTextToClipboardButton = "&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"copyDivToClipboard();\">" + FaIcon + "</a>";
                 CopyTextToClipboardButton += JsClipboardImplementation;
 
                 //create the chat bubble

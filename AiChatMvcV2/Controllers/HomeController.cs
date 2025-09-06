@@ -42,9 +42,9 @@ public class HomeController : Controller
             TimeSpan TimeSpent = (DateTime.Now - StartTime);
 
             _logger.LogInformation("Calling API async for Topic summary.");
-            var JsonTopic = await _callController.CallApiAsync("gemma3",
-            "Summarize the following text into a one to two word description and put a | in front of the first word of the description and a | after the last word of the description. Put the description at the end of the response.",
-            Response,
+            var JsonTopic = await _callController.CallApiAsync("llama3.1",
+            "Summarize the following text into a one to two word description. The response cannot be more than two words. The response must be a one to two word summary of the following text. Generate a one or two word summary. The response should not be longer than two words.",
+            Response, 
             "");
             var ResponseTopic = await _responseController.ParseJsonForObject(JsonTopic.ToString()!);
 
@@ -52,7 +52,7 @@ public class HomeController : Controller
             Item.TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
             Item.Response = Response;
             Item.Model = model;
-            Item.Topic = _responseController.GetTopicFromResponse(ResponseTopic).Trim();
+            Item.Topic = ResponseTopic.ToString();
             Item.Prompt = SystemContent + UserContent;
             Item.NegativePrompt = NegativePrompt;
             Item.Active = 1;

@@ -173,7 +173,7 @@ p {
   background-color: var(--PromptBackgroundColor);
   color: var(--PromptTextColor);
   padding: var(--PromptTablePadding);
-  font-weight: bold !important;
+  font-weight: normal !important;
   font-size: 20px !important;
   border: 1px solid black;
   width: 33%;
