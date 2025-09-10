@@ -25,7 +25,7 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = `Do not generate a response that is longer than 100 words. Do not discuss Bioluminescence.`;
+    const NegativePrompt = `Do not generate a response that is longer than 100 words. The topic cannot be Bioluminescence. The topic cannot be Vintage Typewriters. The topic cannot be Coffee.`;
 
     const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 100 words or less.`;
     //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
@@ -232,7 +232,7 @@ $(document).ready(function () {
             $("#btnApiCallToggle").addClass("btn-danger");
             $("#btnApiCallToggle").removeClass("btn-success");
             KillProcess = true;
-            var e = CreateDivChatNode("SysAdmin", JustifyClass, "Chat Stopped.");
+            var e = CreateDivChatNode("Dave says...", JustifyClass, "Chat Stopped.");
             $('#divChat').append(e);
             e.attr('id', 'ChatStopped');
             const element = document.getElementById("divChat");
