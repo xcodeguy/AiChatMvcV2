@@ -40,6 +40,9 @@
     --ProgressBarTextColor: rgb(0, 0, 0);
     --ModelStatsTableWidth: 100%;
     --HeaderFooterBorderBottomColor: rgb(179, 240, 254);
+
+    /* 09-16-2025 Added chat window wallpaper */
+    --ChatBackgroundImage: url("/assets/windows-xp-dark.jpg");
 }
 
 .ProgressBarColor {

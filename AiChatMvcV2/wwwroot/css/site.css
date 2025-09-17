@@ -242,17 +242,19 @@ select.ThemeDropdownStyle {
 }
 
 .chat_scrollable {
-  height: 72vh;
-  width: 70vw;
+  height: 719px;
+  width: 1310px;
   overflow: auto;
   float: left;
-  margin-left: -5px;
+  background-image: var(--ChatBackgroundImage);
+  opacity: 1.0;
+  margin-right: 0px;
 }
 
 .chat_dashboard {
-  height: 73vh;
-  width: 27vw;
-  padding-top: 0px;
+  height: 719px;
+  width: 516px;
+  padding-top: 5px;
   padding-right: 10px;
   padding-left: 10px;
   float: left;

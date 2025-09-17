@@ -41,6 +41,9 @@
     /* MOVED 08-31-2025 */
     --ModelLabelColor: rgba(194, 226, 255);
     --ModelStatColor: rgb(33, 225, 255);
+
+    /* 09-16-2025 Added chat window wallpaper */
+    --ChatBackgroundImage: url("/assets/galaxy.jpg");
 }
 
 .ProgressBarColor {

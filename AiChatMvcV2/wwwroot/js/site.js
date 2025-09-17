@@ -27,7 +27,7 @@ $(document).ready(function () {
 
     const NegativePrompt = `Do not generate a response that is longer than 100 words. The topic cannot be Bioluminescence. The topic cannot be Vintage Typewriters. The topic cannot be Coffee.`;
 
-    const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 100 words or less.`;
+    const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 100 words or less. Make your response as if a valley girl is speaking.`;
     //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
     //const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
     //const OriginalPrompt = `Discuss the topic of shopping at the mall and response in a Valley Girl  dialet. Use lots of emojis too!`;
@@ -43,14 +43,12 @@ $(document).ready(function () {
     var bubble_title;
     var GlobalCallCount = 0;
     var GlobalErrorCount = 0;
-    const GlobalMaxErrors = 3;
+    const GlobalMaxErrors = -1;
     var KillProcess = false;
     const ApplicationStartTime = new Date();
-    var ApiCallStartTime;
     var TimeElapsedCalculatedSeconds;
     var lastElapsedTime;
     var GlobalChatDivId;
-    var ClipboardFaIconColor;
 
     $("#ThemeDropdownId").change(function () {
         var selectedValue = $(this).val(); // Get the value of the selected option
@@ -121,6 +119,9 @@ $(document).ready(function () {
     //display the prompts
     $("#OriginalPromptLabel").text(OriginalPrompt.substring(0, 1000) + (OriginalPrompt.length >= 1000 ? "..." : ""));
     $("#NegativePromptLabel").text(NegativePrompt.substring(0, 1000) + (NegativePrompt.length >= 1000 ? "..." : ""));
+
+    //display exception max count as label
+    $("#td_exception_label").text("Exceptions: (max=" + GlobalMaxErrors + ")");
 
     //elapsed time clock on web page
     setInterval(function () {
@@ -252,8 +253,6 @@ $(document).ready(function () {
             return;
         }
 
-        ApiCallStartTime = new Date();
-
         //this code accomodates a two element array
         //it's used to toggle the chat bubble justification
         boolXor = xor(true, boolXor);       //comes in as 0 then the Xor sets it
@@ -356,7 +355,7 @@ $(document).ready(function () {
 
                 //create a link that calls the copy to clipboard function
                 //and sets the correct color of the font-awesome icon
-                if(JustificationPointer == 0) {
+                if (JustificationPointer == 0) {
                     var FaIcon = "<i style=\"color: var(--MsgSentTextColor);\" class=\"fa-solid fa-copy\"></i>";
                 } else {
                     var FaIcon = "<i style=\"color: var(--MsgRcvdTextColor);\" class=\"fa-solid fa-copy\"></i>";
@@ -413,8 +412,9 @@ $(document).ready(function () {
                 $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
 
                 if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
-                    //ClearChatDisplay();
-                    return;
+                    if (GlobalMaxErrors != -1) {
+                        return;
+                    }
                 } else {
                     //try again after the exception
                     MakeAjaxCall(OriginalPrompt);
