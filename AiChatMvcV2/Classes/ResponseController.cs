@@ -227,7 +227,7 @@ namespace AiChatMvcV2.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ExceptionMessageString);
+                _logger.LogCritical("{ 0} \n{1}", ExceptionMessageString, ex.Message);
             }
 
             return string.Empty;
