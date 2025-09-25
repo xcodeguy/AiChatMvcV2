@@ -319,8 +319,15 @@ $(document).ready(function () {
                 var TimeString = data.responseItemList[0].timeStamp;
                 var ElapsedCallTime = data.responseItemList[0].responseTime;
                 var TheTopic = data.responseItemList[0].topic;
-
+                var WavfileName = data.responseItemList[0].speechFilename;
+                console.log("WAV FILE NAME: " + WavfileName);
                 $("#TopicLabel").text(TheTopic);
+
+                var AudioHtmlTag = "<audio id=\"TtsTopicVoice\" src=\"" + WavfileName + "\" preload=\"auto\"></audio>";
+                var jsAudioFileImplementation = AudioHtmlTag;
+                jsAudioFileImplementation += "const audio = document.getElementById(\"TtsTopicVoice\");"
+                jsAudioFileImplementation += "audio.play()";
+
 
                 //build the bubble title
                 bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "]";
@@ -364,7 +371,7 @@ $(document).ready(function () {
                 CopyTextToClipboardButton += JsClipboardImplementation;
 
                 //create the chat bubble
-                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse + CopyTextToClipboardButton);
+                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse + CopyTextToClipboardButton + jsAudioFileImplementation);
                 $('#divChat').append(e);
                 e.attr('id', GlobalChatDivId);
 
@@ -390,13 +397,13 @@ $(document).ready(function () {
 
                 //update the word count for the model
                 $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
-                console.log("Updated word count stat for model: " + ModelName);
+                console.log("Updated word count stat for model: " + ModelNameString);
 
                 //if the new stats are better than the old stats then update
                 //if (parseInt(thisTime) < parseInt(lastTime) || ($("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text() == "")) {
 
                 $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
-                console.log("Updating time stat for model: " + ModelName);
+                console.log("Updating time stat for model: " + ModelNameString);
                 //}
 
                 sortTable(1);
@@ -411,10 +418,12 @@ $(document).ready(function () {
                 GlobalErrorCount++;
                 $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
 
-                if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
-                    if (GlobalMaxErrors != -1) {
-                        return;
-                    }
+                //a -1 overrides the max exception logic
+                if (GlobalMaxErrors == -1) {
+                    console.log("GlobalMaxErros=-1: Ignoring retry logic and calling MakeAjaxCall().");
+                    MakeAjaxCall(OriginalPrompt);
+                } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
+                    return;
                 } else {
                     //try again after the exception
                     MakeAjaxCall(OriginalPrompt);

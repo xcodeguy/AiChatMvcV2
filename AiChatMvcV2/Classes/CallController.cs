@@ -12,10 +12,8 @@ using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
 using System.Data;
 
-
 namespace AiChatMvcV2.Classes
 {
-
     public class CallController : ICallController
     {
         private readonly ILogger<CallController> _logger;
@@ -27,7 +25,6 @@ namespace AiChatMvcV2.Classes
         private const string sp_insert_table_response = "sp_insert_table_response";
 
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
-
 
         public CallController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger)
         {
@@ -93,7 +90,6 @@ namespace AiChatMvcV2.Classes
 
         public async Task<string> CallApiAsync(string Model, string SystemContent, string UserContent, string NegativePrompt)
         {
-
             string? url = _settings.Url;
             string data;
             UserContent = SystemContent + " " + UserContent + " " + NegativePrompt;
@@ -125,6 +121,7 @@ namespace AiChatMvcV2.Classes
                 }
             }
         }
+        
     }       //end class
 
 }       //end namespace

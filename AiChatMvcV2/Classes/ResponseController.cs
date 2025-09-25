@@ -3,6 +3,10 @@ using AiChatMvcV2.Contracts;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
 using AiChatMvcV2.Classes;
+using System.Text;
+using System;
+using System.IO;
+using System.Linq.Expressions;
 
 namespace AiChatMvcV2.Controllers
 {
@@ -10,13 +14,16 @@ namespace AiChatMvcV2.Controllers
     {
         private readonly ILogger<CallController> _logger;
         private readonly ApplicationSettings _settings;
-
+        private const float temperature = 0.8f;     //0.8
+        private const int num_ctx = 2048;           //2048
+        private const int num_predict = -1;         //-1
         public ResponseController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger)
         {
             _logger = logger;
             _settings = settings.Value;
             _logger.LogInformation("ResponseController class initialized.");
         }
+        private string ExceptionMessageString;
 
         public String GetTopicFromResponse(string TheResponse)
         {
@@ -63,7 +70,6 @@ namespace AiChatMvcV2.Controllers
             return "Unknown";
 
         }
-
         public int GetWordCount(string TheResponse)
         {
             string[] a = TheResponse.Split(" ");
@@ -75,10 +81,96 @@ namespace AiChatMvcV2.Controllers
             string JsonString = json;
 
             List<char> NO_CHARS = new List<char>() { '{', '}', '\\' };
-            List<char> GOOD_CHARS = new List<char>() {'a','b','c','d','e','f','g','h','i','j','k','l','m','o','p','q','r','s','t','u','v','x','y','z',
-                                                    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-                                                    '0','1','2','3','4','5','6','7','8','9',
-                                                    ' ',',',':','[',']','"','<','>','?','/','.','!','@','#','$','%','^','&','*','(',')','-','_','+','=','|','\\'};
+            List<char> GOOD_CHARS = new List<char>()
+            {
+                'a',
+                'b',
+                'c',
+                'd',
+                'e',
+                'f',
+                'g',
+                'h',
+                'i',
+                'j',
+                'k',
+                'l',
+                'm',
+                'o',
+                'p',
+                'q',
+                'r',
+                's',
+                't',
+                'u',
+                'v',
+                'x',
+                'y',
+                'z',
+                'A',
+                'B',
+                'C',
+                'D',
+                'E',
+                'F',
+                'G',
+                'H',
+                'I',
+                'J',
+                'K',
+                'L',
+                'M',
+                'N',
+                'O',
+                'P',
+                'Q',
+                'R',
+                'S',
+                'T',
+                'U',
+                'V',
+                'W',
+                'X',
+                'Y',
+                'Z',
+                '0',
+                '1',
+                '2',
+                '3',
+                '4',
+                '5',
+                '6',
+                '7',
+                '8',
+                '9',
+                ' ',
+                ',',
+                ':',
+                '[',
+                ']',
+                '"',
+                '<',
+                '>',
+                '?',
+                '/',
+                '.',
+                '!',
+                '@',
+                '#',
+                '$',
+                '%',
+                '^',
+                '&',
+                '*',
+                '(',
+                ')',
+                '-',
+                '_',
+                '+',
+                '=',
+                '|',
+                '\\'
+            };
 
             Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonString)!;
             var ReturnString = item!["response"];
@@ -90,8 +182,82 @@ namespace AiChatMvcV2.Controllers
 
             return Task.Run(ReturnString.ToString)!;
         }
-    }
+        public async Task<string> GenerateTextToSpeechResourceFile(string ResponseText, string Voice)
+        {
+            string? url = _settings.TTSApiEndpointUrl;
+            string? ModelName = _settings.TTSModelName;
+            string data;
+            var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
 
-}
+            try
+            {
+                data = String.Format("{{\"model\": \"{0}\", \"input\": \"{1}\", \"voice\": \"{2}\", \"response_format\" : \"{3}\", \"speed\":\"{4}\"}}", ModelName, ResponseText, Voice, "wav", "1.0");
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(300); //5 min timeout
+
+                    _logger.LogInformation("Calling TTS endpoint");
+                    var content = new StringContent(data, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(url, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("TTS model response success");
+
+                        // get the content-disposition from the http header
+                        // split on the = sign and take the assumed last element
+                        // copy file from source to destination
+                        string cd; string fn; string sf;
+                        cd = response.Content.Headers.GetValues("Content-Disposition").ToList()[0];
+                        fn = cd.Split("=")[1].ToString().Replace("\"", string.Empty); ;
+                        sf = CopySpeechFileToAssets(fn);
+                        _logger.LogInformation("Returning sound file from assets (wav): {model}:{prompt}:{fn}", ModelName, ResponseText, sf);
+
+                        return sf;
+                    }
+                    else
+                    {
+                        ExceptionMessageString = String.Format("Exception in CallController::GenerateTextToSpeechResourceFile() {0} {1}, {2}\nException: {3}", ModelName, url, ResponseText, response.RequestMessage);
+                        throw new Exception(ExceptionMessageString);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ExceptionMessageString);
+            }
+
+            return string.Empty;
+        }
+        public string CopySpeechFileToAssets(string SourceFile)
+        {
+            string DestinationFile = _settings.SpeechFilePlaybackLocation!;
+            DestinationFile += _settings.SpeechFilePlaybackName!;
+
+            try
+            {
+                // Check if the source file exists
+                if (!File.Exists(SourceFile))
+                {
+                    _logger.LogInformation("Error: Source file not found: {file}", SourceFile);
+                    return string.Empty;
+                }
+
+                // Copy the file
+                File.Copy(SourceFile, DestinationFile, true); // The 'true' parameter enables overwriting if the file exists
+                _logger.LogInformation("File '{f1}' copied to '{f2}' successfully.", SourceFile, DestinationFile);
+                return DestinationFile;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("An error occurred: {0}", ex.Message);
+            }
+
+            return string.Empty;
+        }
+
+    }       //end class
+
+}       //end namespace
 
 

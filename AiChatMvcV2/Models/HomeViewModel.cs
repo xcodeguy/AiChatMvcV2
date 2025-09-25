@@ -12,6 +12,7 @@ namespace AiChatMvcV2.Models
         public string? LastUpdated { get; set; } = null;
         public string? ResponseTime { get; set; } = null;
         public int? WordCount { get; set; } = null;
+        public string? SpeechFilename { get; set; } = null;
     }
 
     public class HomeViewModel

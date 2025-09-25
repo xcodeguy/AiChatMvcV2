@@ -242,7 +242,7 @@ select.ThemeDropdownStyle {
 }
 
 .chat_scrollable {
-  height: 719px;
+  height: 691px;
   width: 1310px;
   overflow: auto;
   float: left;
@@ -252,8 +252,8 @@ select.ThemeDropdownStyle {
 }
 
 .chat_dashboard {
-  height: 719px;
-  width: 516px;
+  height: 691px;
+  width: 550px;
   padding-top: 5px;
   padding-right: 10px;
   padding-left: 10px;
