@@ -17,13 +17,14 @@ namespace AiChatMvcV2.Controllers
         private const float temperature = 0.8f;     //0.8
         private const int num_ctx = 2048;           //2048
         private const int num_predict = -1;         //-1
+        private string ExceptionMessageString = string.Empty;
+
         public ResponseController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger)
         {
             _logger = logger;
             _settings = settings.Value;
             _logger.LogInformation("ResponseController class initialized.");
         }
-        private string ExceptionMessageString;
 
         public String GetTopicFromResponse(string TheResponse)
         {
@@ -68,13 +69,14 @@ namespace AiChatMvcV2.Controllers
             }
 
             return "Unknown";
-
         }
+
         public int GetWordCount(string TheResponse)
         {
             string[] a = TheResponse.Split(" ");
             return a.Length;
         }
+
         public Task<string> ParseJsonForObject(string json)
         {
 
@@ -182,6 +184,7 @@ namespace AiChatMvcV2.Controllers
 
             return Task.Run(ReturnString.ToString)!;
         }
+
         public async Task<string> GenerateTextToSpeechResourceFile(string ResponseText, string Voice)
         {
             string? url = _settings.TTSApiEndpointUrl;
@@ -229,6 +232,7 @@ namespace AiChatMvcV2.Controllers
 
             return string.Empty;
         }
+
         public string CopySpeechFileToAssets(string SourceFile)
         {
             string DestinationFile = _settings.SpeechFilePlaybackLocation!;
