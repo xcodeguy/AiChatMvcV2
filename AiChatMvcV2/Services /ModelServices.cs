@@ -1,34 +1,31 @@
 ///////////////////////////////////////////////
 //    David Ferrell
 //    Copyright (C) 2025, Xcodeguy Software
-//    Class for calling LLM API's in OLlama
 ///////////////////////////////////////////////
 using AiChatMvcV2.Contracts;
 using System.Text;
-using System.Text.Json;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
 using System.Data;
-using AiChatMvcV2.Controllers;
+using AiChatMvcV2.Services;
 
-namespace AiChatMvcV2.Classes
+namespace AiChatMvcV2.Services
 {
-    public class CallController : ICallController
+    public class ModelServices : IModelServices
     {
-        private readonly ILogger<CallController> _logger;
-        private readonly ResponseController _responseController;
+        private readonly ILogger<ModelServices> _logger;
+        private readonly ResponseServices _responseController;
         private readonly ApplicationSettings _settings;
         private const float temperature = 0.8f;     //0.8
         private const int num_ctx = 2048;           //2048
         private const int num_predict = -1;         //-1
-
         private const string sp_insert_table_response = "sp_insert_table_response";
-
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
+        string ExceptionMessageString = string.Empty;
 
-        public CallController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger, ResponseController responseController)
+        public ModelServices(IOptions<ApplicationSettings> settings, ILogger<ModelServices> logger, ResponseServices responseController)
         {
             _logger = logger;
             _responseController = responseController;
@@ -53,9 +50,9 @@ namespace AiChatMvcV2.Classes
 
         public bool InsertResponse(ResponseItem TheResponse)
         {
-            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            using (MySqlConnection connection = new(_connectionString))
             {
-                using (MySqlCommand command = new MySqlCommand(sp_insert_table_response, connection))
+                using (MySqlCommand command = new(sp_insert_table_response, connection))
                 {
                     _logger.LogInformation("Executing: {sp_insert_table_response}.", sp_insert_table_response);
                     command.CommandType = CommandType.StoredProcedure;
@@ -100,30 +97,40 @@ namespace AiChatMvcV2.Classes
             data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, UserContent);
             _logger.LogInformation("Built data string");
 
-            using (var client = new HttpClient())
+            try
             {
-                client.Timeout = TimeSpan.FromSeconds(300); //5 min timeout
-
-                _logger.LogInformation("Calling AI model API");
-                var content = new StringContent(data, Encoding.UTF8, "application/json");
-                var response = await client.PostAsync(url, content);
-
-                if (response.IsSuccessStatusCode)
+                using (var client = new HttpClient())
                 {
-                    _logger.LogInformation("AI model response success");
-                    using var stream = await response.Content.ReadAsStreamAsync();
-                    using var reader = new StreamReader(stream);
-                    var text = await reader.ReadToEndAsync();
-                    _logger.LogInformation("Returning contents of {model}:{prompt}:{text}", Model, UserContent, text);
-                    return text;
-                }
-                else
-                {
-                    string ExceptionMessageString = String.Format("Exception in CallController::CallApiAsync() {0} {1}, {2}\nException: {3}", Model, UserContent, NegativePrompt, response.RequestMessage);
-                    _logger.LogCritical(ExceptionMessageString);
-                    throw new Exception(ExceptionMessageString);
+                    client.Timeout = TimeSpan.FromSeconds(300); //5 min timeout
+
+                    _logger.LogInformation("Calling model API");
+                    var content = new StringContent(data, Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(url, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("Model response success");
+                        using var stream = await response.Content.ReadAsStreamAsync();
+                        using var reader = new StreamReader(stream);
+                        var text = await reader.ReadToEndAsync();
+                        _logger.LogInformation("Returning contents of {model}:{prompt}:{text}", Model, UserContent, text);
+                        return text;
+                    }
+                    else
+                    {
+                        ExceptionMessageString = String.Format("{0} {1}, {2}\nException: {3}", Model, UserContent, NegativePrompt, response.RequestMessage);
+                        throw new Exception(ExceptionMessageString);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("Exception in CallController::CallApiAsync()->{0}\n{1}",
+                            ExceptionMessageString != string.Empty ? ExceptionMessageString : "Unknown error",
+                            ex.Message);
+            }
+            
+            return string.Empty;
         }
         
     }       //end class

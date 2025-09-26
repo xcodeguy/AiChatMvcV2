@@ -1,5 +1,4 @@
-using AiChatMvcV2.Classes;
-using AiChatMvcV2.Controllers;
+using AiChatMvcV2.Services;
 using AiChatMvcV2.Objects;
 using NLog;
 using NLog.Web;
@@ -21,8 +20,8 @@ try
 
     //other services
     builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
-    builder.Services.AddTransient<CallController>();
-    builder.Services.AddTransient<ResponseController>();
+    builder.Services.AddTransient<ModelServices>();
+    builder.Services.AddTransient<ResponseServices>();
 
     var app = builder.Build();
 
@@ -47,9 +46,9 @@ try
         .WithStaticAssets();
 
     app.MapControllerRoute(
-    name: "default2",
-    pattern: "{controller=Home}/{action=MakeApiCall}")
-    .WithStaticAssets();
+        name: "default2",
+        pattern: "{controller=Home}/{action=MakeApiCall}")
+        .WithStaticAssets();
 
     app.Run();
 }

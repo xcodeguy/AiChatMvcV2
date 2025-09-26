@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using AiChatMvcV2.Models;
-using AiChatMvcV2.Classes;
+using AiChatMvcV2.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System;
@@ -10,19 +10,19 @@ using System.Media;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
 
-namespace AiChatMvcV2.Controllers;
+namespace AiChatMvcV2.Services;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly ApplicationSettings _settings;
-    private readonly CallController _callController;
-    private readonly ResponseController _responseController;
+    private readonly ModelServices _callController;
+    private readonly ResponseServices _responseController;
 
     public HomeController(IOptions<ApplicationSettings> settings,
                             ILogger<HomeController> logger,
-                            CallController callController,
-                            ResponseController responseController)
+                            ModelServices callController,
+                            ResponseServices responseController)
     {
         _logger = logger;
         _callController = callController;
@@ -46,10 +46,10 @@ public class HomeController : Controller
             ViewModel.ResponseItemList = new List<ResponseItem>();
             ResponseItem Item;
 
-            // call the inference server to egenrate a response
+            // call the inference server to generate a response
             _logger.LogInformation("Calling API async for model {ModelName}", model);
             var JsonResponse = await _callController.CallApiAsync(model, SystemContent, UserContent, NegativePrompt);
-            var TextResponse = await _responseController.ParseJsonForObject(JsonResponse.ToString()!);
+            var TextResponse = await _responseController.SanitizeResponseFromJson(JsonResponse.ToString()!);
             TimeSpan TimeSpent = DateTime.Now - StartTime;
 
             // call the inference server to summarize the response into a one or two word topic
@@ -59,10 +59,10 @@ public class HomeController : Controller
                 TextResponse,
                 "The response cannot be more than two words. Do not use any special characters. Do not use any punctuation."
             );
-            var ResponseTopic = await _responseController.ParseJsonForObject(JsonTopic.ToString()!);
+            var ResponseTopic = await _responseController.SanitizeResponseFromJson(JsonTopic.ToString()!);
 
             //call the inference server to generate natural language for the topic
-            var AudioFilename = await _responseController.GenerateTextToSpeechResourceFile(TextResponse, "tara");
+            var AudioFilename = await _responseController.GenerateSpeechFile(TextResponse, "tara");
             // Check if the source file exists
             long fileSizeInBytes = 0;
             string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;

@@ -1,7 +1,7 @@
 namespace AiChatMvcV2.Contracts
 {
-    public interface IResponseController
+    public interface IResponseServices
     {
-        public Task<string> ParseJsonForObject(string json);
+        public Task<string> SanitizeResponseFromJson(string json);
     }
 }
