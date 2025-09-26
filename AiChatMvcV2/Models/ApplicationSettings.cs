@@ -10,5 +10,6 @@ namespace AiChatMvcV2.Objects
         public string? SpeechFileDropLocation { get; set; } = null;
         public string? SpeechFilePlaybackLocation { get; set; } = null;
         public string? SpeechFilePlaybackName { get; set; } = null;
+        public string? SpeechFileUrlLocation { get; set; } = null;
     }
 }

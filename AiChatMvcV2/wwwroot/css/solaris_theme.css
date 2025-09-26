@@ -3,7 +3,7 @@
     --BodyBackgroundColor: rgb(36, 36, 36);
     --ChatBackgroundColor: rgb(90, 90, 90);
     --ChatBorderColor: rgb(255, 255, 255);
-    --ChatContainerViewHeight: 74vh;
+    --ChatContainerViewHeight: 695px;
 
     --NavBarBackgroundColor: var(--BodyBackgroundColor);
     --NavBarTextColor: rgb(0, 0, 0);

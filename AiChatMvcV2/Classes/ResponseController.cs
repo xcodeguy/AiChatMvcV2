@@ -7,6 +7,8 @@ using System.Text;
 using System;
 using System.IO;
 using System.Linq.Expressions;
+using System.Media;
+using System.Diagnostics;
 
 namespace AiChatMvcV2.Controllers
 {
@@ -98,6 +100,7 @@ namespace AiChatMvcV2.Controllers
                 'k',
                 'l',
                 'm',
+                'n',
                 'o',
                 'p',
                 'q',
@@ -106,6 +109,7 @@ namespace AiChatMvcV2.Controllers
                 't',
                 'u',
                 'v',
+                'w',
                 'x',
                 'y',
                 'z',
@@ -151,6 +155,7 @@ namespace AiChatMvcV2.Controllers
                 '[',
                 ']',
                 '"',
+                '\'',
                 '<',
                 '>',
                 '?',
@@ -167,22 +172,39 @@ namespace AiChatMvcV2.Controllers
                 '(',
                 ')',
                 '-',
-                '_',
                 '+',
                 '=',
                 '|',
-                '\\'
+                '{',
+                '}'
             };
 
             Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonString)!;
-            var ReturnString = item!["response"];
-            String s = String.Format("{0}", ReturnString);
+            String ReturnString = item!["response"].ToString()!;
+
+            if (ReturnString == null)
+            {
+                _logger.LogCritical("ParseJsonForObject: 'response' field is null or does not exist in response JSON.");
+                return Task.FromResult(string.Empty);
+            }
+
             ReturnString = ReturnString.ToString()!.Replace("\n", String.Empty);
-            ReturnString = ReturnString.ToString()!.Replace("\"", "");
-            Console.WriteLine(ReturnString);
+            ReturnString = ReturnString.ToString()!.Replace("\"", String.Empty);
+            ReturnString = ReturnString.ToString()!.Replace("\\", String.Empty);
 
+            int resultLength = ReturnString != null ? ReturnString.ToString()!.Length : 0;
+            StringBuilder result = new StringBuilder(resultLength);
+            if (resultLength != 0)
+            {
+                foreach (char c in ReturnString!.ToString()!)
+                {
+                    if (GOOD_CHARS.Contains(c)) {
+                        result.Append(c);
+                    } 
+                }
+            }
 
-            return Task.Run(ReturnString.ToString)!;
+            return Task.FromResult(result != null ? result.ToString()! : string.Empty);
         }
 
         public async Task<string> GenerateTextToSpeechResourceFile(string ResponseText, string Voice)
@@ -212,9 +234,22 @@ namespace AiChatMvcV2.Controllers
                         // copy file from source to destination
                         string cd; string fn; string sf;
                         cd = response.Content.Headers.GetValues("Content-Disposition").ToList()[0];
-                        fn = cd.Split("=")[1].ToString().Replace("\"", string.Empty); ;
+
+                        //AI generated and its pretty damn good
+                        if (string.IsNullOrEmpty(_settings.SpeechFileDropLocation))
+                        {
+                            _logger.LogCritical("SpeechFileDropLocation is null or empty in ApplicationSettings.");
+                            throw new InvalidOperationException("SpeechFileDropLocation cannot be null or empty.");
+                        }
+                        //end AI
+
+                        //build the filename from the drop location and the filename from the header
+                        fn = _settings.SpeechFileDropLocation;
+                        fn += cd.Split("=")[1].ToString().Replace("\"", string.Empty);
+
+                        //write the file to the website assets location
                         sf = CopySpeechFileToAssets(fn);
-                        _logger.LogInformation("Returning sound file from assets (wav): {model}:{prompt}:{fn}", ModelName, ResponseText, sf);
+                        _logger.LogInformation("Returning sound file from assets: {model}:{prompt}:{fn}", ModelName, ResponseText, sf);
 
                         return sf;
                     }
@@ -250,6 +285,13 @@ namespace AiChatMvcV2.Controllers
                 // Copy the file
                 File.Copy(SourceFile, DestinationFile, true); // The 'true' parameter enables overwriting if the file exists
                 _logger.LogInformation("File '{f1}' copied to '{f2}' successfully.", SourceFile, DestinationFile);
+
+
+                //return just the audio filename. No path, url or location information
+                DestinationFile = _settings.SpeechFilePlaybackName!;
+
+                PlayWavOnMac(_settings.SpeechFilePlaybackLocation + DestinationFile);
+
                 return DestinationFile;
             }
             catch (Exception ex)
@@ -258,6 +300,35 @@ namespace AiChatMvcV2.Controllers
             }
 
             return string.Empty;
+        }
+
+        public static void PlayWavOnMac(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine($"Error: File not found at {filePath}");
+                return;
+            }
+
+            try
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "afplay",
+                    Arguments = $"\"{filePath}\"", // Quote the path to handle spaces
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (Process process = Process.Start(startInfo)!)
+                {
+                    process.WaitForExit(); // Optional: Wait for playback to finish
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error playing WAV file: {ex.Message}");
+            }
         }
 
     }       //end class

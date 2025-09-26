@@ -5,18 +5,20 @@
 ///////////////////////////////////////////////
 using AiChatMvcV2.Contracts;
 using System.Text;
+using System.Text.Json;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
-using MySql.Data;
 using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
 using System.Data;
+using AiChatMvcV2.Controllers;
 
 namespace AiChatMvcV2.Classes
 {
     public class CallController : ICallController
     {
         private readonly ILogger<CallController> _logger;
+        private readonly ResponseController _responseController;
         private readonly ApplicationSettings _settings;
         private const float temperature = 0.8f;     //0.8
         private const int num_ctx = 2048;           //2048
@@ -26,11 +28,11 @@ namespace AiChatMvcV2.Classes
 
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
 
-        public CallController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger)
+        public CallController(IOptions<ApplicationSettings> settings, ILogger<CallController> logger, ResponseController responseController)
         {
             _logger = logger;
+            _responseController = responseController;
             _settings = settings.Value;
-            _logger.LogDebug(1, "CallApi class initialized. Injections are happy");
         }
 
         private MySqlConnection? GetConnection()
@@ -109,13 +111,15 @@ namespace AiChatMvcV2.Classes
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("AI model response success");
-                    var text = response.Content.ReadAsStreamAsync();
+                    using var stream = await response.Content.ReadAsStreamAsync();
+                    using var reader = new StreamReader(stream);
+                    var text = await reader.ReadToEndAsync();
                     _logger.LogInformation("Returning contents of {model}:{prompt}:{text}", Model, UserContent, text);
-                    return await response.Content.ReadAsStringAsync();
+                    return text;
                 }
                 else
                 {
-                    String ExceptionMessageString = String.Format("Exception in CallController::CallApiAsync() {0} {1}, {2}\nException: {3}", Model, UserContent, NegativePrompt, response.RequestMessage);
+                    string ExceptionMessageString = String.Format("Exception in CallController::CallApiAsync() {0} {1}, {2}\nException: {3}", Model, UserContent, NegativePrompt, response.RequestMessage);
                     _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }

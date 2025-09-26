@@ -25,9 +25,9 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = `Do not generate a response that is longer than 100 words. The topic cannot be Bioluminescence. The topic cannot be Vintage Typewriters. The topic cannot be Coffee.`;
+    const NegativePrompt = `Do not use punctuation. Do not use asterisks.Do not generate a response that is longer than 25 words. The topic cannot be Bioluminescence. The topic cannot be Vintage Typewriters. The topic cannot be Coffee.`;
 
-    const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 100 words or less. Make your response as if a valley girl is speaking.`;
+    const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 25 words or less. Make your response as if a valley girl is speaking.`;
     //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
     //const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
     //const OriginalPrompt = `Discuss the topic of shopping at the mall and response in a Valley Girl  dialet. Use lots of emojis too!`;
@@ -312,22 +312,23 @@ $(document).ready(function () {
                 console.log("Success");
 
                 //get the text response from the data object that
-                //contains the ChatNonStreamingList list. We access
+                //contains the responseItemList list. We access
                 //element 0 and get our properties from the json
                 var TheResponse = data.responseItemList[0].response;
                 ModelNameString = data.responseItemList[0].model;
                 var TimeString = data.responseItemList[0].timeStamp;
                 var ElapsedCallTime = data.responseItemList[0].responseTime;
                 var TheTopic = data.responseItemList[0].topic;
-                var WavfileName = data.responseItemList[0].speechFilename;
+                var WavfileName = data.responseItemList[0].audioFilename;
                 console.log("WAV FILE NAME: " + WavfileName);
                 $("#TopicLabel").text(TheTopic);
 
-                var AudioHtmlTag = "<audio id=\"TtsTopicVoice\" src=\"" + WavfileName + "\" preload=\"auto\"></audio>";
+                var AudioHtmlTag = "<audio id=\"TtsTopicVoice" + GlobalCallCount + "\" src=\"" + WavfileName + "\" muted=\"\" autoplay=\"\" playsinline=\"\"></audio>";
                 var jsAudioFileImplementation = AudioHtmlTag;
-                jsAudioFileImplementation += "const audio = document.getElementById(\"TtsTopicVoice\");"
-                jsAudioFileImplementation += "audio.play()";
-
+                jsAudioFileImplementation += "<script>";
+                jsAudioFileImplementation += "  const audio = document.getElementById(\"TtsTopicVoice" + GlobalCallCount + "\");"
+                jsAudioFileImplementation += "  audio.play();";
+                jsAudioFileImplementation += "</script>";
 
                 //build the bubble title
                 bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "]";
@@ -345,6 +346,7 @@ $(document).ready(function () {
                 //add a <script></script> tag to implement the
                 //javascript function that copies the chat text
                 //to the clipboard.
+                /*
                 var JsClipboardImplementation = '';
                 JsClipboardImplementation += "<script>";
                 JsClipboardImplementation += "  function copyDivToClipboard() {";
@@ -369,9 +371,10 @@ $(document).ready(function () {
                 }
                 var CopyTextToClipboardButton = "&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"copyDivToClipboard();\">" + FaIcon + "</a>";
                 CopyTextToClipboardButton += JsClipboardImplementation;
+                */
 
                 //create the chat bubble
-                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse + CopyTextToClipboardButton + jsAudioFileImplementation);
+                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse);
                 $('#divChat').append(e);
                 e.attr('id', GlobalChatDivId);
 
