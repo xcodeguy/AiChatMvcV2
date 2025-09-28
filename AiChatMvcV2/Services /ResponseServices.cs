@@ -134,11 +134,15 @@ namespace AiChatMvcV2.Services
             {
                 Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
 
-                string HtmlTagPattern = "<[^>]*>.*?<\\/[^>]*>";
-                string ThinkTagPattern = "<think>.*?<\\/think>";
+                string HtmlTagPattern = $"(<[^>]*>)";
+                string ThinkTagPattern = $"(?<=<think>).*?(?=</think>)";
                 string OriginalString = item["response"].ToString()!;
-                string BetterString = Regex.Replace(OriginalString, HtmlTagPattern, string.Empty);
-                string CleanString = Regex.Replace(BetterString, ThinkTagPattern, string.Empty);
+                if(OriginalString.Contains("<think>"))
+                {
+                    Console.WriteLine("Found think tag in response");
+                }
+                string BetterString = Regex.Replace(OriginalString, ThinkTagPattern, string.Empty);
+                string CleanString = Regex.Replace(BetterString, HtmlTagPattern, string.Empty);
                 CleanString = CleanString.ToString()!.Replace("\n", string.Empty);
                 CleanString = CleanString.ToString()!.Replace("\"", string.Empty);
                 CleanString = CleanString.ToString()!.Replace("\\", string.Empty);

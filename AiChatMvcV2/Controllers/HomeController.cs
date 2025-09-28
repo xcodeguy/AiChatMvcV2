@@ -17,16 +17,16 @@ public class HomeController : Controller
     private readonly ILogger<HomeController> _logger;
     private readonly ApplicationSettings _settings;
     private readonly ModelServices _callController;
-    private readonly ResponseServices _responseController;
+    private readonly ResponseServices _responseService;
 
     public HomeController(IOptions<ApplicationSettings> settings,
                             ILogger<HomeController> logger,
                             ModelServices callController,
-                            ResponseServices responseController)
+                            ResponseServices responseService)
     {
         _logger = logger;
         _callController = callController;
-        _responseController = responseController;
+        _responseService = responseService;
         _settings = settings.Value;
 
         _logger.LogDebug(1, "NLog injected into HomeController");
@@ -49,7 +49,7 @@ public class HomeController : Controller
             // call the inference server to generate a response
             _logger.LogInformation("Calling API async for model {ModelName}", model);
             var JsonResponse = await _callController.CallApiAsync(model, SystemContent, UserContent, NegativePrompt);
-            var TextResponse = await _responseController.SanitizeResponseFromJson(JsonResponse.ToString()!);
+            var TextResponse = await _responseService.SanitizeResponseFromJson(JsonResponse.ToString()!);
             TimeSpan TimeSpent = DateTime.Now - StartTime;
 
             // call the inference server to summarize the response into a one or two word topic
@@ -59,10 +59,10 @@ public class HomeController : Controller
                 TextResponse,
                 "The response cannot be more than two words. Do not use any special characters. Do not use any punctuation."
             );
-            var TextTopic = await _responseController.SanitizeResponseFromJson(JsonTopic.ToString()!);
+            var TextTopic = await _responseService.SanitizeResponseFromJson(JsonTopic.ToString()!);
 
             //call the inference server to generate natural language for the topic
-            var AudioFilename = await _responseController.GenerateSpeechFile(TextTopic, "tara");
+            var AudioFilename = await _responseService.GenerateSpeechFile(TextTopic, "tara");
 
             // Check if the source file exists
             long fileSizeInBytes = 0;
@@ -92,7 +92,7 @@ public class HomeController : Controller
                 AudioFilename = _settings.SpeechFileUrlLocation + AudioFilename,
                 AudioFileSize = fileSizeInBytes.ToString(),
                 ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds),
-                WordCount = _responseController.GetWordCount(TextResponse)
+                WordCount = _responseService.GetWordCount(TextResponse)
             };
 
             ViewModel.ResponseItemList?.Add(Item);

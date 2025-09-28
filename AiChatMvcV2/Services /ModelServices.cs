@@ -16,7 +16,7 @@ namespace AiChatMvcV2.Services
     public class ModelServices : IModelServices
     {
         private readonly ILogger<ModelServices> _logger;
-        private readonly ResponseServices _responseController;
+        private readonly ResponseServices _responseService;
         private readonly ApplicationSettings _settings;
         private const float temperature = 0.8f;     //0.8
         private const int num_ctx = 2048;           //2048
@@ -25,10 +25,10 @@ namespace AiChatMvcV2.Services
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
         string ExceptionMessageString = string.Empty;
 
-        public ModelServices(IOptions<ApplicationSettings> settings, ILogger<ModelServices> logger, ResponseServices responseController)
+        public ModelServices(IOptions<ApplicationSettings> settings, ILogger<ModelServices> logger, ResponseServices responseService)
         {
             _logger = logger;
-            _responseController = responseController;
+            _responseService = responseService;
             _settings = settings.Value;
         }
 
