@@ -34,7 +34,7 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> MakeApiCall(string model,
+    public async Task<IActionResult> QueryModelForResponse(string model,
                                                 string SystemContent,
                                                 string UserContent,
                                                 string NegativePrompt)
@@ -59,10 +59,11 @@ public class HomeController : Controller
                 TextResponse,
                 "The response cannot be more than two words. Do not use any special characters. Do not use any punctuation."
             );
-            var ResponseTopic = await _responseController.SanitizeResponseFromJson(JsonTopic.ToString()!);
+            var TextTopic = await _responseController.SanitizeResponseFromJson(JsonTopic.ToString()!);
 
             //call the inference server to generate natural language for the topic
-            var AudioFilename = await _responseController.GenerateSpeechFile(TextResponse, "tara");
+            var AudioFilename = await _responseController.GenerateSpeechFile(TextTopic, "tara");
+
             // Check if the source file exists
             long fileSizeInBytes = 0;
             string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
@@ -83,7 +84,7 @@ public class HomeController : Controller
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
                 Response = TextResponse,
                 Model = model,
-                Topic = ResponseTopic.ToString(),
+                Topic = TextTopic.ToString(),
                 Prompt = SystemContent + UserContent,
                 NegativePrompt = NegativePrompt,
                 Active = 1,
@@ -108,7 +109,7 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            String ExceptionMessageString = String.Format("Exception in HomeController::MakeApiCall() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
+            String ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
             _logger.LogCritical(ExceptionMessageString);
             throw;
         }

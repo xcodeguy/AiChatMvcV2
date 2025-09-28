@@ -47,7 +47,7 @@ try
 
     app.MapControllerRoute(
         name: "default2",
-        pattern: "{controller=Home}/{action=MakeApiCall}")
+        pattern: "{controller=Home}/{action=QueryModelForResponse}")
         .WithStaticAssets();
 
     app.Run();

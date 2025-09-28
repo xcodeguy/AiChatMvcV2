@@ -2,12 +2,17 @@ using System.Text.Json;
 using AiChatMvcV2.Contracts;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
-using AiChatMvcV2.Services;
 using System.Text;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System;
+using System.IO;
+using System.Collections.Generic;
 
-namespace AiChatMvcV2.Services  
+namespace AiChatMvcV2.Services
 {
     public class ResponseServices : IResponseServices
     {
@@ -30,8 +35,8 @@ namespace AiChatMvcV2.Services
 
         public Task<string> SanitizeResponseFromJson(string json)
         {
-            List<char> NO_CHARS = new List<char>() { '{', '}', '\\' };
-            List<char> GOOD_CHARS = new List<char>()
+            List<char> NO_CHARS = new() { '{', '}', '\\' };
+            List<char> GOOD_CHARS = new()
             {
                 'a',
                 'b',
@@ -125,55 +130,63 @@ namespace AiChatMvcV2.Services
                 '}'
             };
 
-            Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
-
-            string HtmlTagPattern = "<[^>]*>.*?<\\/[^>]*>";
-            string ThinkTagPattern = "<think>.*?<\\/think>";
-            string UglyString = item["response"].ToString()!;
-            string BetterString = Regex.Replace(UglyString, HtmlTagPattern, string.Empty);
-            string CleanString = Regex.Replace(BetterString, ThinkTagPattern, string.Empty);
-            CleanString = CleanString.ToString()!.Replace("\n", string.Empty);
-            CleanString = CleanString.ToString()!.Replace("\"", string.Empty);
-            CleanString = CleanString.ToString()!.Replace("\\", string.Empty);
-
-            int resultLength = CleanString != null ? CleanString.ToString()!.Length : 0;
-            StringBuilder result = new StringBuilder(resultLength);
-            if (resultLength != 0)
+            try
             {
-                foreach (char c in CleanString!.ToString()!)
+                Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
+
+                string HtmlTagPattern = "<[^>]*>.*?<\\/[^>]*>";
+                string ThinkTagPattern = "<think>.*?<\\/think>";
+                string OriginalString = item["response"].ToString()!;
+                string BetterString = Regex.Replace(OriginalString, HtmlTagPattern, string.Empty);
+                string CleanString = Regex.Replace(BetterString, ThinkTagPattern, string.Empty);
+                CleanString = CleanString.ToString()!.Replace("\n", string.Empty);
+                CleanString = CleanString.ToString()!.Replace("\"", string.Empty);
+                CleanString = CleanString.ToString()!.Replace("\\", string.Empty);
+
+                int resultLength = CleanString != null ? CleanString.ToString()!.Length : 0;
+                StringBuilder result = new(resultLength);
+                if (resultLength != 0)
                 {
-                    if (GOOD_CHARS.Contains(c))
+                    foreach (char c in CleanString!.ToString()!)
                     {
-                        result.Append(c);
+                        if (GOOD_CHARS.Contains(c))
+                        {
+                            result.Append(c);
+                        }
                     }
                 }
+                return Task.FromResult(result != null ? result.ToString()! : "Response from the model is null, empty, or invalid.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("ResponseServices::SanitizeResponseFromJson() Exception: {ExceptionMessage}", ex.Message);
+                throw;
             }
 
-            return Task.FromResult(result != null ? result.ToString()! : "Response from the model is null, empty, or invalid.");
         }
 
-        public async Task<string> GenerateSpeechFile(string ResponseText, string Voice)
+        public async Task<string> GenerateSpeechFile(string TextForSpeech, string Voice)
         {
-            string url = _settings.TTSApiEndpointUrl;
+            string TtsEndpointUrl = _settings.TTSApiEndpointUrl;
             string ModelName = _settings.TTSModelName;
-            string data;
+            string TtsRequest;
 
             try
             {
-                data = string.Format("{{\"model\": \"{0}\", \"input\": \"{1}\", \"voice\": \"{2}\", \"response_format\" : \"{3}\", \"speed\":\"{4}\"}}",
+                TtsRequest = string.Format("{{\"model\": \"{0}\", \"input\": \"{1}\", \"voice\": \"{2}\", \"response_format\" : \"{3}\", \"speed\":\"{4}\"}}",
                                         ModelName,
-                                        ResponseText,
+                                        TextForSpeech,
                                         Voice,
                                         _settings.SpeechFileFormat,
                                         _settings.PlaybackSpeed);
-                                        
+
                 using (var client = new HttpClient())
                 {
                     client.Timeout = TimeSpan.FromSeconds(300); //5 min timeout
 
                     _logger.LogInformation("Calling TTS endpoint");
-                    var content = new StringContent(data, Encoding.UTF8, "application/json");
-                    HttpResponseMessage response = await client.PostAsync(url, content);
+                    var content = new StringContent(TtsRequest, Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(TtsEndpointUrl, content);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -181,7 +194,7 @@ namespace AiChatMvcV2.Services
 
                         string ContentDisposiion;
                         string DropFilename;
-                        string AssetFilename;
+                        string WebAssetFilename;
                         string LocalAssetFilename;
 
                         //get the content-disposition from the header
@@ -189,33 +202,39 @@ namespace AiChatMvcV2.Services
                         ContentDisposiion = response.Content.Headers.GetValues("Content-Disposition").ToList()[0];
 
                         //build the filename from the drop location and from the header
+                        //if the header is null throw an exception 
                         DropFilename = _settings.SpeechFileDropLocation!;
+                        if (ContentDisposiion.ToString() is null)
+                        {
+                            ExceptionMessageString = string.Format("Exception in ResponseController::GenerateTextToSpeechResourceFile() {0} {1}, {2}\nException: {3}", ModelName, TtsEndpointUrl, TextForSpeech, "Content-Disposition header is null");
+                            throw new Exception(ExceptionMessageString);
+                        }
                         DropFilename += ContentDisposiion.Split("=")[1].ToString().Replace("\"", string.Empty);
 
                         //copy the speech file to the website assets location
-                        AssetFilename = CopySpeechFileToAssets(DropFilename);
-                        LocalAssetFilename = _settings.SpeechFilePlaybackLocation! + AssetFilename;
+                        WebAssetFilename = CopySpeechFileToAssets(DropFilename);
+                        LocalAssetFilename = _settings.SpeechFilePlaybackLocation! + WebAssetFilename;
 
-                        _logger.LogInformation("Returning sound file ({Filename}): DropFile={source}, Destination={dest}", AssetFilename, DropFilename, LocalAssetFilename);
-                        return AssetFilename;
+                        _logger.LogInformation("Returning sound file ({Filename}): DropFile={source}, Destination={dest}", WebAssetFilename, DropFilename, LocalAssetFilename);
+                        return WebAssetFilename;
                     }
                     else
                     {
-                        ExceptionMessageString = string.Format("Exception in ResponseController::GenerateTextToSpeechResourceFile() {0} {1}, {2}\nException: {3}", ModelName, url, ResponseText, response.RequestMessage);
+                        ExceptionMessageString = string.Format("Exception in ResponseController::GenerateTextToSpeechResourceFile() {0} {1}, {2}\nException: {3}", ModelName, TtsEndpointUrl, TextForSpeech, response.RequestMessage);
                         throw new Exception(ExceptionMessageString);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("{ 0} \n{1}", ExceptionMessageString, ex.Message);
+                _logger.LogCritical("ResponseServices::GenerateSpeechFile() {MesageString}\n{ExceptionMessage}", ExceptionMessageString, ex.Message);
+                throw;
             }
-
-            return string.Empty;
         }
 
         public string CopySpeechFileToAssets(string SourceFile)
         {
+            //get the path..then append default filename to string
             string DestinationFile = _settings.SpeechFilePlaybackLocation!;
             DestinationFile += _settings.SpeechFilePlaybackName!;
 
@@ -232,7 +251,6 @@ namespace AiChatMvcV2.Services
                 File.Copy(SourceFile, DestinationFile, true); // The 'true' parameter enables overwriting if the file exists
                 _logger.LogInformation("File '{f1}' copied to '{f2}' successfully.", SourceFile, DestinationFile);
 
-
                 //return just the audio filename. No path, url or location information
                 DestinationFile = _settings.SpeechFilePlaybackName!;
 
@@ -242,23 +260,24 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("An error occurred: {0}", ex.Message);
+                _logger.LogInformation("ResponseController::An error occurred while copying speech asset file: {0}", ex.Message);
+                throw;
             }
 
-            return string.Empty;
         }
 
-        public static void PlayWavOnMac(string filePath)
+        public void PlayWavOnMac(string filePath)
         {
-            if (!File.Exists(filePath))
+            if ((filePath == null) || (!File.Exists(filePath)))
             {
-                Console.WriteLine($"Error: File not found at {filePath}");
-                return;
+                ExceptionMessageString = $"ResponseController::PlayWavOnMac Error: File not found at {(filePath != null ? filePath : "Filename is NULL")}";
+                _logger.LogInformation(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
             }
 
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                ProcessStartInfo startInfo = new()
                 {
                     FileName = "afplay",
                     Arguments = $"\"{filePath}\"", // Quote the path to handle spaces
@@ -273,7 +292,8 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error playing WAV file: {ex.Message}");
+                _logger.LogCritical($"Error playing WAV file: {ex.Message}");
+                throw;
             }
         }
 

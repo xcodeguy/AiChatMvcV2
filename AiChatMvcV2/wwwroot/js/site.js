@@ -298,8 +298,8 @@ $(document).ready(function () {
         $.ajax({
             //make the call
             //the OriginalPrompt, promnpt, and NegativePrompt
-            //get concatenated in the MakeApiCall endpoint
-            url: 'http://localhost:5022/Home/MakeApiCall',
+            //get concatenated in the QueryModelForResponse endpoint
+            url: 'http://localhost:5022/Home/QueryModelForResponse',
             type: 'POST',
             data: {
                 'Model': ModelNameString,
@@ -320,15 +320,9 @@ $(document).ready(function () {
                 var ElapsedCallTime = data.responseItemList[0].responseTime;
                 var TheTopic = data.responseItemList[0].topic;
                 var WavfileName = data.responseItemList[0].audioFilename;
-                console.log("WAV FILE NAME: " + WavfileName);
-                $("#TopicLabel").text(TheTopic);
 
-                var AudioHtmlTag = "<audio id=\"TtsTopicVoice" + GlobalCallCount + "\" src=\"" + WavfileName + "\" muted=\"\" autoplay=\"\" playsinline=\"\"></audio>";
-                var jsAudioFileImplementation = AudioHtmlTag;
-                jsAudioFileImplementation += "<script>";
-                jsAudioFileImplementation += "  const audio = document.getElementById(\"TtsTopicVoice" + GlobalCallCount + "\");"
-                jsAudioFileImplementation += "  audio.play();";
-                jsAudioFileImplementation += "</script>";
+                //update the prompt table topic cell on the web page
+                $("#TopicLabel").text(TheTopic);
 
                 //build the bubble title
                 bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "]";
