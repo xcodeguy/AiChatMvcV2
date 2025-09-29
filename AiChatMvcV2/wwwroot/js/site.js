@@ -5,9 +5,9 @@
 //    JavaScript for website and API calls
 ///////////////////////////////////////////////
 
-$(document).ready(function () {
+$(document).ready(async function () {
 
-    //set some variables
+    //chat justification and model arrays
     const ResponseBubbleJustify = new Array("msg sent", "msg rcvd");
     const ModelName = new Array(
         "gemma3",
@@ -25,23 +25,19 @@ $(document).ready(function () {
         "dolphin-phi"
     );
 
-    const NegativePrompt = `Do not use punctuation. Do not use asterisks.Do not generate a response that is longer than 25 words. The topic cannot be Bioluminescence. The topic cannot be Vintage Typewriters. The topic cannot be Coffee.`;
-    const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 25 words or less. Make your response as if a valley girl is speaking.`;
-    //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
-    //const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
-    //const OriginalPrompt = `Discuss the topic of shopping at the mall and response in a Valley Girl  dialet. Use lots of emojis too!`;
-
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
+    const GlobalMaxErrors = -1;
+    const ApplicationStartTime = new Date();
+    var KillProcess = false;
     var GlobalCallCount = 0;
     var GlobalErrorCount = 0;
-    const GlobalMaxErrors = -1;
-    var KillProcess = false;
-    const ApplicationStartTime = new Date();
     var TimeElapsedCalculatedSeconds = 0;
     var lastElapsedTime = 0;
     var GlobalChatDivId = "";
+    var GlobalNegativePrompt = "";
+    var GlobalOriginalPrompt = "";
 
     var boolXor = false;
     var JustifyClass = "";
@@ -58,7 +54,7 @@ $(document).ready(function () {
     var TheTopic = "";
     var WavfileName = "";
     var TtsVoice = "";
-    var Exceptions = "";
+    var ExceptionString = "";
 
     $("#ThemeDropdownId").change(function () {
         var selectedValue = $(this).val(); // Get the value of the selected option
@@ -125,10 +121,6 @@ $(document).ready(function () {
             }
         }
     }
-
-    //display the prompts
-    $("#OriginalPromptLabel").text(OriginalPrompt.substring(0, 1000) + (OriginalPrompt.length >= 1000 ? "..." : ""));
-    $("#NegativePromptLabel").text(NegativePrompt.substring(0, 1000) + (NegativePrompt.length >= 1000 ? "..." : ""));
 
     //display exception max count as label
     $("#td_exception_label").text("Exceptions: (max=" + GlobalMaxErrors + ")");
@@ -208,9 +200,6 @@ $(document).ready(function () {
         }
     }
 
-    //make the initial call to get the chat started
-    MakeAjaxCall(OriginalPrompt);
-
     //returns X number of words from string
     function getSubstringByWordCount(str, numWords) {
         const wordsArray = str.trim().split(/\s+/).filter(word => word.length > 0);
@@ -237,7 +226,7 @@ $(document).ready(function () {
             $("#btnApiCallToggle").html('Started');
             $("#btnApiCallToggle").addClass("btn-success");
             $("#btnApiCallToggle").removeClass("btn-danger");
-            MakeAjaxCall(OriginalPrompt);
+            CallApiEndpoint(OriginalPrompt);
         } else {
             $("#btnApiCallToggle").html('Stopped');
             $("#btnApiCallToggle").addClass("btn-danger");
@@ -253,7 +242,16 @@ $(document).ready(function () {
         }
     });
 
-    function MakeAjaxCall(prompt) {
+    //GetPrompts() is called to get the two prompts
+    //from appsettings.json via the HomeController.cs
+    //The prompts are stored in global variables
+    //When the last prompt is fetched, the success:
+    //handler calls CallApiEndpoint() to start the
+    //process of calling the models in a round robin fashion
+    var result = await GetPrompts();
+
+    function CallApiEndpoint(prompt) {
+
         //if the KillProcess global variable is true then
         //exit the function. Controlled by toggle switch on
         //web page
@@ -312,15 +310,15 @@ $(document).ready(function () {
         console.log("Making api call");
         $.ajax({
             //make the call
-            //the OriginalPrompt, promnpt, and NegativePrompt
+            //the GlobalOriginalPrompt, promnpt, and NegativePrompt
             //get concatenated in the QueryModelForResponse endpoint
             url: 'http://localhost:5022/Home/QueryModelForResponse',
             type: 'POST',
             data: {
                 'Model': ModelNameString,
-                'SystemContent': OriginalPrompt,
+                'SystemContent': GlobalOriginalPrompt,
                 'UserContent': prompt,
-                'NegativePrompt': NegativePrompt
+                'NegativePrompt': GlobalNegativePrompt
             },
             /*dataType: 'json',*/
             success: function (data) {
@@ -336,7 +334,7 @@ $(document).ready(function () {
                 TheTopic = data.responseItemList[0].topic;
                 WavfileName = data.responseItemList[0].audioFilename;
                 TtsVoice = data.responseItemList[0].ttsVoice;
-                Exceptions = data.responseItemList[0].exceptions;
+                ExceptionString = data.responseItemList[0].exceptions;
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the error: handler
@@ -345,44 +343,46 @@ $(document).ready(function () {
                 //the Exceptions property of the data.responseItemList[0]
                 //The data.responseItemList[0] is handled and returned by 
                 //the HomeController.cs
-                if (Exceptions.trim() != "") {
-                    console.log(Exceptions);
+                if (ExceptionString.trim() != "") {
+                    console.log(ExceptionString);
                     TheTopic = "Exception";
-                    UpdateWebUiElements(Exceptions, false);
+                    UpdateWebUiElements(ExceptionString, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
+                    DivChqatElementForException.style.color = "#ffffff";
+
+                    DisplayExceptionData();
                 }
                 else {
                     UpdateWebUiElements(TheResponse, true);
                 }
 
                 //make another call with returned response
-                MakeAjaxCall(TheResponse);
+                CallApiEndpoint(TheResponse);
             },
             error: function (xhr, status, error) {
-                console.log("AJAX Error:" + xhr.responseText + ", status: " + status + ", error: " + error);
+                console.log("AJAX Error:" + xhr.responseText);
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the success: handler
                 //to update the web page with the model meta-data
-                TheTopic = "Exception";
+                TheTopic = "Exception!";
                 UpdateWebUiElements(xhr.responseText, false);
                 DivChatElementForException = document.getElementById(GlobalChatDivId);
                 DivChatElementForException.style.backgroundColor = "#ff0000";
+                DivChqatElementForException.style.color = "#ffffff";
 
-                //increment and format the global error count
-                GlobalErrorCount++;
-                $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
+                DisplayExceptionData();
 
                 //a -1 overrides the max exception logic
                 if (GlobalMaxErrors == -1) {
                     console.log("GlobalMaxErros=-1: Ignoring retry logic and calling MakeAjaxCall().");
-                    MakeAjaxCall(OriginalPrompt);
+                    CallApiEndpoint(OriginalPrompt);
                 } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
                     return;
                 } else {
                     //try again after the exception
-                    MakeAjaxCall(OriginalPrompt);
+                    CallApiEndpoint(OriginalPrompt);
                 }
             },
             complete: function () {
@@ -395,6 +395,10 @@ $(document).ready(function () {
     //called from both the success: and error: handlers
     //of the ajax call
     function UpdateWebUiElements(DivText, PlaySpeechFile = true) {
+
+        if(DivText == null || DivText == undefined || DivText.trim() == ""){
+            DivText = "Empty Response or Exception!";
+        }
         //update the prompt table topic cell on the web page
         $("#TopicLabel").text(TheTopic);
 
@@ -421,7 +425,6 @@ $(document).ready(function () {
         DivChatContainerElement = document.getElementById("divChat");
         if (!(DivChatContainerElement === null) && !(DivChatContainerElement === undefined)) {
             DivChatContainerElement.scrollIntoView(false);
-            console.log("Created DIV chat node for response");
         }
 
         //increment and format the global call count
@@ -437,12 +440,10 @@ $(document).ready(function () {
         const wordsArray = DivText.trim().split(/\s+/).filter(word => word.length > 0);
         var thisWord = ZeroPad(wordsArray.length, 4);
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
-        console.log("Updated word count stat for model: " + ModelNameString);
 
         //if the new stats are better than the old stats then update
         //if (parseInt(thisTime) < parseInt(lastTime) || ($("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text() == "")) {
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
-        console.log("Updating time stat for model: " + ModelNameString);
         //}
 
         sortTable(1);
@@ -459,8 +460,11 @@ $(document).ready(function () {
                 error: function (xhr, status, error) {
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
-                    DivChatElementForException.text = status + ", " + error;
-                    console.log("Error playing speech file: " + status + ", " + error);
+                    DivChqatElementForException.style.color = "#ffffff";
+                    DivChatElementForException.text = xhr.responseText;
+                    console.log("Error playing speech file: " + xhr.responseText);
+
+                    DisplayExceptionData();
                 }
             });
         }
@@ -487,6 +491,43 @@ $(document).ready(function () {
         return e;
     }
 
+    async function GetPrompts() {
+        //get the startup prompt from the server
+        $.ajax({
+            url: 'http://localhost:5022/Home/GetStartupPrompt',
+            type: 'POST',
+            success: function (response) {
+                GlobalOriginalPrompt = response;
+                $("#OriginalPromptLabel").text(GlobalOriginalPrompt.substring(0, 1000) + (GlobalOriginalPrompt.length >= 1000 ? "..." : ""));
+
+                //get the negative prompt from the server
+                $.ajax({
+                    url: 'http://localhost:5022/Home/GetNegativePrompt',
+                    type: 'POST',
+                    success: function (response) {
+                        GlobalNegativePrompt = response;
+                        $("#NegativePromptLabel").text(GlobalNegativePrompt.substring(0, 1000) + (GlobalNegativePrompt.length >= 1000 ? "..." : ""));
+
+                        CallApiEndpoint(GlobalOriginalPrompt);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("Error setting negative prompt: " + xhr.responseText);
+                    }
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log("Error setting startup prompt: " + xhr.responseText);
+            }
+        });
+
+
+        return true;
+    }
+
+    async function DisplayExceptionData() {
+        GlobalErrorCount++;
+        $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
+    }
 });
 
 

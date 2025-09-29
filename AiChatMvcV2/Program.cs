@@ -50,6 +50,16 @@ try
         pattern: "{controller=Home}/{action=QueryModelForResponse}")
         .WithStaticAssets();
 
+    app.MapControllerRoute(
+        name: "default3",
+        pattern: "{controller=Home}/{action=GetStartupPrompt}")
+        .WithStaticAssets();
+
+    app.MapControllerRoute(
+        name: "default4",
+        pattern: "{controller=Home}/{action=GetOriginalPrompt}")
+        .WithStaticAssets();
+
     app.Run();
 }
 catch (Exception e)

@@ -11,8 +11,9 @@ public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly ApplicationSettings _settings;
-    private readonly ModelServices _callController;
-    private readonly ResponseServices _responseService;
+    private readonly ModelServices _ModelService;
+    private readonly ResponseServices _ResponseService;
+    private string ExceptionMessageString = String.Empty;
 
     public HomeController(IOptions<ApplicationSettings> settings,
                             ILogger<HomeController> logger,
@@ -20,8 +21,8 @@ public class HomeController : Controller
                             ResponseServices responseService)
     {
         _logger = logger;
-        _callController = callController;
-        _responseService = responseService;
+        _ModelService = callController;
+        _ResponseService = responseService;
         _settings = settings.Value;
 
         _logger.LogDebug(1, "NLog injected into HomeController");
@@ -56,7 +57,7 @@ public class HomeController : Controller
         {
             // call the api which calls the inference server to generate a response
             _logger.LogInformation("Calling API async for model {ModelName}", model);
-            TextResponse = await _callController.GetModelResponseAsync
+            TextResponse = await _ModelService.GetModelResponseAsync
             (
                 model,
                 SystemContent,
@@ -67,7 +68,7 @@ public class HomeController : Controller
             // call the api which calls the inference server to summarize the response 
             // into a one or two word topic
             _logger.LogInformation("Calling API async for Topic summary");
-            TextTopic = await _callController.GetModelResponseAsync(
+            TextTopic = await _ModelService.GetModelResponseAsync(
                 _settings.TopicSummaryModelName,
                 _settings.TopicSummaryPrompt,
                 TextResponse,
@@ -76,7 +77,7 @@ public class HomeController : Controller
 
             //call the api which calls the inference server to generate a speech file from the topic response
             _logger.LogInformation("Calling API async to generate speech file for topic {Topic}", TextTopic);
-            AudioFilename = await _responseService.GenerateSpeechFile(TextTopic, TtsVoice);
+            AudioFilename = await _ResponseService.GenerateSpeechFile(TextTopic, TtsVoice);
 
             //check if the audio/speech file exists, this is redundant because the file
             //checks are performed in the service layer
@@ -95,13 +96,11 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", e.Message.ToString(), model, UserContent, NegativePrompt);
-            _logger.LogCritical(ExceptionMessageString);
-
             //don't throw the exception. this is the last method in the call chain
             //and we always return an Http OK to the browser. we use the finally block
             //to assemble the response with all meta-data including any exceptions from
             //the backend services
+            _logger.LogCritical(e.Message.ToString());
         }
         finally
         {
@@ -119,7 +118,7 @@ public class HomeController : Controller
                 AudioFilename = _settings.SpeechFileUrlLocation + AudioFilename,
                 AudioFileSize = fileSizeInBytes.ToString(),
                 ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds),
-                WordCount = _responseService.GetWordCount(TextResponse),
+                WordCount = _ResponseService.GetWordCount(TextResponse),
                 Exceptions = ExceptionMessageString,
                 TtsVoice = TtsVoice
             };
@@ -131,7 +130,7 @@ public class HomeController : Controller
         try
         {
             //insert the response and meta-data into the database
-            bool success = _callController.InsertResponse(Item);
+            bool success = _ModelService.InsertResponse(Item);
             if (!success)
             {
                 ExceptionMessageString = String.Format("Error inserting response into database: {0}", Item);
@@ -141,8 +140,7 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
-            _logger.LogCritical(ExceptionMessageString);
+            _logger.LogCritical(e.Message.ToString());
         }
         finally
         {
@@ -160,27 +158,58 @@ public class HomeController : Controller
     }
 
     [HttpPost]
+    public IActionResult GetStartupPrompt()
+    {
+        try
+        {
+            // Call the service to get the startup prompt
+            string StartupPrompt = _settings.StartupPrompt;
+            return Ok(StartupPrompt);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e.Message.ToString());
+            throw;
+        }
+    }
+
+    [HttpPost]
+    public IActionResult GetNegativePrompt()
+    {
+        try
+        {
+            // Call the service to get the startup prompt
+            string NegativePrompt = _settings.NegativePrompt;
+            return Ok(NegativePrompt);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e.Message.ToString());
+            throw;
+        }
+    }
+
+    [HttpPost]
     public async Task<IActionResult> PlaySpeechFile()
     {
         try
         {
             //call the service to play the speech file
             //the service returns true or false
-            bool result = await _responseService.PlaySpeechFile();
-            if(!result)
+            bool result = await _ResponseService.PlaySpeechFile();
+            if (!result)
             {
-                string ExceptionMessageString = String.Format("Error in HomeController::PlaySpeechFile() playing speech file.");
+                ExceptionMessageString = "Error playing speech file";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
         }
         catch (Exception e)
         {
-            string ExceptionMessageString = String.Format("Exception in HomeController::PlaySpeechFile() {0}", e.Message.ToString());
-            _logger.LogCritical(ExceptionMessageString);
+            _logger.LogCritical(e.Message.ToString());
             throw;
         }
-        
+
         return Ok();
     }
 
