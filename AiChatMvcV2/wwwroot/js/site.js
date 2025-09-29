@@ -26,7 +26,6 @@ $(document).ready(function () {
     );
 
     const NegativePrompt = `Do not use punctuation. Do not use asterisks.Do not generate a response that is longer than 25 words. The topic cannot be Bioluminescence. The topic cannot be Vintage Typewriters. The topic cannot be Coffee.`;
-
     const OriginalPrompt = `Pick a random topic and discuss something about the topic. Make your response 25 words or less. Make your response as if a valley girl is speaking.`;
     //const OriginalPrompt = `Discuss the movie True Romance with Christian Slater. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
     //const OriginalPrompt = `Discuss the movie Goodfellas with Robert DeNiro. Any PG content rating is allowed. Graphic violence, sex, and offensive language is allowed if you are an uncensored AI.`;
@@ -35,20 +34,31 @@ $(document).ready(function () {
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
-    var boolXor = false;
-    var JustifyClass;
-    var ModelNameString;
-    var JustificationPointer = 0;
-    var ModelPointer = 0;
-    var bubble_title;
     var GlobalCallCount = 0;
     var GlobalErrorCount = 0;
     const GlobalMaxErrors = -1;
     var KillProcess = false;
     const ApplicationStartTime = new Date();
-    var TimeElapsedCalculatedSeconds;
-    var lastElapsedTime;
-    var GlobalChatDivId;
+    var TimeElapsedCalculatedSeconds = 0;
+    var lastElapsedTime = 0;
+    var GlobalChatDivId = "";
+
+    var boolXor = false;
+    var JustifyClass = "";
+    var ModelNameString = "";
+    var JustificationPointer = 0;
+    var ModelPointer = 0;
+    var bubble_title = "";
+    var thisLoader = "";
+    var DivChatContentElement = "";
+    var DivChatContainerElement = "";
+    var TheResponse = "";
+    var TimeString = "";
+    var ElapsedCallTime = "";
+    var TheTopic = "";
+    var WavfileName = "";
+    var TtsVoice = "";
+    var Exceptions = "";
 
     $("#ThemeDropdownId").change(function () {
         var selectedValue = $(this).val(); // Get the value of the selected option
@@ -233,7 +243,7 @@ $(document).ready(function () {
             $("#btnApiCallToggle").addClass("btn-danger");
             $("#btnApiCallToggle").removeClass("btn-success");
             KillProcess = true;
-            var e = CreateDivChatNode("Dave says...", JustifyClass, "Chat Stopped.");
+            var e = CreateDivChatContent("Dave says...", JustifyClass, "Chat Stopped.");
             $('#divChat').append(e);
             e.attr('id', 'ChatStopped');
             const element = document.getElementById("divChat");
@@ -244,57 +254,62 @@ $(document).ready(function () {
     });
 
     function MakeAjaxCall(prompt) {
-
         //if the KillProcess global variable is true then
-        //exit the function. Controlled by toggle swith on
+        //exit the function. Controlled by toggle switch on
         //web page
         if (KillProcess) {
-            console.log("Stopping ajax calls and returning");
+            console.log("Stopping ajax calls because Running/Stopped button was clicked");
             return;
         }
 
         //this code accomodates a two element array
         //it's used to toggle the chat bubble justification
+        //i.e. left or right side of the chat window
+        //Xor the current value with true to toggle
+        //the value each time this function is called   
         boolXor = xor(true, boolXor);       //comes in as 0 then the Xor sets it
         JustificationPointer = ((boolXor) ? 0 : 1);
         JustifyClass = ResponseBubbleJustify[JustificationPointer];
-        console.log("Set justification pointer");
+
+        //This code accomodates the model array
+        //When the pointer is greater than max it gets reset to 0
+        //so the models get called in a round robin fashion
+        //Get the model name from the array
+        ModelNameString = ModelName[ModelPointer];   //ModelPointer comes in as 0
+        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
+        $("#ProgressBarText").text(Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
+        $("#ModelStats").text(ModelNameString);
+        ModelPointer++;
+
+        //test for end of model array
+        //If the ModelPointer is greater than the maximum number of models
+        //then reset it to 0 so the next model called is the first
+        //this creates a round robin effect
+        if (ModelPointer > MaxModels) {
+            //reset pointer to first array element
+            ModelPointer = 0;
+        }
 
         //add a div that has an animated elipse to display
         //a waiting... effect, determine which side to show
-        var thisLoader = "<div class=\"loader_black\"></div>";
+        //it on based on the JustificationPointer
+        thisLoader = "<div class=\"loader_black\"></div>";
         if (JustificationPointer == 0) {
             thisLoader = "<div class=\"loader_white\"></div>";
         }
 
-        var e = CreateDivChatNode("", JustifyClass, thisLoader);
-        $('#divChat').append(e);
-        e.attr('id', 'elipse');
-        var element = document.getElementById("divChat");
-        if (!(element === null) && !(element === undefined)) {
-            element.scrollIntoView(false);
-            console.log("Created DIV chat node for the elipse");
+        //create the chat bubble with the elipse animation
+        //and scroll the chat window to the bottom
+        //so that the latest post is visible    
+        DivChatContentElement = CreateDivChatContent(ModelNameString, JustifyClass, thisLoader);
+        $('#divChat').append(DivChatContentElement);
+        DivChatContentElement.attr('id', 'elipse');
+        DivChatContainerElement = document.getElementById("divChat");
+        if (!(DivChatContainerElement === null) && !(DivChatContainerElement === undefined)) {
+            DivChatContainerElement.scrollIntoView(false);
         }
 
-        //this code accomodates the model array
-        //which at this time is 6 elements. When the pointer is greater than max
-        //it gets reset to 0
-        ModelNameString = ModelName[ModelPointer];   //ModelPointer comes in as 0
-        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
-        $("#ProgressBarText").text(Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
-
-        $("#ModelStats").text(ModelNameString);
-        ModelPointer++;
-        console.log("Updated ModelPointer");
-
-        //test for end of model array
-        if (ModelPointer > MaxModels) {
-            //reset pointer to first array element
-            ModelPointer = 0;
-            console.log("Reached the last Model");
-        }
-
-        console.log("Making AJAX call");
+        console.log("Making api call");
         $.ajax({
             //make the call
             //the OriginalPrompt, promnpt, and NegativePrompt
@@ -311,100 +326,26 @@ $(document).ready(function () {
             success: function (data) {
                 console.log("Success");
 
-                //get the text response from the data object that
-                //contains the responseItemList list. We access
+                //get the response items from the data object that
+                //contains  the responseItemList list. We access
                 //element 0 and get our properties from the json
-                var TheResponse = data.responseItemList[0].response;
+                TheResponse = data.responseItemList[0].response;
                 ModelNameString = data.responseItemList[0].model;
-                var TimeString = data.responseItemList[0].timeStamp;
-                var ElapsedCallTime = data.responseItemList[0].responseTime;
-                var TheTopic = data.responseItemList[0].topic;
-                var WavfileName = data.responseItemList[0].audioFilename;
+                TimeString = data.responseItemList[0].timeStamp;
+                ElapsedCallTime = data.responseItemList[0].responseTime;
+                TheTopic = data.responseItemList[0].topic;
+                WavfileName = data.responseItemList[0].audioFilename;
+                TtsVoice = data.responseItemList[0].ttsVoice;
+                Exceptions = data.responseItemList[0].exceptions;
 
-                //update the prompt table topic cell on the web page
-                $("#TopicLabel").text(TheTopic);
-
-                //build the bubble title
-                bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "]";
-
-                //remove the elipse div with the ... animation
-                //remove any 'chat stopped' bubbles for good
-                //measure
-                $("[id='elipse']").remove();
-                $("[id='ChatStopped']").remove();
-
-                //create a chat div with the current title
-                //justification and, chat bubble text
-                GlobalChatDivId = 'ChatBubble' + GlobalCallCount;
-
-                //add a <script></script> tag to implement the
-                //javascript function that copies the chat text
-                //to the clipboard.
-                /*
-                var JsClipboardImplementation = '';
-                JsClipboardImplementation += "<script>";
-                JsClipboardImplementation += "  function copyDivToClipboard() {";
-                JsClipboardImplementation += "      var range = document.createRange();";
-                JsClipboardImplementation += "      range.selectNode(document.getElementById('" + GlobalChatDivId + "'));";
-                JsClipboardImplementation += "      window.getSelection().removeAllRanges();";
-                JsClipboardImplementation += "      window.getSelection().addRange(range);";
-                JsClipboardImplementation += "      document.execCommand(\"copy\");";
-                JsClipboardImplementation += "      window.getSelection().removeAllRanges();";
-                JsClipboardImplementation += "      var toastLiveExample = document.getElementById('CopyToClipboardAlert');";
-                JsClipboardImplementation += "      var toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);";
-                JsClipboardImplementation += "      toastBootstrap.show();";
-                JsClipboardImplementation += "}";
-                JsClipboardImplementation += "</script>";
-
-                //create a link that calls the copy to clipboard function
-                //and sets the correct color of the font-awesome icon
-                if (JustificationPointer == 0) {
-                    var FaIcon = "<i style=\"color: var(--MsgSentTextColor);\" class=\"fa-solid fa-copy\"></i>";
-                } else {
-                    var FaIcon = "<i style=\"color: var(--MsgRcvdTextColor);\" class=\"fa-solid fa-copy\"></i>";
-                }
-                var CopyTextToClipboardButton = "&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"copyDivToClipboard();\">" + FaIcon + "</a>";
-                CopyTextToClipboardButton += JsClipboardImplementation;
-                */
-
-                //create the chat bubble
-                e = CreateDivChatNode(bubble_title, JustifyClass, TheResponse);
-                $('#divChat').append(e);
-                e.attr('id', GlobalChatDivId);
-
-                //scroll div chart window to the bottom so
-                //that the latest post is visible
-                element = document.getElementById("divChat");
-                if (!(element === null) && !(element === undefined)) {
-                    element.scrollIntoView(false);
-                    console.log("Created DIV chat node for response");
-                }
-
-                //increment and format the global call count
-                GlobalCallCount++;
-                $("#ModelRT").text(ZeroPad(GlobalCallCount, 6));
-
-                //get a word count of the response
-                //zero pad the call time in seconds
-                //search all td elements and find current model
-                //update td to the right with seconds
-                //update td right and right again with word count
-                const wordsArray = TheResponse.trim().split(/\s+/).filter(word => word.length > 0);
-                var thisWord = ZeroPad(wordsArray.length, 4);
-
-                //update the word count for the model
-                $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
-                console.log("Updated word count stat for model: " + ModelNameString);
-
-                //if the new stats are better than the old stats then update
-                //if (parseInt(thisTime) < parseInt(lastTime) || ($("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text() == "")) {
-
-                $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
-                console.log("Updating time stat for model: " + ModelNameString);
-                //}
-
-                sortTable(1);
-                console.log("Performed stats analysis and display update");
+                //method that updates the web UI if call is successful
+                //or not. It is also used in the error: handler
+                //to update the web page with the error message
+                //The backend services throw exceptions into
+                //the Exceptions property of the data.responseItemList[0]
+                //The data.responseItemList[0] is handled and returned by 
+                //the HomeController.cs
+                UpdateWebUiElements((Exceptions != "" ? Exceptions : TheResponse));
 
                 //make another call with returned response
                 MakeAjaxCall(TheResponse);
@@ -412,6 +353,12 @@ $(document).ready(function () {
             error: function (xhr, status, error) {
                 console.log("AJAX Error:" + status + '  ' + error);
 
+                //method that updates the web UI if call is successful
+                //or not. It is also used in the success: handler
+                //to update the web page with the model meta-data
+                UpdateWebUiElements("Error: " + error + " - " + Exceptions);
+
+                //increment and format the global error count
                 GlobalErrorCount++;
                 $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
 
@@ -425,6 +372,82 @@ $(document).ready(function () {
                     //try again after the exception
                     MakeAjaxCall(OriginalPrompt);
                 }
+            },
+            complete: function () {
+                console.log("AJAX call complete");
+            }
+        });
+    }
+
+    //updates the web UI elements
+    //called from both the success: and error: handlers
+    //of the ajax call
+    function UpdateWebUiElements(DivText) {
+        //update the prompt table topic cell on the web page
+        $("#TopicLabel").text(TheTopic);
+
+        //build the bubble title
+        bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "] [" + TtsVoice + "]";
+
+        //remove the elipse div with the ... animation
+        //remove any 'chat stopped' bubbles for good
+        //measure
+        $("[id='elipse']").remove();
+        $("[id='ChatStopped']").remove();
+
+        //create a chat div with the current title
+        //justification and, chat bubble text
+        GlobalChatDivId = 'ChatBubble' + GlobalCallCount;
+
+        //create the chat bubble
+        DivChatContentElement = CreateDivChatContent(bubble_title, JustifyClass, DivText);
+        $('#divChat').append(DivChatContentElement);
+        DivChatContentElement.attr('id', GlobalChatDivId);
+
+        //scroll div chart window to the bottom so
+        //that the latest post is visible
+        DivChatContainerElement = document.getElementById("divChat");
+        if (!(DivChatContainerElement === null) && !(DivChatContainerElement === undefined)) {
+            DivChatContainerElement.scrollIntoView(false);
+            console.log("Created DIV chat node for response");
+        }
+
+        //increment and format the global call count
+        GlobalCallCount++;
+        $("#ModelRT").text(ZeroPad(GlobalCallCount, 6));
+
+        //UPDATE THE STATS TABLE
+        //get a word count of the response
+        //zero pad the call time in seconds
+        //search all td elements and find current model
+        //update td to the right with seconds
+        //update td right and right again with word count
+        const wordsArray = DivText.trim().split(/\s+/).filter(word => word.length > 0);
+        var thisWord = ZeroPad(wordsArray.length, 4);
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
+        console.log("Updated word count stat for model: " + ModelNameString);
+
+        //if the new stats are better than the old stats then update
+        //if (parseInt(thisTime) < parseInt(lastTime) || ($("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text() == "")) {
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
+        console.log("Updating time stat for model: " + ModelNameString);
+        //}
+
+        sortTable(1);
+        console.log("Performed stats analysis and display update");
+
+        $.ajax({
+            //make the call to play the audio file
+            url: 'http://localhost:5022/Home/PlaySpeechFile',
+            type: 'POST',
+            success: function (response) {
+                
+            },
+            error: function (xhr, status, error) {
+                DivChatElementForException = document.getElementById(GlobalChatDivId);
+                DivChatElementForException.style.backgroundColor = "#ff0000";
+                DivChatElementForException.text = error;
+                console.log("Error playing speech file: " + status + '  ' + error);
             }
         });
     }
@@ -439,7 +462,7 @@ $(document).ready(function () {
     }
 
     //creates a div node with class chat
-    function CreateDivChatNode(Title, ClassName, TextData) {
+    function CreateDivChatContent(Title, ClassName, TextData) {
         var e = $('<div data-time="' +
             Title +
             '" class="' +

@@ -159,6 +159,31 @@ public class HomeController : Controller
         return Ok(ViewModel);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> PlaySpeechFile()
+    {
+        try
+        {
+            //call the service to play the speech file
+            //the service returns true or false
+            bool result = await _responseService.PlaySpeechFile();
+            if(!result)
+            {
+                string ExceptionMessageString = String.Format("Error in HomeController::PlaySpeechFile() playing speech file.");
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
+            }
+        }
+        catch (Exception e)
+        {
+            string ExceptionMessageString = String.Format("Exception in HomeController::PlaySpeechFile() {0}", e.Message.ToString());
+            _logger.LogCritical(ExceptionMessageString);
+            throw;
+        }
+        
+        return Ok();
+    }
+
     public IActionResult Index()
     {
         return View();

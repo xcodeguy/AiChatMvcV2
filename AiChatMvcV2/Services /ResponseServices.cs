@@ -286,7 +286,7 @@ namespace AiChatMvcV2.Services
             }
         }
 
-        public void PlaySpeechFile()
+        public async Task<bool> PlaySpeechFile()
         {
             try
             {
@@ -310,6 +310,8 @@ namespace AiChatMvcV2.Services
                 {
                     process.WaitForExit(); // Optional: Wait for playback to finish
                 }
+
+                return await Task.FromResult(true);
             }
             catch (Exception ex)
             {
