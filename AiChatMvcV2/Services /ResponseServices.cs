@@ -5,12 +5,6 @@ using Microsoft.Extensions.Options;
 using System.Text;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System;
-using System.IO;
-using System.Collections.Generic;
 
 namespace AiChatMvcV2.Services
 {
@@ -24,13 +18,24 @@ namespace AiChatMvcV2.Services
         {
             _logger = logger;
             _settings = settings.Value;
-            _logger.LogInformation("ResponseController class initialized.");
         }
 
         public int GetWordCount(string TheResponse)
         {
-            string[] a = TheResponse.Split(" ");
-            return a.Length;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(TheResponse))
+                {
+                    return 0;
+                }
+                string[] a = TheResponse.Split(" ");
+                return a.Length;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("ResponseServices::GetWordCount() Exception: {ExceptionMessage}", ex.Message);
+                throw;
+            }
         }
 
         public Task<string> SanitizeResponseFromJson(string json)
@@ -137,15 +142,16 @@ namespace AiChatMvcV2.Services
                 string HtmlTagPattern = $"(<[^>]*>)";
                 string ThinkTagPattern = $"(?<=<think>).*?(?=</think>)";
                 string OriginalString = item["response"].ToString()!;
-                if(OriginalString.Contains("<think>"))
+                if (OriginalString.Contains("<think>"))
                 {
                     Console.WriteLine("Found think tag in response");
                 }
+                OriginalString = OriginalString.ToString()!.Replace("\n", string.Empty);
+                OriginalString = OriginalString.ToString()!.Replace("\"", string.Empty);
+                OriginalString = OriginalString.ToString()!.Replace("\\", string.Empty);
                 string BetterString = Regex.Replace(OriginalString, ThinkTagPattern, string.Empty);
                 string CleanString = Regex.Replace(BetterString, HtmlTagPattern, string.Empty);
-                CleanString = CleanString.ToString()!.Replace("\n", string.Empty);
-                CleanString = CleanString.ToString()!.Replace("\"", string.Empty);
-                CleanString = CleanString.ToString()!.Replace("\\", string.Empty);
+
 
                 int resultLength = CleanString != null ? CleanString.ToString()!.Length : 0;
                 StringBuilder result = new(resultLength);
@@ -186,16 +192,12 @@ namespace AiChatMvcV2.Services
 
                 using (var client = new HttpClient())
                 {
-                    client.Timeout = TimeSpan.FromSeconds(300); //5 min timeout
-
-                    _logger.LogInformation("Calling TTS endpoint");
+                    client.Timeout = TimeSpan.FromSeconds(_settings.HttpTtsTimeout);
                     var content = new StringContent(TtsRequest, Encoding.UTF8, "application/json");
                     HttpResponseMessage response = await client.PostAsync(TtsEndpointUrl, content);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        _logger.LogInformation("TTS model response success");
-
                         string ContentDisposiion;
                         string DropFilename;
                         string WebAssetFilename;
@@ -210,16 +212,26 @@ namespace AiChatMvcV2.Services
                         DropFilename = _settings.SpeechFileDropLocation!;
                         if (ContentDisposiion.ToString() is null)
                         {
-                            ExceptionMessageString = string.Format("Exception in ResponseController::GenerateTextToSpeechResourceFile() {0} {1}, {2}\nException: {3}", ModelName, TtsEndpointUrl, TextForSpeech, "Content-Disposition header is null");
+                            ExceptionMessageString = string.Format("Content-Disposition header is null");
                             throw new Exception(ExceptionMessageString);
                         }
-                        DropFilename += ContentDisposiion.Split("=")[1].ToString().Replace("\"", string.Empty);
+
+                        //content-disposition: attachment; filename="your_audio_file.wav"  
+                        //split the string on the '=' character and get the second element in the array
+                        var ContentDispositionArray = ContentDisposiion.Split("=");
+                        if (ContentDispositionArray.Length < 2)
+                        {
+                            ExceptionMessageString = string.Format("Content-Disposition header is invalid (split array < 2): {0}", ContentDisposiion);
+                            throw new Exception(ExceptionMessageString);
+                        }
+
+                        //get the filename and remove the " characters
+                        DropFilename += ContentDispositionArray[1].ToString().Replace("\"", string.Empty);
 
                         //copy the speech file to the website assets location
                         WebAssetFilename = CopySpeechFileToAssets(DropFilename);
                         LocalAssetFilename = _settings.SpeechFilePlaybackLocation! + WebAssetFilename;
 
-                        _logger.LogInformation("Returning sound file ({Filename}): DropFile={source}, Destination={dest}", WebAssetFilename, DropFilename, LocalAssetFilename);
                         return WebAssetFilename;
                     }
                     else
@@ -244,11 +256,18 @@ namespace AiChatMvcV2.Services
 
             try
             {
+                //check for null
+                if (SourceFile == null)
+                {
+                    ExceptionMessageString = "Error: Source file is NULL";
+                    throw new Exception(ExceptionMessageString);
+                }
+
                 // Check if the source file exists
                 if (!File.Exists(SourceFile))
                 {
-                    _logger.LogInformation("Error: Source file not found: {file}", SourceFile);
-                    return string.Empty;
+                    ExceptionMessageString = string.Format("Error: Source file not found: {file}", SourceFile);
+                    throw new Exception(ExceptionMessageString);
                 }
 
                 // Copy the file
@@ -258,29 +277,27 @@ namespace AiChatMvcV2.Services
                 //return just the audio filename. No path, url or location information
                 DestinationFile = _settings.SpeechFilePlaybackName!;
 
-                PlayWavOnMac(_settings.SpeechFilePlaybackLocation + DestinationFile);
-
                 return DestinationFile;
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("ResponseController::An error occurred while copying speech asset file: {0}", ex.Message);
+                _logger.LogInformation("ResponseController::CopySpeechFileToAssets: An error occurred while copying speech asset file: {0}", ex.Message);
                 throw;
             }
-
         }
 
-        public void PlayWavOnMac(string filePath)
+        public void PlaySpeechFile()
         {
-            if ((filePath == null) || (!File.Exists(filePath)))
-            {
-                ExceptionMessageString = $"ResponseController::PlayWavOnMac Error: File not found at {(filePath != null ? filePath : "Filename is NULL")}";
-                _logger.LogInformation(ExceptionMessageString);
-                throw new Exception(ExceptionMessageString);
-            }
-
             try
             {
+                string filePath = _settings.SpeechFilePlaybackLocation + _settings.SpeechFilePlaybackName;
+                if ((filePath == null) || (!File.Exists(filePath)))
+                {
+                    ExceptionMessageString = $"Speech file not found at {(filePath != null ? filePath : "Filename is NULL")}";
+                    _logger.LogInformation(ExceptionMessageString);
+                    throw new Exception(ExceptionMessageString);
+                }
+
                 ProcessStartInfo startInfo = new()
                 {
                     FileName = "afplay",
@@ -296,7 +313,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Error playing WAV file: {ex.Message}");
+                _logger.LogCritical($"ResponseServices::PlaySpeechFile()Error playing WAV file: {ex.Message}");
                 throw;
             }
         }

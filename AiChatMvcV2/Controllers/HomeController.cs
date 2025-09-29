@@ -1,14 +1,9 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using AiChatMvcV2.Models;
-using AiChatMvcV2.Services;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System;
-using System.IO;
-using System.Media;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace AiChatMvcV2.Services;
 
@@ -39,38 +34,57 @@ public class HomeController : Controller
                                                 string UserContent,
                                                 string NegativePrompt)
     {
+        DateTime StartTime = DateTime.Now;
+        HomeViewModel ViewModel = new HomeViewModel();
+        ViewModel.ResponseItemList = new List<ResponseItem>();
+        TimeSpan TimeSpent = new TimeSpan();
+        ResponseItem Item;
+        List<string> TtsVoices = _settings.TtsVoices;
+        Random rand = new Random();
+        string TtsVoice = TtsVoices[rand.Next(TtsVoices.Count)];
+        long fileSizeInBytes = 0;
+        string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
+        string TextResponse = string.Empty;
+        string TextTopic = string.Empty;
+        string AudioFilename = string.Empty;
+        String ExceptionMessageString = string.Empty;
+
+        //////////////////////////////////////////
+        // API Round trip TRY/CATCH block
+        //////////////////////////////////////////
         try
         {
-            DateTime StartTime = DateTime.Now;
-            HomeViewModel ViewModel = new HomeViewModel();
-            ViewModel.ResponseItemList = new List<ResponseItem>();
-            ResponseItem Item;
 
             // call the inference server to generate a response
             _logger.LogInformation("Calling API async for model {ModelName}", model);
-            var JsonResponse = await _callController.CallApiAsync(model, SystemContent, UserContent, NegativePrompt);
-            var TextResponse = await _responseService.SanitizeResponseFromJson(JsonResponse.ToString()!);
-            TimeSpan TimeSpent = DateTime.Now - StartTime;
+            TextResponse = await _callController.GetModelResponseAsync
+            (
+                model,
+                SystemContent,
+                UserContent,
+                NegativePrompt
+            );
 
             // call the inference server to summarize the response into a one or two word topic
-            _logger.LogInformation("Calling API async for Topic summary.");
-            var JsonTopic = await _callController.CallApiAsync("llama3.1",
-                "Summarize the following text into a one or two word description:",
+            _logger.LogInformation("Calling API async for Topic summary");
+            TextTopic = await _callController.GetModelResponseAsync(
+                _settings.TopicSummaryModelName,
+                _settings.TopicSummaryPrompt,
                 TextResponse,
-                "The response cannot be more than two words. Do not use any special characters. Do not use any punctuation."
+                _settings.TopicSummaryNegativePrompt
             );
-            var TextTopic = await _responseService.SanitizeResponseFromJson(JsonTopic.ToString()!);
 
-            //call the inference server to generate natural language for the topic
-            var AudioFilename = await _responseService.GenerateSpeechFile(TextTopic, "tara");
+            //call the inference server to generate a speech file from the topic response
+            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}", TextTopic);
+            AudioFilename = await _responseService.GenerateSpeechFile(TextTopic, TtsVoice);
 
-            // Check if the source file exists
-            long fileSizeInBytes = 0;
-            string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
+            //check if the audio/speech file exists, this is redundant because the file
+            //checks are performed in the service layer
             if (!System.IO.File.Exists(local_path_to_assets_folder + AudioFilename))
             {
-                _logger.LogInformation("Error: Source file not found: {file}", AudioFilename);
-                return NotFound($"Audio file not found: {local_path_to_assets_folder + AudioFilename}");
+                ExceptionMessageString = String.Format("Speech/Audio file not found: {0}", AudioFilename);
+                _logger.LogInformation(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
             }
             else
             {
@@ -78,7 +92,20 @@ public class HomeController : Controller
                 fileSizeInBytes = fileInfo.Length;
                 _logger.LogInformation("Audio file generated: {file}, size: {size} bytes", AudioFilename, fileSizeInBytes);
             }
+        }
+        catch (Exception e)
+        {
+            ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
+            _logger.LogCritical(ExceptionMessageString);
 
+            //don't throw the exception. this is the last method in the call chain
+            //and we always return an Http OK to the browser. we use the finally block
+            //to assemble the response with all meta-data including any exceptions from
+            //the backend services
+        }
+        finally
+        {
+            // build out the response object
             Item = new ResponseItem
             {
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
@@ -92,27 +119,44 @@ public class HomeController : Controller
                 AudioFilename = _settings.SpeechFileUrlLocation + AudioFilename,
                 AudioFileSize = fileSizeInBytes.ToString(),
                 ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds),
-                WordCount = _responseService.GetWordCount(TextResponse)
+                WordCount = _responseService.GetWordCount(TextResponse),
+                Exceptions = ExceptionMessageString,
+                TtsVoice = TtsVoice
             };
+        }
 
-            ViewModel.ResponseItemList?.Add(Item);
-
+        //////////////////////////////////////////
+        // INSERT into databased TRY/CATCH block
+        //////////////////////////////////////////
+        try
+        {
+            //insert the response and meta-data into the database
             bool success = _callController.InsertResponse(Item);
             if (!success)
             {
-                _logger.LogCritical("Error inserting response into database: {responseItem}", Item);
+                ExceptionMessageString = String.Format("Error inserting response into database: {0}", Item);
+                _logger.LogCritical(ExceptionMessageString);
                 throw new Exception("Error inserting response into database.");
             }
-
-            _logger.LogInformation("Returning a response for model {ModelName}", model);
-            return Ok(ViewModel);
         }
         catch (Exception e)
         {
-            String ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
+            ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
             _logger.LogCritical(ExceptionMessageString);
-            throw;
         }
+        finally
+        {
+
+        }
+
+        //calculate elapsed time
+        TimeSpent = DateTime.Now - StartTime;
+
+        //assign the last two properties and return an HTTP OK with the loaded view model
+        Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+        Item.Exceptions = ExceptionMessageString;
+        ViewModel.ResponseItemList.Add(Item);
+        return Ok(ViewModel);
     }
 
     public IActionResult Index()

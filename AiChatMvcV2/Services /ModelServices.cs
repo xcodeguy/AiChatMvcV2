@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
 using System.Data;
-using AiChatMvcV2.Services;
 
 namespace AiChatMvcV2.Services
 {
@@ -54,7 +53,6 @@ namespace AiChatMvcV2.Services
             {
                 using (MySqlCommand command = new(sp_insert_table_response, connection))
                 {
-                    _logger.LogInformation("Executing: {sp_insert_table_response}.", sp_insert_table_response);
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("timestamp", TheResponse.TimeStamp);
                     command.Parameters.AddWithValue("response", TheResponse.Response);
@@ -65,16 +63,15 @@ namespace AiChatMvcV2.Services
                     command.Parameters.AddWithValue("active", TheResponse.Active);
                     command.Parameters.AddWithValue("last_updated", TheResponse.LastUpdated);
                     command.Parameters.AddWithValue("response_time", DateTime.Now.ToString("yyyy-MM-dd ") +
-                    TheResponse.ResponseTime);
+                                                    TheResponse.ResponseTime);
                     command.Parameters.AddWithValue("word_count", TheResponse.WordCount);
 
                     try
                     {
                         connection.Open();
                         command.ExecuteNonQuery(); // Use ExecuteReader if the SP returns data
-                        _logger.LogInformation("Executed stored procedure sp_insert_table_response with a response object of {0}", TheResponse);
                         connection.Close();
-                        _logger.LogInformation("Query executed and connection closed.");
+                        _logger.LogInformation("Query ({}) executed and connection closed.", sp_insert_table_response);
                     }
                     catch (MySqlException ex)
                     {
@@ -87,33 +84,31 @@ namespace AiChatMvcV2.Services
             return true;
         }
 
-        public async Task<string> CallApiAsync(string Model, string SystemContent, string UserContent, string NegativePrompt)
+        public async Task<string> GetModelResponseAsync(string Model, string SystemContent, string UserContent, string NegativePrompt)
         {
-            string? url = _settings.Url;
+            string url = _settings.Url;
             string data;
             UserContent = SystemContent + " " + UserContent + " " + NegativePrompt;
             var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
 
             data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, UserContent);
-            _logger.LogInformation("Built data string");
 
             try
             {
                 using (var client = new HttpClient())
                 {
-                    client.Timeout = TimeSpan.FromSeconds(300); //5 min timeout
+                    client.Timeout = TimeSpan.FromSeconds(_settings.HttpApiTimeout);
 
-                    _logger.LogInformation("Calling model API");
                     var content = new StringContent(data, Encoding.UTF8, "application/json");
                     var response = await client.PostAsync(url, content);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        _logger.LogInformation("Model response success");
                         using var stream = await response.Content.ReadAsStreamAsync();
                         using var reader = new StreamReader(stream);
                         var text = await reader.ReadToEndAsync();
-                        _logger.LogInformation("Returning contents of {model}:{prompt}:{text}", Model, UserContent, text);
+
+                        text = _responseService.SanitizeResponseFromJson(text).Result;
                         return text;
                     }
                     else
@@ -126,13 +121,13 @@ namespace AiChatMvcV2.Services
             catch (Exception ex)
             {
                 _logger.LogCritical("Exception in CallController::CallApiAsync()->{0}\n{1}",
-                            ExceptionMessageString != string.Empty ? ExceptionMessageString : "Unknown error",
-                            ex.Message);
+                                    ExceptionMessageString,
+                                    ex.Message);
             }
-            
+
             return string.Empty;
         }
-        
+
     }       //end class
 
 }       //end namespace

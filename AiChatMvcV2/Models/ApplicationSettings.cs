@@ -11,5 +11,11 @@ namespace AiChatMvcV2.Objects
         public required string SpeechFileUrlLocation { get; set; }
         public required string SpeechFileFormat { get; set; }
         public required string PlaybackSpeed { get; set; }
+        public required int HttpTtsTimeout { get; set; }
+        public required int HttpApiTimeout { get; set; }
+        public required string TopicSummaryModelName { get; set; }
+        public required string TopicSummaryPrompt { get; set; }
+        public required string TopicSummaryNegativePrompt { get; set; }
+        public required List<string> TtsVoices { get; set; }
     }
 }
