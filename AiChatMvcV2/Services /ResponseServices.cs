@@ -137,6 +137,17 @@ namespace AiChatMvcV2.Services
 
             try
             {
+                //////////////////////////////////////////
+                // TEST EXCEPTION THROW
+                //////////////////////////////////////////
+                if (_settings.ResponseServicesTestException == true)
+                {
+                    _logger.LogInformation("ResponseServicesTestException is true, testing exception throw.");
+                    Type classType = this.GetType();
+                    ExceptionMessageString = $"<strong>TEST EXCEPTION FROM {classType.Name.ToString().ToUpper()}. THIS IS A TEST EXCEPTION.</strong>";
+                    throw new Exception(ExceptionMessageString);
+                }
+
                 Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
 
                 string HtmlTagPattern = $"(<[^>]*>)";

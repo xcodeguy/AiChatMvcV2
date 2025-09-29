@@ -8,6 +8,7 @@ using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
+using AiChatMvcV2.Services;
 using System.Data;
 
 namespace AiChatMvcV2.Services
@@ -29,7 +30,7 @@ namespace AiChatMvcV2.Services
             _logger = logger;
             _responseService = responseService;
             _settings = settings.Value;
-        }
+      }
 
         private MySqlConnection? GetConnection()
         {
@@ -95,6 +96,17 @@ namespace AiChatMvcV2.Services
 
             try
             {
+                //////////////////////////////////////////
+                // TEST EXCEPTION THROW
+                //////////////////////////////////////////
+                if (_settings.ModelServicesTestException == true)
+                {
+                    _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
+                    Type classType = this.GetType();
+                    ExceptionMessageString = $"<strong>TEST EXCEPTION FROM {classType.Name.ToString().ToUpper()}. THIS IS A TEST EXCEPTION.</strong>";
+                    throw new Exception(ExceptionMessageString);
+                }
+
                 using (var client = new HttpClient())
                 {
                     client.Timeout = TimeSpan.FromSeconds(_settings.HttpApiTimeout);
@@ -123,9 +135,8 @@ namespace AiChatMvcV2.Services
                 _logger.LogCritical("Exception in CallController::CallApiAsync()->{0}\n{1}",
                                     ExceptionMessageString,
                                     ex.Message);
+                throw;
             }
-
-            return string.Empty;
         }
 
     }       //end class

@@ -17,5 +17,7 @@ namespace AiChatMvcV2.Objects
         public required string TopicSummaryPrompt { get; set; }
         public required string TopicSummaryNegativePrompt { get; set; }
         public required List<string> TtsVoices { get; set; }
+        public required bool ModelServicesTestException { get; set; }
+        public required bool ResponseServicesTestException { get; set; }
     }
 }

@@ -345,18 +345,30 @@ $(document).ready(function () {
                 //the Exceptions property of the data.responseItemList[0]
                 //The data.responseItemList[0] is handled and returned by 
                 //the HomeController.cs
-                UpdateWebUiElements((Exceptions != "" ? Exceptions : TheResponse));
+                if (Exceptions.trim() != "") {
+                    console.log(Exceptions);
+                    TheTopic = "Exception";
+                    UpdateWebUiElements(Exceptions, false);
+                    DivChatElementForException = document.getElementById(GlobalChatDivId);
+                    DivChatElementForException.style.backgroundColor = "#ff0000";
+                }
+                else {
+                    UpdateWebUiElements(TheResponse, true);
+                }
 
                 //make another call with returned response
                 MakeAjaxCall(TheResponse);
             },
             error: function (xhr, status, error) {
-                console.log("AJAX Error:" + status + '  ' + error);
+                console.log("AJAX Error:" + xhr.responseText + ", status: " + status + ", error: " + error);
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the success: handler
                 //to update the web page with the model meta-data
-                UpdateWebUiElements("Error: " + error + " - " + Exceptions);
+                TheTopic = "Exception";
+                UpdateWebUiElements(xhr.responseText, false);
+                DivChatElementForException = document.getElementById(GlobalChatDivId);
+                DivChatElementForException.style.backgroundColor = "#ff0000";
 
                 //increment and format the global error count
                 GlobalErrorCount++;
@@ -382,7 +394,7 @@ $(document).ready(function () {
     //updates the web UI elements
     //called from both the success: and error: handlers
     //of the ajax call
-    function UpdateWebUiElements(DivText) {
+    function UpdateWebUiElements(DivText, PlaySpeechFile = true) {
         //update the prompt table topic cell on the web page
         $("#TopicLabel").text(TheTopic);
 
@@ -436,20 +448,22 @@ $(document).ready(function () {
         sortTable(1);
         console.log("Performed stats analysis and display update");
 
-        $.ajax({
-            //make the call to play the audio file
-            url: 'http://localhost:5022/Home/PlaySpeechFile',
-            type: 'POST',
-            success: function (response) {
-                
-            },
-            error: function (xhr, status, error) {
-                DivChatElementForException = document.getElementById(GlobalChatDivId);
-                DivChatElementForException.style.backgroundColor = "#ff0000";
-                DivChatElementForException.text = error;
-                console.log("Error playing speech file: " + status + '  ' + error);
-            }
-        });
+        if (PlaySpeechFile) {
+            $.ajax({
+                //make the call to play the audio file
+                url: 'http://localhost:5022/Home/PlaySpeechFile',
+                type: 'POST',
+                success: function (response) {
+
+                },
+                error: function (xhr, status, error) {
+                    DivChatElementForException = document.getElementById(GlobalChatDivId);
+                    DivChatElementForException.style.backgroundColor = "#ff0000";
+                    DivChatElementForException.text = status + ", " + error;
+                    console.log("Error playing speech file: " + status + ", " + error);
+                }
+            });
+        }
     }
 
     //cleans up chat display

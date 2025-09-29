@@ -54,8 +54,7 @@ public class HomeController : Controller
         //////////////////////////////////////////
         try
         {
-
-            // call the inference server to generate a response
+            // call the api which calls the inference server to generate a response
             _logger.LogInformation("Calling API async for model {ModelName}", model);
             TextResponse = await _callController.GetModelResponseAsync
             (
@@ -65,7 +64,8 @@ public class HomeController : Controller
                 NegativePrompt
             );
 
-            // call the inference server to summarize the response into a one or two word topic
+            // call the api which calls the inference server to summarize the response 
+            // into a one or two word topic
             _logger.LogInformation("Calling API async for Topic summary");
             TextTopic = await _callController.GetModelResponseAsync(
                 _settings.TopicSummaryModelName,
@@ -74,7 +74,7 @@ public class HomeController : Controller
                 _settings.TopicSummaryNegativePrompt
             );
 
-            //call the inference server to generate a speech file from the topic response
+            //call the api which calls the inference server to generate a speech file from the topic response
             _logger.LogInformation("Calling API async to generate speech file for topic {Topic}", TextTopic);
             AudioFilename = await _responseService.GenerateSpeechFile(TextTopic, TtsVoice);
 
@@ -95,7 +95,7 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", model, UserContent, NegativePrompt, e.Message.ToString());
+            ExceptionMessageString = String.Format("Exception in HomeController::QueryModelForResponse() {0}, {1} {2}, {3}", e.Message.ToString(), model, UserContent, NegativePrompt);
             _logger.LogCritical(ExceptionMessageString);
 
             //don't throw the exception. this is the last method in the call chain
