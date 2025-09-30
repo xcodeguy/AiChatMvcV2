@@ -3,7 +3,6 @@
     --BodyBackgroundColor: rgb(36, 36, 36);
     --ChatBackgroundColor: rgb(90, 90, 90);
     --ChatBorderColor: rgb(255, 255, 255);
-    --ChatContainerViewHeight: 695px;
 
     --NavBarBackgroundColor: var(--BodyBackgroundColor);
     --NavBarTextColor: rgb(0, 0, 0);
@@ -27,7 +26,6 @@
     --PromptHeadingTextColor: var(--PromptBackgroundColor);
     --PromptBackgroundColor: rgb(194, 226, 255);
     --PromptTextColor: var(--PromptHeadingtBackgroundColor);
-    --PromptTablePadding: 3px;
 
     --BubbleTitleTextColor: rgb(255, 255, 255);
 
@@ -35,7 +33,6 @@
     --ChatDashboardBackgroundColor: rgb(90, 90, 90);
     --PrivacyLinkColor: rgb(255, 255, 255);
     --ProgressBarTextColor: rgb(0, 0, 0);
-    --ModelStatsTableWidth: 100%;
     --HeaderFooterBorderBottomColor: rgba(200, 200, 200, 0.644);
 
     /* MOVED 08-31-2025 */

@@ -10,6 +10,7 @@ using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
 using AiChatMvcV2.Services;
 using System.Data;
+using System.Reflection;
 
 namespace AiChatMvcV2.Services
 {
@@ -30,7 +31,7 @@ namespace AiChatMvcV2.Services
             _logger = logger;
             _responseService = responseService;
             _settings = settings.Value;
-      }
+        }
 
         private MySqlConnection? GetConnection()
         {
@@ -50,6 +51,23 @@ namespace AiChatMvcV2.Services
 
         public bool InsertResponse(ResponseItem TheResponse)
         {
+            //////////////////////////////////////////
+            // TEST EXCEPTION THROW
+            //////////////////////////////////////////
+            if (_settings.MySqlTestException == true)
+            {
+                _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
+                Type classType = this.GetType();
+                if (MethodBase.GetCurrentMethod() != null)
+                {
+                    string className = classType.Name.ToString();
+                    string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
+                    ExceptionMessageString = $"Test exception from: {className}.{methodName}";
+                }
+
+                throw new Exception(ExceptionMessageString);
+            }
+
             using (MySqlConnection connection = new(_connectionString))
             {
                 using (MySqlCommand command = new(sp_insert_table_response, connection))
@@ -89,7 +107,7 @@ namespace AiChatMvcV2.Services
         {
             string url = _settings.Url;
             string data;
-            UserContent = SystemContent + " " + UserContent + " " + NegativePrompt;
+            UserContent = SystemContent + " " + NegativePrompt + " " + UserContent;
             var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
 
             data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, UserContent);
@@ -132,7 +150,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Exception in CallController::CallApiAsync()->{0}\n{1}",
+                _logger.LogCritical("Exception in ModelServices::GetModelResponseAsync()->{0}\n{1}",
                                     ExceptionMessageString,
                                     ex.Message);
                 throw;

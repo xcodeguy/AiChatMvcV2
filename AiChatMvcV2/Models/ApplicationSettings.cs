@@ -19,6 +19,7 @@ namespace AiChatMvcV2.Objects
         public required List<string> TtsVoices { get; set; }
         public required bool ModelServicesTestException { get; set; }
         public required bool ResponseServicesTestException { get; set; }
+        public required bool MySqlTestException { get; set; }
         public required string StartupPrompt { get; set; }
         public required string NegativePrompt { get; set; }
     }

@@ -331,6 +331,38 @@ namespace AiChatMvcV2.Services
             }
         }
 
+        public Task<string> GetTopicFromResponseText(string ResponseText)
+        {
+            try
+            {
+                bool HasColons = ResponseText.Contains(":");
+                if (HasColons)
+                {
+                    string[] SplitColonArray = ResponseText.Split(":");
+                    //how big is the array?
+                    int ColonElementCount = SplitColonArray.Length;
+                    string TopicText = SplitColonArray[ColonElementCount - 1];
+                    if (TopicText != null && TopicText != string.Empty)
+                    {
+                        int WordCount = GetWordCount(TopicText);
+                        if (WordCount > 2)
+                        {
+                            string[] SplitSpaceArray = TopicText.Split(" ");
+                        }
+                    }
+                }
+              }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+
+            }
+
+            return Task.FromResult(string.Empty);
+        }
     }       //end class
 
 }       //end namespace

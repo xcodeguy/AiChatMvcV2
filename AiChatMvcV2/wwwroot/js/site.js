@@ -349,44 +349,45 @@ $(document).ready(async function () {
                     UpdateWebUiElements(ExceptionString, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
-                    DivChqatElementForException.style.color = "#ffffff";
+                    DivChatElementForException.style.color = "#ffffff";
 
-                    DisplayExceptionData();
+                    DisplayExceptionCountStatistic();
                 }
                 else {
                     UpdateWebUiElements(TheResponse, true);
                 }
 
                 //make another call with returned response
+                console.log("Making recursive api call");
                 CallApiEndpoint(TheResponse);
             },
             error: function (xhr, status, error) {
-                console.log("AJAX Error:" + xhr.responseText);
+                console.log("Error:" + xhr.statusText);
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the success: handler
                 //to update the web page with the model meta-data
                 TheTopic = "Exception!";
-                UpdateWebUiElements(xhr.responseText, false);
+                UpdateWebUiElements(xhr.statusText, false);
                 DivChatElementForException = document.getElementById(GlobalChatDivId);
                 DivChatElementForException.style.backgroundColor = "#ff0000";
-                DivChqatElementForException.style.color = "#ffffff";
+                DivChatElementForException.style.color = "#ffffff";
 
-                DisplayExceptionData();
+                DisplayExceptionCountStatistic();
 
-                //a -1 overrides the max exception logic
+                //-1 overrides the max exception logic
                 if (GlobalMaxErrors == -1) {
-                    console.log("GlobalMaxErros=-1: Ignoring retry logic and calling MakeAjaxCall().");
-                    CallApiEndpoint(OriginalPrompt);
+                    console.log("GlobalMaxErros=-1: Ignoring retry logic and calling CallApiEndpoint().");
+                    CallApiEndpoint(GlobalOriginalPrompt);
                 } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
                     return;
                 } else {
                     //try again after the exception
-                    CallApiEndpoint(OriginalPrompt);
+                    CallApiEndpoint(GlobalOriginalPrompt);
                 }
             },
             complete: function () {
-                console.log("AJAX call complete");
+                console.log("Done\n\n");
             }
         });
     }
@@ -396,7 +397,7 @@ $(document).ready(async function () {
     //of the ajax call
     function UpdateWebUiElements(DivText, PlaySpeechFile = true) {
 
-        if(DivText == null || DivText == undefined || DivText.trim() == ""){
+        if (DivText == null || DivText == undefined || DivText.trim() == "") {
             DivText = "Empty Response or Exception!";
         }
         //update the prompt table topic cell on the web page
@@ -439,15 +440,11 @@ $(document).ready(async function () {
         //update td right and right again with word count
         const wordsArray = DivText.trim().split(/\s+/).filter(word => word.length > 0);
         var thisWord = ZeroPad(wordsArray.length, 4);
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
 
-        //if the new stats are better than the old stats then update
-        //if (parseInt(thisTime) < parseInt(lastTime) || ($("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text() == "")) {
-        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
-        //}
-
+        //sort the table by call time
         sortTable(1);
-        console.log("Performed stats analysis and display update");
 
         if (PlaySpeechFile) {
             $.ajax({
@@ -460,11 +457,11 @@ $(document).ready(async function () {
                 error: function (xhr, status, error) {
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
-                    DivChqatElementForException.style.color = "#ffffff";
-                    DivChatElementForException.text = xhr.responseText;
-                    console.log("Error playing speech file: " + xhr.responseText);
+                    DivChatElementForException.style.color = "#ffffff";
+                    DivChatElementForException.text = xhr.statusText;
+                    console.log("Error playing speech file: " + xhr.statusText);
 
-                    DisplayExceptionData();
+                    DisplayExceptionCountStatistic();
                 }
             });
         }
@@ -524,7 +521,7 @@ $(document).ready(async function () {
         return true;
     }
 
-    async function DisplayExceptionData() {
+    async function DisplayExceptionCountStatistic() {
         GlobalErrorCount++;
         $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
     }

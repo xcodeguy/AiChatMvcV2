@@ -48,7 +48,7 @@ public class HomeController : Controller
         string TextResponse = string.Empty;
         string TextTopic = string.Empty;
         string AudioFilename = string.Empty;
-        String ExceptionMessageString = string.Empty;
+        string ExceptionMessageString = string.Empty;
 
         //////////////////////////////////////////
         // API Round trip TRY/CATCH block
@@ -100,7 +100,8 @@ public class HomeController : Controller
             //and we always return an Http OK to the browser. we use the finally block
             //to assemble the response with all meta-data including any exceptions from
             //the backend services
-            _logger.LogCritical(e.Message.ToString());
+            ExceptionMessageString = e.Message.ToString();
+            _logger.LogCritical(ExceptionMessageString);
         }
         finally
         {
@@ -140,7 +141,8 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            _logger.LogCritical(e.Message.ToString());
+            ExceptionMessageString = e.Message.ToString();
+            _logger.LogCritical(ExceptionMessageString);
         }
         finally
         {

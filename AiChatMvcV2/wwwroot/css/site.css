@@ -1,3 +1,9 @@
+:root {
+    --ChatContainerViewHeight: 695px;
+    --PromptTablePadding: 10px;
+    --ModelStatsTableWidth: 100%;
+}
+
 nav {
   background-color: var(--NavBarBackgroundColor);
   color: var(--NavBarTextColor);
@@ -155,7 +161,7 @@ p {
   border-color: var(--ChatBorderColor);
   border-width: 1px;
   border-style: solid;
-  padding: var(--PromptTablePadding);
+  /*padding: var(--PromptTablePadding);*/
 }
 
 .PromptTableHeading {
@@ -242,7 +248,7 @@ select.ThemeDropdownStyle {
 }
 
 .chat_scrollable {
-  height: 691px;
+  height: 693px;
   width: 1310px;
   overflow: auto;
   float: left;
@@ -252,7 +258,7 @@ select.ThemeDropdownStyle {
 }
 
 .chat_dashboard {
-  height: 691px;
+  height: 693px;
   width: 550px;
   padding-top: 5px;
   padding-right: 10px;

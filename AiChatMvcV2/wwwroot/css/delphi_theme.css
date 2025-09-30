@@ -3,7 +3,6 @@
     --BodyBackgroundColor: rgb(0, 48, 138);
     --ChatBackgroundColor: rgb(0, 29, 63);
     --ChatBorderColor: rgb(0, 229, 255);
-    --ChatContainerViewHeight: 74vh;
 
     --ModelLabelColor: rgb(185, 219, 253);
     --ModelStatColor: rgb(255, 255, 255);
@@ -30,7 +29,6 @@
     --PromptHeadingTextColor: rgb(0, 0, 0);
     --PromptBackgroundColor: rgb(255, 255, 255);
     --PromptTextColor: rgb(0, 0, 0);
-    --PromptTablePadding: 3px;
 
     --BubbleTitleTextColor: rgb(255, 255, 255);
 
@@ -38,7 +36,6 @@
     --ChatDashboardBackgroundColor: var(--ChatBackgroundColor);
     --PrivacyLinkColor: rgb(255, 255, 255);
     --ProgressBarTextColor: rgb(0, 0, 0);
-    --ModelStatsTableWidth: 100%;
     --HeaderFooterBorderBottomColor: rgb(179, 240, 254);
 
     /* 09-16-2025 Added chat window wallpaper */
