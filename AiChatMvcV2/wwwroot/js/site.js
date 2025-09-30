@@ -28,7 +28,7 @@ $(document).ready(async function () {
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
-    const GlobalMaxErrors = -1;
+    const GlobalMaxErrors = 3;
     const ApplicationStartTime = new Date();
     var KillProcess = false;
     var GlobalCallCount = 0;
@@ -121,9 +121,6 @@ $(document).ready(async function () {
             }
         }
     }
-
-    //display exception max count as label
-    $("#td_exception_label").text("Exceptions: (max=" + GlobalMaxErrors + ")");
 
     //elapsed time clock on web page
     setInterval(function () {
@@ -345,7 +342,7 @@ $(document).ready(async function () {
                 //the HomeController.cs
                 if (ExceptionString.trim() != "") {
                     console.log(ExceptionString);
-                    TheTopic = "Exception";
+                    TheTopic = "Service Exception!";
                     UpdateWebUiElements(ExceptionString, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
@@ -367,7 +364,7 @@ $(document).ready(async function () {
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the success: handler
                 //to update the web page with the model meta-data
-                TheTopic = "Exception!";
+                TheTopic = "Http Exception!";
                 UpdateWebUiElements(xhr.statusText, false);
                 DivChatElementForException = document.getElementById(GlobalChatDivId);
                 DivChatElementForException.style.backgroundColor = "#ff0000";
@@ -401,6 +398,11 @@ $(document).ready(async function () {
             DivText = "Empty Response or Exception!";
         }
         //update the prompt table topic cell on the web page
+        $('#TopicLabel').fadeOut('slow', function () {
+            $('#TopicLabel').fadeIn('slow', function () {
+
+            });
+        })
         $("#TopicLabel").text(TheTopic);
 
         //build the bubble title
@@ -455,11 +457,11 @@ $(document).ready(async function () {
 
                 },
                 error: function (xhr, status, error) {
+                    TheTopic = "Audio Exception!";
+                    UpdateWebUiElements(xhr.statusText, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
                     DivChatElementForException.style.color = "#ffffff";
-                    DivChatElementForException.text = xhr.statusText;
-                    console.log("Error playing speech file: " + xhr.statusText);
 
                     DisplayExceptionCountStatistic();
                 }

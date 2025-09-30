@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System.Text;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace AiChatMvcV2.Services
 {
@@ -142,9 +143,15 @@ namespace AiChatMvcV2.Services
                 //////////////////////////////////////////
                 if (_settings.ResponseServicesTestException == true)
                 {
-                    _logger.LogInformation("ResponseServicesTestException is true, testing exception throw.");
                     Type classType = this.GetType();
-                    ExceptionMessageString = $"<strong>TEST EXCEPTION FROM {classType.Name.ToString().ToUpper()}. THIS IS A TEST EXCEPTION.</strong>";
+                    if (MethodBase.GetCurrentMethod() != null)
+                    {
+                        string className = classType.Name.ToString();
+                        string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
+                        ExceptionMessageString = $"Test exception from: {className}.{methodName}";
+                        _logger.LogInformation("ResponseServicesTestException is true, testing exception throw.");
+                    }
+
                     throw new Exception(ExceptionMessageString);
                 }
 
@@ -351,10 +358,11 @@ namespace AiChatMvcV2.Services
                         }
                     }
                 }
-              }
+            }
             catch (Exception ex)
             {
-
+                _logger.LogCritical($"ResponseServices::PlaySpeechFile()Error playing WAV file: {ex.Message}");
+                throw;
             }
             finally
             {

@@ -1,7 +1,7 @@
 :root {
-    --ChatContainerViewHeight: 695px;
-    --PromptTablePadding: 10px;
-    --ModelStatsTableWidth: 100%;
+  --ChatContainerViewHeight: 695px;
+  --PromptTablePadding: 10px;
+  --ModelStatsTableWidth: 100%;
 }
 
 nav {
@@ -184,6 +184,14 @@ p {
   border: 1px solid black;
   width: 33%;
   vertical-align: top;
+}
+
+.TopicLabelStandOut {
+  vertical-align: middle;
+  text-align: center;
+  font-weight: bold !important;
+  font-size: 48px !important;
+  text-shadow: 2px 2px 4px rgba(0, 13, 255, 0.5);
 }
 
 .LlmSettingsDialog {

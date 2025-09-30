@@ -67,7 +67,7 @@ public class HomeController : Controller
 
             // call the api which calls the inference server to summarize the response 
             // into a one or two word topic
-            _logger.LogInformation("Calling API async for Topic summary");
+            _logger.LogInformation("Calling API async for Topic summary using {model}", model);
             TextTopic = await _ModelService.GetModelResponseAsync(
                 _settings.TopicSummaryModelName,
                 _settings.TopicSummaryPrompt,

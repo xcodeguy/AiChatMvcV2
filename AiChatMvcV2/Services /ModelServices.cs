@@ -56,13 +56,13 @@ namespace AiChatMvcV2.Services
             //////////////////////////////////////////
             if (_settings.MySqlTestException == true)
             {
-                _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
                 Type classType = this.GetType();
                 if (MethodBase.GetCurrentMethod() != null)
                 {
                     string className = classType.Name.ToString();
                     string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
                     ExceptionMessageString = $"Test exception from: {className}.{methodName}";
+                    _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
                 }
 
                 throw new Exception(ExceptionMessageString);
@@ -119,9 +119,15 @@ namespace AiChatMvcV2.Services
                 //////////////////////////////////////////
                 if (_settings.ModelServicesTestException == true)
                 {
-                    _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
                     Type classType = this.GetType();
-                    ExceptionMessageString = $"<strong>TEST EXCEPTION FROM {classType.Name.ToString().ToUpper()}. THIS IS A TEST EXCEPTION.</strong>";
+                    if (MethodBase.GetCurrentMethod() != null)
+                    {
+                        string className = classType.Name.ToString();
+                        string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
+                        ExceptionMessageString = $"Test exception from: {className}.{methodName}";
+                        _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
+                    }
+
                     throw new Exception(ExceptionMessageString);
                 }
 
