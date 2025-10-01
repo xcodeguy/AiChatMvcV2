@@ -1,6 +1,7 @@
 :root {
-  --ChatContainerViewHeight: 695px;
-  --PromptTablePadding: 10px;
+  --ChatContainerViewHeight: 645px;
+  --ChatScrollableDashboardHeight: 643px;
+  --PromptTablePadding: 7px;
   --ModelStatsTableWidth: 100%;
 }
 
@@ -154,14 +155,12 @@ p {
 
 .PromptTable {
   width: 100%;
+  border: solid var(--ChatBorderColor) 1px;
+  border-collapse: unset !important;
 }
 
 .PromptContainer {
   width: 97vw;
-  border-color: var(--ChatBorderColor);
-  border-width: 1px;
-  border-style: solid;
-  /*padding: var(--PromptTablePadding);*/
 }
 
 .PromptTableHeading {
@@ -170,7 +169,6 @@ p {
   padding: var(--PromptTablePadding);
   font-weight: normal !important;
   font-size: 18px !important;
-  border: 1px solid black;
   width: 33%;
   vertical-align: middle;
 }
@@ -181,9 +179,9 @@ p {
   padding: var(--PromptTablePadding);
   font-weight: normal !important;
   font-size: 20px !important;
-  border: 1px solid black;
   width: 33%;
   vertical-align: top;
+  height: 50px important !;
 }
 
 .TopicLabelStandOut {
@@ -256,7 +254,7 @@ select.ThemeDropdownStyle {
 }
 
 .chat_scrollable {
-  height: 693px;
+  height: var(--ChatScrollableDashboardHeight);
   width: 1310px;
   overflow: auto;
   float: left;
@@ -266,11 +264,11 @@ select.ThemeDropdownStyle {
 }
 
 .chat_dashboard {
-  height: 693px;
-  width: 550px;
-  padding-top: 5px;
-  padding-right: 10px;
-  padding-left: 10px;
+  height: var(--ChatScrollableDashboardHeight);
+  width: 540px;
+  padding-top: 25px;
+  padding-right: 15px;
+  padding-left: 25px;
   float: left;
   overflow: auto;
   border-left: 1px solid var(--ChatBorderColor);
@@ -327,7 +325,7 @@ select.ThemeDropdownStyle {
   text-align: left;
   text-decoration: none;
   font-weight: bold !important;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .ModelStatsTable {

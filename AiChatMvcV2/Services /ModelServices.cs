@@ -8,7 +8,6 @@ using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
-using AiChatMvcV2.Services;
 using System.Data;
 using System.Reflection;
 
@@ -94,8 +93,11 @@ namespace AiChatMvcV2.Services
                     }
                     catch (MySqlException ex)
                     {
-                        _logger.LogCritical("Exception: CallController->InsertResponse: {exMessage}, {TheResponse}", ex.Message, TheResponse);
-                        throw new Exception(ex.Message);
+                        Type classType = this.GetType();
+                        string className = classType.Name.ToString();
+                        string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                        _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
+                        throw;
                     }
                 }
             }
@@ -156,9 +158,10 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Exception in ModelServices::GetModelResponseAsync()->{0}\n{1}",
-                                    ExceptionMessageString,
-                                    ex.Message);
+                Type classType = this.GetType();
+                string className = classType.Name.ToString();
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
                 throw;
             }
         }

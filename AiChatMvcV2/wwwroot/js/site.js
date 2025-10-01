@@ -123,6 +123,7 @@ $(document).ready(async function () {
     }
 
     //elapsed time clock on web page
+    /*
     setInterval(function () {
         if (KillProcess) {
             lastElapsedTime = new Date();
@@ -133,6 +134,7 @@ $(document).ready(async function () {
         }
         $('#RealTimeClock').text(str);
     }, 1000); // 1000 milliseconds = 1 second 
+    */
 
     //calculates elapsed time
     function GetElapsedTime(StartTime) {

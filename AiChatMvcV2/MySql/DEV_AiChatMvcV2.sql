@@ -43,13 +43,18 @@ SELECT COUNT(*) FROM Response;
 
 TRUNCATE TABLE Response;
 
-SELECT *
-FROM `Response`
-ORDER BY timestamp DESC;
+SELECT * FROM Response ORDER BY topic;
 
 SELECT COUNT(*)
 FROM `Response`;
 
 SELECT * FROM Response WHERE timestamp >= '2025-08-26 01:00:00'
 
-SELECT COUNT(topic), topic FROM Response GROUP BY topic ORDER BY topic ASC
+SELECT COUNT(topic) AS 'Hits', topic, timestamp FROM Response GROUP BY topic, timestamp ORDER BY Hits DESC, timestamp DESC;
+
+SELECT * FROM Response WHERE Response LIKE '%Biolum%';
+
+SHOW COLUMNS FROM Response;
+
+ALTER TABLE Response
+MODIFY topic TEXT;

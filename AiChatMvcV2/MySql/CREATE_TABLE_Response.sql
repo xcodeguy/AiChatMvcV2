@@ -15,7 +15,7 @@ CREATE TABLE Response (
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             response LONGTEXT NOT NULL,
             model VARCHAR(100),
-            topic VARCHAR(100),
+            topic TEXT,
             prompt TEXT,
             negative_prompt TEXT,
             active BOOLEAN,

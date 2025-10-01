@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using AiChatMvcV2.Models;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
 
 namespace AiChatMvcV2.Services;
 
@@ -65,6 +64,8 @@ public class HomeController : Controller
                 NegativePrompt
             );
 
+            // Best summary models for summary prompt so far:
+            // deepseek-r1, gemma3, wizard-vicuna
             // call the api which calls the inference server to summarize the response 
             // into a one or two word topic
             _logger.LogInformation("Calling API async for Topic summary using {model}", model);
@@ -74,6 +75,13 @@ public class HomeController : Controller
                 TextResponse,
                 _settings.TopicSummaryNegativePrompt
             );
+
+            //truncate the topic text if the model went off on a tangent response
+            if (TextTopic.Length > 45)
+            {
+                _logger.LogInformation($"The topic length is {TextTopic.Length} chars in length. Truncating to 45.");
+                TextTopic = TextTopic.Substring(1, 45);
+            }
 
             //call the api which calls the inference server to generate a speech file from the topic response
             _logger.LogInformation("Calling API async to generate speech file for topic {Topic}", TextTopic);

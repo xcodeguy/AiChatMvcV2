@@ -14,11 +14,17 @@ namespace AiChatMvcV2.Services
         private readonly ILogger<ResponseServices> _logger;
         private readonly ApplicationSettings _settings;
         private string ExceptionMessageString = string.Empty;
+        Type _classType;
+        string _className = string.Empty;
+        string _methodName;
 
         public ResponseServices(IOptions<ApplicationSettings> settings, ILogger<ResponseServices> logger)
         {
             _logger = logger;
             _settings = settings.Value;
+            _classType = this.GetType();
+            _className = _classType.Name.ToString();
+            _methodName = string.Empty;
         }
 
         public int GetWordCount(string TheResponse)
@@ -34,9 +40,12 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("ResponseServices::GetWordCount() Exception: {ExceptionMessage}", ex.Message);
-                throw;
+                Type classType = this.GetType();
+                string className = classType.Name.ToString();
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
             }
+            return 0;
         }
 
         public Task<string> SanitizeResponseFromJson(string json)
@@ -187,7 +196,10 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("ResponseServices::SanitizeResponseFromJson() Exception: {ExceptionMessage}", ex.Message);
+                Type classType = this.GetType();
+                string className = classType.Name.ToString();
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
                 throw;
             }
 
@@ -195,6 +207,7 @@ namespace AiChatMvcV2.Services
 
         public async Task<string> GenerateSpeechFile(string TextForSpeech, string Voice)
         {
+            _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
             string TtsEndpointUrl = _settings.TTSApiEndpointUrl;
             string ModelName = _settings.TTSModelName;
             string TtsRequest;
@@ -254,15 +267,17 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = string.Format("Exception in ResponseController::GenerateTextToSpeechResourceFile() {0} {1}, {2}\nException: {3}", ModelName, TtsEndpointUrl, TextForSpeech, response.RequestMessage);
+                        ExceptionMessageString = response.RequestMessage != null ? response.RequestMessage.ToString() : "RequestMessage is null";
                         throw new Exception(ExceptionMessageString);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("ResponseServices::GenerateSpeechFile() {MesageString}\n{ExceptionMessage}", ExceptionMessageString, ex.Message);
-                throw;
+                
+                ExceptionMessageString = $"{_className}.{_methodName}: {ex.Message}";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
             }
         }
 
@@ -299,7 +314,10 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("ResponseController::CopySpeechFileToAssets: An error occurred while copying speech asset file: {0}", ex.Message);
+                Type classType = this.GetType();
+                string className = classType.Name.ToString();
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
+                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
                 throw;
             }
         }
@@ -333,44 +351,15 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"ResponseServices::PlaySpeechFile()Error playing WAV file: {ex.Message}");
+                Type classType = this.GetType();
+                string className = classType.Name.ToString();
+                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
                 throw;
             }
         }
 
-        public Task<string> GetTopicFromResponseText(string ResponseText)
-        {
-            try
-            {
-                bool HasColons = ResponseText.Contains(":");
-                if (HasColons)
-                {
-                    string[] SplitColonArray = ResponseText.Split(":");
-                    //how big is the array?
-                    int ColonElementCount = SplitColonArray.Length;
-                    string TopicText = SplitColonArray[ColonElementCount - 1];
-                    if (TopicText != null && TopicText != string.Empty)
-                    {
-                        int WordCount = GetWordCount(TopicText);
-                        if (WordCount > 2)
-                        {
-                            string[] SplitSpaceArray = TopicText.Split(" ");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical($"ResponseServices::PlaySpeechFile()Error playing WAV file: {ex.Message}");
-                throw;
-            }
-            finally
-            {
 
-            }
-
-            return Task.FromResult(string.Empty);
-        }
     }       //end class
 
 }       //end namespace
