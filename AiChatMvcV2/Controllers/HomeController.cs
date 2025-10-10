@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using AiChatMvcV2.Models;
 using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
+using System.Reflection;
+using System.Linq;
 
 namespace AiChatMvcV2.Services;
 
@@ -13,6 +15,10 @@ public class HomeController : Controller
     private readonly ModelServices _ModelService;
     private readonly ResponseServices _ResponseService;
     private string ExceptionMessageString = String.Empty;
+    Type _classType;
+    string _className = string.Empty;
+    string _methodName = string.Empty;
+    Func<string, string, string, string> GetClassAndMethodName;
 
     public HomeController(IOptions<ApplicationSettings> settings,
                             ILogger<HomeController> logger,
@@ -23,8 +29,9 @@ public class HomeController : Controller
         _ModelService = callController;
         _ResponseService = responseService;
         _settings = settings.Value;
+        _classType = this.GetType();
 
-        _logger.LogDebug(1, "NLog injected into HomeController");
+        GetClassAndMethodName = (cls, mth, exp) => $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {exp}";
 
     }
 
@@ -68,9 +75,14 @@ public class HomeController : Controller
             // deepseek-r1, gemma3, wizard-vicuna
             // call the api which calls the inference server to summarize the response 
             // into a one or two word topic
+            var HardModel = model;
+            if (!_settings.AllowModelToSummarizeOwnResponse)
+            {
+                HardModel = _settings.TopicSummaryModelName;
+            }
             _logger.LogInformation("Calling API async for Topic summary using {model}", model);
             TextTopic = await _ModelService.GetModelResponseAsync(
-                _settings.TopicSummaryModelName,
+                HardModel,
                 _settings.TopicSummaryPrompt,
                 TextResponse,
                 _settings.TopicSummaryNegativePrompt
@@ -84,7 +96,10 @@ public class HomeController : Controller
             }
 
             //call the api which calls the inference server to generate a speech file from the topic response
-            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}", TextTopic);
+            // append a '.' period to the end of the topic before sending it
+            // for audio render. This helps the model produce a more natural
+            // pronunciation of the one or tqo word topic.
+            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TextTopic);
             AudioFilename = await _ResponseService.GenerateSpeechFile(TextTopic, TtsVoice);
 
             //check if the audio/speech file exists, this is redundant because the file
@@ -191,6 +206,21 @@ public class HomeController : Controller
             // Call the service to get the startup prompt
             string NegativePrompt = _settings.NegativePrompt;
             return Ok(NegativePrompt);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(e.Message.ToString());
+            throw;
+        }
+    }
+
+    [HttpPost]
+    public IActionResult GetModelNames()
+    {
+        try
+        {
+            List<string> ModelNameList = _settings.LLMs;
+            return Ok(ModelNameList);
         }
         catch (Exception e)
         {

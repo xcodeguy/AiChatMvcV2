@@ -22,5 +22,8 @@ namespace AiChatMvcV2.Objects
         public required bool MySqlTestException { get; set; }
         public required string StartupPrompt { get; set; }
         public required string NegativePrompt { get; set; }
+        public required List<string> LLMs { get; set; }
+        public required string PromptTextDelimiter { get; set; }
+        public required bool AllowModelToSummarizeOwnResponse { get; set; }
     }
 }

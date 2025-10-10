@@ -11,13 +11,15 @@ namespace AiChatMvcV2.Services
 {
     public class ResponseServices : IResponseServices
     {
+        #region variables
         private readonly ILogger<ResponseServices> _logger;
         private readonly ApplicationSettings _settings;
         private string ExceptionMessageString = string.Empty;
         Type _classType;
         string _className = string.Empty;
         string _methodName;
-
+        #endregion
+        #region methods
         public ResponseServices(IOptions<ApplicationSettings> settings, ILogger<ResponseServices> logger)
         {
             _logger = logger;
@@ -274,7 +276,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                
+
                 ExceptionMessageString = $"{_className}.{_methodName}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
@@ -351,15 +353,12 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                Type classType = this.GetType();
-                string className = classType.Name.ToString();
-                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
+                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
                 throw;
             }
         }
-
-
+        #endregion
     }       //end class
 
 }       //end namespace

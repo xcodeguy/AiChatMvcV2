@@ -109,10 +109,18 @@ namespace AiChatMvcV2.Services
         {
             string url = _settings.Url;
             string data;
-            UserContent = SystemContent + " " + NegativePrompt + " " + UserContent;
+            string PromptTextDelimiter = _settings.PromptTextDelimiter;
+            string FinalPrompt = SystemContent
+                + " "
+                + NegativePrompt
+                + " "
+                + PromptTextDelimiter
+                + UserContent
+                + PromptTextDelimiter;
+                
             var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
 
-            data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, UserContent);
+            data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, FinalPrompt);
 
             try
             {

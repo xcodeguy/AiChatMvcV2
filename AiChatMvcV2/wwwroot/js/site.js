@@ -396,9 +396,15 @@ $(document).ready(async function () {
     //of the ajax call
     function UpdateWebUiElements(DivText, PlaySpeechFile = true) {
 
+        //check the text for null or empty, set flag if true
+        //which will be used in the below code for making div
+        //element red with white text
+        var EmptyResponseOrException = false;
         if (DivText == null || DivText == undefined || DivText.trim() == "") {
             DivText = "Empty Response or Exception!";
+            EmptyResponseOrException = true;
         }
+
         //update the prompt table topic cell on the web page
         $('#TopicLabel').fadeOut('slow', function () {
             $('#TopicLabel').fadeIn('slow', function () {
@@ -424,6 +430,14 @@ $(document).ready(async function () {
         DivChatContentElement = CreateDivChatContent(bubble_title, JustifyClass, DivText);
         $('#divChat').append(DivChatContentElement);
         DivChatContentElement.attr('id', GlobalChatDivId);
+
+        //if flag is set make the background red and the text white
+        //to indicate an error
+        if (EmptyResponseOrException) {
+            DivChatElementForException = document.getElementById(GlobalChatDivId);
+            DivChatElementForException.style.backgroundColor = "#ff0000";
+            DivChatElementForException.style.color = "#ffffff";
+        }
 
         //scroll div chart window to the bottom so
         //that the latest post is visible
@@ -497,27 +511,29 @@ $(document).ready(async function () {
         $.ajax({
             url: 'http://localhost:5022/Home/GetStartupPrompt',
             type: 'POST',
-            success: function (response) {
-                GlobalOriginalPrompt = response;
+            success: function (response1) {
+                GlobalOriginalPrompt = response1;
                 $("#OriginalPromptLabel").text(GlobalOriginalPrompt.substring(0, 1000) + (GlobalOriginalPrompt.length >= 1000 ? "..." : ""));
 
                 //get the negative prompt from the server
                 $.ajax({
                     url: 'http://localhost:5022/Home/GetNegativePrompt',
                     type: 'POST',
-                    success: function (response) {
-                        GlobalNegativePrompt = response;
+                    success: function (response2) {
+                        GlobalNegativePrompt = response2;
                         $("#NegativePromptLabel").text(GlobalNegativePrompt.substring(0, 1000) + (GlobalNegativePrompt.length >= 1000 ? "..." : ""));
 
-                        CallApiEndpoint(GlobalOriginalPrompt);
+                        //call api with no prompt which will let the backend
+                        //assemble just the Prompt ans Negative Prompt
+                        CallApiEndpoint("");
                     },
-                    error: function (xhr, status, error) {
-                        console.log("Error setting negative prompt: " + xhr.responseText);
+                    error: function (xhr2, status, error) {
+                        console.log("Error setting negative prompt: " + xhr2.responseText);
                     }
                 });
             },
-            error: function (xhr, status, error) {
-                console.log("Error setting startup prompt: " + xhr.responseText);
+            error: function (xhr1, status, error) {
+                console.log("Error setting startup prompt: " + xhr1.responseText);
             }
         });
 
