@@ -187,9 +187,10 @@ public class HomeController : Controller
     {
         try
         {
-            // Call the service to get the startup prompt
-            string StartupPrompt = _settings.StartupPrompt;
-            return Ok(StartupPrompt);
+            string filePath = "prompts.md";
+
+            string text = System.IO.File.ReadAllText(filePath);
+            return Ok(text);
         }
         catch (Exception e)
         {
@@ -269,4 +270,21 @@ public class HomeController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    public string OpenPromptFile()
+    {
+        string filePath = "prompts.md";
+
+        try
+        {
+            string text = System.IO.File.ReadAllText(filePath);
+            return text;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error opening prompt file: {ex.Message}");
+            return null;
+        }
+    }
+
 }

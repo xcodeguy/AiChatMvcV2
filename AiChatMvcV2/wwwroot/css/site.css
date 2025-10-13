@@ -5,6 +5,20 @@
   --ModelStatsTableWidth: 100%;
 }
 
+pre:not(.parent) {
+  display: block;
+  margin-bottom: 0;
+  margin-top: 0;
+  padding: 0;
+}
+
+.parent pre {
+  display: block;
+  margin-bottom: 0;
+  margin-top: 0;
+  padding: 0;
+}
+
 nav {
   background-color: var(--NavBarBackgroundColor);
   color: var(--NavBarTextColor);
@@ -176,7 +190,8 @@ p {
 .PromptTableData {
   background-color: var(--PromptBackgroundColor);
   color: var(--PromptTextColor);
-  padding: var(--PromptTablePadding);
+  padding-left: var(--PromptTablePadding);
+  padding-right: var(--PromptTablePadding);
   font-weight: normal !important;
   font-size: 20px !important;
   width: 33%;

@@ -512,17 +512,18 @@ $(document).ready(async function () {
             url: 'http://localhost:5022/Home/GetStartupPrompt',
             type: 'POST',
             success: function (response1) {
-                GlobalOriginalPrompt = response1;
-                $("#OriginalPromptLabel").text(GlobalOriginalPrompt.substring(0, 1000) + (GlobalOriginalPrompt.length >= 1000 ? "..." : ""));
+                //GlobalOriginalPrompt = response1;
+                //$("#OriginalPromptLabel").text(GlobalOriginalPrompt.substring(0, 1000) + (GlobalOriginalPrompt.length >= 1000 ? "..." : ""));
+                GlobalOriginalPrompt = $("#OriginalPromptLabel").text();
 
                 //get the negative prompt from the server
                 $.ajax({
                     url: 'http://localhost:5022/Home/GetNegativePrompt',
                     type: 'POST',
                     success: function (response2) {
-                        GlobalNegativePrompt = response2;
-                        $("#NegativePromptLabel").text(GlobalNegativePrompt.substring(0, 1000) + (GlobalNegativePrompt.length >= 1000 ? "..." : ""));
-
+                        //GlobalNegativePrompt = response2;
+                        //$("#NegativePromptLabel").text(GlobalNegativePrompt.substring(0, 1000) + (GlobalNegativePrompt.length >= 1000 ? "..." : ""));
+                        GlobalNegativePrompt = "";
                         //call api with no prompt which will let the backend
                         //assemble just the Prompt ans Negative Prompt
                         CallApiEndpoint("");
