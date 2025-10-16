@@ -1,59 +1,7 @@
 ﻿@{
     ViewData["Title"] = "AiChatMvcV2";
 }
-<!--
-<div class="PromptContainer">
-    <table id="" class="PromptTable">
-        <thead>
-            <tr class="">
-                <th id="" class="PromptTableHeading"><i class="fa-solid fa-lg fa-terminal"></i>&nbsp;&nbsp;Prompt</th>
-                <th id="" class="PromptTableHeading"><i
-                        class="fa-solid fa-lg fa-user-minus"></i></i>&nbsp;&nbsp;Negative Prompt</th>
-                <th id="" class="PromptTableHeading"><i class="fa-regular fa-lg fa-comments"></i></i>&nbsp;&nbsp;Topic
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td id="OriginalPromptLabel" class="PromptTableData">
-<pre><code>&lt;preamble&gt;
-    You will be given two tasks. Select ONE task and respond ONLY to that task.
-    Do not attempt to complete both tasks.
-&lt;/preamble&gt;
-&lt;task&gt;
-    Please choose either Task A or Task B. Your response should be limited to the chosen task only.
-&lt;/task&gt;
-&lt;task_A&gt;
-    Discuss the oimportance of a good prompt when using AI.
-    &lt;notes&gt;
-        What about structuring the prompt?
-        Is repetition okay?
-        What are good practices?
-        What are bad practices?
-    &lt;/notes&gt;
-    &lt;additional instructions&gt;
-        Elaborate on what a Negative Prompt is.
-        What is a Negative Prompt used for?
-        Provide an example.
-    &lt;/additional instructions&gt;
-&lt;/task_A&gt;
-&lt;task_B&gt;
-    Generate new and relevant information on what is being discussed in the &lt;other&gt; element.
-    &lt;other&gt;
-        The health care industry in the united states is a very complex system.
-    &lt;/other&gt;
-&lt;/task_B&gt;</code></pre>
-                </td>
-                <td id="NegativePromptLabel" class="PromptTableData">
-                </td>
-                <td id="TopicLabel" class="PromptTableData TopicLabelStandOut">
-                    AiChatMvcV3
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
--->
+
 <div class="ChatContainer">
     <div class="chat_scrollable">
         <div class="chat" id="divChat">
@@ -142,60 +90,11 @@
 
             </ul>
         </div>
+
+        <div class="console_log_window" id="console_log_window">
+        </div>
     </div>
 </div>
-
-<div class="PromptContainer">
-    <table id="" class="PromptTable">
-        <thead>
-            <tr class="">
-                <th id="" class="PromptTableHeading"><i class="fa-solid fa-lg fa-terminal"></i>&nbsp;&nbsp;Prompt</th>
-                <th id="" class="PromptTableHeading"><i
-                        class="fa-solid fa-lg fa-user-minus"></i></i>&nbsp;&nbsp;Negative Prompt</th>
-                <th id="" class="PromptTableHeading"><i class="fa-regular fa-lg fa-comments"></i></i>&nbsp;&nbsp;Topic
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td id="OriginalPromptLabel" class="PromptTableData">
-<pre><code>&lt;preamble&gt;
-    You will be given two tasks. Select ONE task and respond ONLY to that task.
-    Do not attempt to complete both tasks.
-&lt;/preamble&gt;
-&lt;task&gt;
-    Please choose either Task A or Task B. Your response should be limited to the chosen task only.
-&lt;/task&gt;
-&lt;task_A&gt;
-    Discuss the oimportance of a good prompt when using AI.
-    &lt;notes&gt;
-        What about structuring the prompt?
-        Is repetition okay?
-        What are good practices?
-        What are bad practices?
-    &lt;/notes&gt;
-    &lt;additional instructions&gt;
-        Elaborate on what a Negative Prompt is.
-        What is a Negative Prompt used for?
-        Provide an example.
-    &lt;/additional instructions&gt;
-&lt;/task_A&gt;
-&lt;task_B&gt;
-    Generate new and relevant information on what is being discussed in the &lt;other&gt; element.
-    &lt;other&gt;
-        The health care industry in the united states is a very complex system.
-    &lt;/other&gt;
-&lt;/task_B&gt;</code></pre>
-                </td>
-                 <td id="TopicLabel" class="PromptTableData TopicLabelStandOut">
-                    AiChatMvcV3
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-
 
 <!-- LLM Settings Modal -->
 

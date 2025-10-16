@@ -57,7 +57,7 @@ try
 
     app.MapControllerRoute(
         name: "default4",
-        pattern: "{controller=Home}/{action=GetOriginalPrompt}")
+        pattern: "{controller=Home}/{action=GetModelNames}")
         .WithStaticAssets();
 
     app.Run();

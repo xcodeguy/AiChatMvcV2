@@ -9,36 +9,18 @@ $(document).ready(async function () {
 
     //chat justification and model arrays
     const ResponseBubbleJustify = new Array("msg sent", "msg rcvd");
-    const ModelName = new Array(
-        "gemma3",
-        "deepseek-r1",
-        "mistral",
-        "qwen3",
-        "codellama",
-        "llama3.1",
-        "everythinglm",
-        "llava",
-        "codegemma",
-        "phi3",
-        "llama2-uncensored",
-        "wizard-vicuna-uncensored",
-        "dolphin-phi"
-    );
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
     const MaxModels = 12;
     const GlobalMaxErrors = 3;
-    const ApplicationStartTime = new Date();
+    //const ApplicationStartTime = new Date();        //elapsed time on page commented out
     var KillProcess = false;
     var GlobalCallCount = 0;
     var GlobalErrorCount = 0;
     var TimeElapsedCalculatedSeconds = 0;
     var lastElapsedTime = 0;
     var GlobalChatDivId = "";
-    var GlobalNegativePrompt = "";
-    var GlobalOriginalPrompt = "";
-
     var boolXor = false;
     var JustifyClass = "";
     var ModelNameString = "";
@@ -56,6 +38,35 @@ $(document).ready(async function () {
     var TtsVoice = "";
     var ExceptionString = "";
 
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+    ConsolLogWindow("******************************");
+
+    ConsolLogWindow("Initialized variables");
+
+    //get the model names from the appSetting.json file
+    ConsolLogWindow("Getting model names");
+    _ = await GetModelNames();
+
+    //call the HomeController for the first time to 
+    //generate a response and all the meta data
+    ConsolLogWindow("Calling first model for a response");
+    CallApiEndpoint("");
+
+
     $("#ThemeDropdownId").change(function () {
         var selectedValue = $(this).val(); // Get the value of the selected option
         var selectedText = $(this).find('option:selected').text(); // Get the text of the selected option
@@ -66,12 +77,15 @@ $(document).ready(async function () {
         switch (selectedText) {
             case "Light":
                 $(".ThemeDropdownStyle").css("color", "#000000");
+                ConsolLogWindow("Theme changed to Light");
                 break;
             case "Delphi":
                 $(".ThemeDropdownStyle").css("color", "#ffffff");
+                ConsolLogWindow("Theme changed to Delphi");
                 break;
             case "Solaris":
                 $(".ThemeDropdownStyle").css("color", "#ffffff");
+                ConsolLogWindow("Theme changed to Solaris");
                 break;
         }
     });
@@ -174,18 +188,16 @@ $(document).ready(async function () {
         return TimeElapsedCalculatedSeconds;
     }
 
-    BuildModelStatsTable();
-
     function BuildModelStatsTable() {
         $('#ModelStatsTable > tbody').html('');
 
         //build the model list on the dashboard
-        for (var i = 0; i < ModelName.length; i++) {
+        for (var i = 0; i < ModelNamesArray.length; i++) {
 
             var tr = $("<tr class=\"ModelStatsTableRow\"></tr>");
             tr.attr('id', 'ModelStatsTableRow' + i);
 
-            var ModelNameCell = $("<td style='text-align: left;' class=\"ModelStatsTableCell\">" + ModelName[i] + "</td>");
+            var ModelNameCell = $("<td style='text-align: left;' class=\"ModelStatsTableCell\">" + ModelNamesArray[i] + "</td>");
             ModelNameCell.attr('id', 'ModelStatsTablCell1_' + i);
 
             var ModelTimeCell = $("<td class=\"ModelStatsTableCell\"></td>");
@@ -197,6 +209,7 @@ $(document).ready(async function () {
             tr.append(ModelNameCell, ModelTimeCell, ModelWordCountCell);
             $('#ModelStatsTable tbody:last').append(tr);
         }
+        ConsolLogWindow("Model stats table created");
     }
 
     //returns X number of words from string
@@ -213,6 +226,7 @@ $(document).ready(async function () {
         ClearChatDisplay();
         BuildModelStatsTable();
         ModelPointer = 0;
+        ConsolLogWindow("Chat window cleared");
     });
 
     //when toggle button is clicked, turn the API calls on or off
@@ -225,7 +239,8 @@ $(document).ready(async function () {
             $("#btnApiCallToggle").html('Started');
             $("#btnApiCallToggle").addClass("btn-success");
             $("#btnApiCallToggle").removeClass("btn-danger");
-            CallApiEndpoint(OriginalPrompt);
+            CallApiEndpoint("");
+            ConsolLogWindow("Char started");
         } else {
             $("#btnApiCallToggle").html('Stopped');
             $("#btnApiCallToggle").addClass("btn-danger");
@@ -238,16 +253,9 @@ $(document).ready(async function () {
             if (!(element === null) && !(element === undefined)) {
                 element.scrollIntoView(false);
             }
+            ConsolLogWindow("Chat stopped");
         }
     });
-
-    //GetPrompts() is called to get the two prompts
-    //from appsettings.json via the HomeController.cs
-    //The prompts are stored in global variables
-    //When the last prompt is fetched, the success:
-    //handler calls CallApiEndpoint() to start the
-    //process of calling the models in a round robin fashion
-    var result = await GetPrompts();
 
     function CallApiEndpoint(prompt) {
 
@@ -272,9 +280,9 @@ $(document).ready(async function () {
         //When the pointer is greater than max it gets reset to 0
         //so the models get called in a round robin fashion
         //Get the model name from the array
-        ModelNameString = ModelName[ModelPointer];   //ModelPointer comes in as 0
-        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
-        $("#ProgressBarText").text(Math.round((((ModelPointer + 1) / (ModelName.length - 1)) * 100)) + '%');
+        ModelNameString = ModelNamesArray[ModelPointer];   //ModelPointer comes in as 0
+        $("#ProgressBar").attr('style', 'width: ' + Math.round((((ModelPointer + 1) / (ModelNamesArray.length - 1)) * 100)) + '%');
+        $("#ProgressBarText").text(Math.round((((ModelPointer + 1) / (ModelNamesArray.length - 1)) * 100)) + '%');
         $("#ModelStats").text(ModelNameString);
         ModelPointer++;
 
@@ -306,22 +314,18 @@ $(document).ready(async function () {
             DivChatContainerElement.scrollIntoView(false);
         }
 
-        console.log("Making api call");
+        ConsolLogWindow("Making api call for model response.");
         $.ajax({
             //make the call
-            //the GlobalOriginalPrompt, promnpt, and NegativePrompt
-            //get concatenated in the QueryModelForResponse endpoint
             url: 'http://localhost:5022/Home/QueryModelForResponse',
             type: 'POST',
             data: {
                 'Model': ModelNameString,
-                'SystemContent': GlobalOriginalPrompt,
-                'UserContent': prompt,
-                'NegativePrompt': GlobalNegativePrompt
+                'Prompt': prompt
             },
             /*dataType: 'json',*/
             success: function (data) {
-                console.log("Success");
+                ConsolLogWindow("Success");
 
                 //get the response items from the data object that
                 //contains  the responseItemList list. We access
@@ -334,6 +338,8 @@ $(document).ready(async function () {
                 WavfileName = data.responseItemList[0].audioFilename;
                 TtsVoice = data.responseItemList[0].ttsVoice;
                 ExceptionString = data.responseItemList[0].exceptions;
+                ConsolLogWindow("Got reaponse items");
+                ConsolLogWindow("TOPIC: " + TheTopic);
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the error: handler
@@ -343,7 +349,7 @@ $(document).ready(async function () {
                 //The data.responseItemList[0] is handled and returned by 
                 //the HomeController.cs
                 if (ExceptionString.trim() != "") {
-                    console.log(ExceptionString);
+                    ConsolLogWindow(ExceptionString);
                     TheTopic = "Service Exception!";
                     UpdateWebUiElements(ExceptionString, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
@@ -354,14 +360,15 @@ $(document).ready(async function () {
                 }
                 else {
                     UpdateWebUiElements(TheResponse, true);
+                    ConsolLogWindow("Updated web UI elements");
                 }
 
                 //make another call with returned response
-                console.log("Making recursive api call");
+                ConsolLogWindow("Calling next model with last response");
                 CallApiEndpoint(TheResponse);
             },
             error: function (xhr, status, error) {
-                console.log("Error:" + xhr.statusText);
+                ConsolLogWindow(xhr.statusText);
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the success: handler
@@ -376,17 +383,18 @@ $(document).ready(async function () {
 
                 //-1 overrides the max exception logic
                 if (GlobalMaxErrors == -1) {
-                    console.log("GlobalMaxErros=-1: Ignoring retry logic and calling CallApiEndpoint().");
-                    CallApiEndpoint(GlobalOriginalPrompt);
+                    ConsolLogWindow("GlobalMaxErros=-1: Ignoring retry logic and calling CallApiEndpoint().");
+                    CallApiEndpoint("");
                 } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
                     return;
                 } else {
                     //try again after the exception
-                    CallApiEndpoint(GlobalOriginalPrompt);
+                    ConsolLogWindow("Continuing with api calls after exception");
+                    CallApiEndpoint("");
                 }
             },
             complete: function () {
-                console.log("Done\n\n");
+                ConsolLogWindow("Done");
             }
         });
     }
@@ -465,14 +473,16 @@ $(document).ready(async function () {
         sortTable(1);
 
         if (PlaySpeechFile) {
+            ConsolLogWindow("Playing speech file");
             $.ajax({
                 //make the call to play the audio file
                 url: 'http://localhost:5022/Home/PlaySpeechFile',
                 type: 'POST',
                 success: function (response) {
-
+                    ConsolLogWindow("Success");
                 },
                 error: function (xhr, status, error) {
+                    ConsolLogWindow(xhr.statusText);
                     TheTopic = "Audio Exception!";
                     UpdateWebUiElements(xhr.statusText, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
@@ -491,7 +501,7 @@ $(document).ready(async function () {
         $("[id='ChatStopped']").remove();
         $("[id='ChatBubble" + GlobalCallCount + "']").remove();
         $("#divChat").html("");
-        console.log("ClearChatDisplay()->GlobalErrorCount: " + GlobalErrorCount + ", KillProcess: " + KillProcess);
+        ConsolLogWindow("ClearChatDisplay()->GlobalErrorCount: " + GlobalErrorCount + ", KillProcess: " + KillProcess);
     }
 
     //creates a div node with class chat
@@ -506,45 +516,53 @@ $(document).ready(async function () {
         return e;
     }
 
-    async function GetPrompts() {
+    async function GetPrompt() {
         //get the startup prompt from the server
-        $.ajax({
+        await $.ajax({
             url: 'http://localhost:5022/Home/GetStartupPrompt',
             type: 'POST',
-            success: function (response1) {
-                //GlobalOriginalPrompt = response1;
-                //$("#OriginalPromptLabel").text(GlobalOriginalPrompt.substring(0, 1000) + (GlobalOriginalPrompt.length >= 1000 ? "..." : ""));
-                GlobalOriginalPrompt = $("#OriginalPromptLabel").text();
-
-                //get the negative prompt from the server
-                $.ajax({
-                    url: 'http://localhost:5022/Home/GetNegativePrompt',
-                    type: 'POST',
-                    success: function (response2) {
-                        //GlobalNegativePrompt = response2;
-                        //$("#NegativePromptLabel").text(GlobalNegativePrompt.substring(0, 1000) + (GlobalNegativePrompt.length >= 1000 ? "..." : ""));
-                        GlobalNegativePrompt = "";
-                        //call api with no prompt which will let the backend
-                        //assemble just the Prompt ans Negative Prompt
-                        CallApiEndpoint("");
-                    },
-                    error: function (xhr2, status, error) {
-                        console.log("Error setting negative prompt: " + xhr2.responseText);
-                    }
-                });
+            success: function (response) {
+                $("#FormattedPromptForDisplay").text(response);
+                return response;
             },
-            error: function (xhr1, status, error) {
-                console.log("Error setting startup prompt: " + xhr1.responseText);
+            error: function (xhr, status, error) {
+                ConsolLogWindow("Error setting startup prompt: " + xhr.responseText);
             }
         });
+    }
 
-
-        return true;
+    async function GetModelNames() {
+        //get the startup prompt from the server
+        await $.ajax({
+            url: 'http://localhost:5022/Home/GetModelNames',
+            type: 'POST',
+            success: function (response) {
+                ModelNamesArray = response;
+                BuildModelStatsTable();
+                return response;
+            },
+            error: function (xhr, status, error) {
+                ConsolLogWindow(xhr.responseText);
+            }
+        });
     }
 
     async function DisplayExceptionCountStatistic() {
         GlobalErrorCount++;
         $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
+    }
+
+    function ConsolLogWindow(message) {
+        var tdiv = document.getElementById("console_log_window");
+        var telm = document.createElement("p");
+        telm.textContent = message;
+        tdiv.appendChild(telm);
+
+        tdiv = null;
+        telm = null;
+        tdiv = document.getElementById("console_log_window");
+        tdiv.scrollIntoView(false);
+        console.log(message);
     }
 });
 

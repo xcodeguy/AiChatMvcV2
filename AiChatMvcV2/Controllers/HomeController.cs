@@ -37,9 +37,7 @@ public class HomeController : Controller
 
     [HttpPost]
     public async Task<IActionResult> QueryModelForResponse(string model,
-                                                string SystemContent,
-                                                string UserContent,
-                                                string NegativePrompt)
+                                                            string Prompt)
     {
         DateTime StartTime = DateTime.Now;
         HomeViewModel ViewModel = new HomeViewModel();
@@ -51,8 +49,8 @@ public class HomeController : Controller
         string TtsVoice = TtsVoices[rand.Next(TtsVoices.Count)];
         long fileSizeInBytes = 0;
         string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
-        string TextResponse = string.Empty;
-        string TextTopic = string.Empty;
+        string ResponseText = string.Empty;
+        string SummaryText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
 
@@ -61,46 +59,93 @@ public class HomeController : Controller
         //////////////////////////////////////////
         try
         {
+            //////////////////////////////////////////////////////////////////
+            //GET MODEL RESPONSE
+            //////////////////////////////////////////////////////////////////
+            //read the prompt from the prompt.md file
+            //remove any carriage returns because this causes
+            //an exception somewhere in the ollama api
+            var StructuredPrompt = GetStartupPrompt();
+            if (StructuredPrompt == null)
+            {
+                ExceptionMessageString = $"The structured prompt for the response is missing or empty for model {model}.";
+                throw new Exception(ExceptionMessageString);
+            }
+
+            //remove carriage returns
+            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\n", string.Empty);
+
+            //take the Prompt parameter that is passed into the method
+            //and insert it into the <other> element. This provides the
+            //mechanism to allow the model to chhose from w new topic
+            //or to respond to the existing topic found in the <other>
+            //tag.
+            if ((Prompt != null) && (Prompt != string.Empty))
+            {
+                StructuredPrompt = StructuredPrompt.Replace("</other>", Prompt + "</other>");
+            }
+
             // call the api which calls the inference server to generate a response
             _logger.LogInformation("Calling API async for model {ModelName}", model);
-            TextResponse = await _ModelService.GetModelResponseAsync
+            ResponseText = await _ModelService.GetModelResponseAsync
             (
                 model,
-                SystemContent,
-                UserContent,
-                NegativePrompt
+                StructuredPrompt
             );
+            //////////////////////////////////////////////////////////////////
 
+
+            //////////////////////////////////////////////////////////////////
+            //GET MODEL RESPONSE FOR SUMMARY
+            //////////////////////////////////////////////////////////////////
             // Best summary models for summary prompt so far:
             // deepseek-r1, gemma3, wizard-vicuna
             // call the api which calls the inference server to summarize the response 
             // into a one or two word topic
-            var HardModel = model;
+
+            //allow the model to summarize it's own response by default
+            var ResponseSummaryModelName = model;
+
+            //if the model is not allowed to summarize it's own response
+            //use the default summary model name
             if (!_settings.AllowModelToSummarizeOwnResponse)
             {
-                HardModel = _settings.TopicSummaryModelName;
+                ResponseSummaryModelName = _settings.TopicSummaryModelName;
             }
-            _logger.LogInformation("Calling API async for Topic summary using {model}", model);
-            TextTopic = await _ModelService.GetModelResponseAsync(
-                HardModel,
-                _settings.TopicSummaryPrompt,
-                TextResponse,
-                _settings.TopicSummaryNegativePrompt
+
+            //get the response summary prompt and make sure it's valid
+            var ResponseSummaryPrompt = GetTopicSummaryPrompt();
+            if (ResponseSummaryPrompt == null)
+            {
+                ExceptionMessageString = $"The prompt for the response summary is missing or empty for model {model}.";
+                throw new Exception(ExceptionMessageString);
+            }
+
+            //remove carriage returns
+            ResponseSummaryPrompt = ResponseSummaryPrompt.ToString()!.Replace("\n", string.Empty);
+            ResponseSummaryPrompt = ResponseSummaryPrompt.Replace("</target>", ResponseText + "</target>");
+
+            _logger.LogInformation("Calling API async for response summary using {model}", ResponseSummaryModelName);
+            SummaryText = await _ModelService.GetModelResponseAsync(
+                ResponseSummaryModelName,
+                ResponseSummaryPrompt.ToString()!
             );
+            //////////////////////////////////////////////////////////////////
+
 
             //truncate the topic text if the model went off on a tangent response
-            if (TextTopic.Length > 45)
+            if (SummaryText.Length > 45)
             {
-                _logger.LogInformation($"The topic length is {TextTopic.Length} chars in length. Truncating to 45.");
-                TextTopic = TextTopic.Substring(1, 45);
+                _logger.LogInformation($"The summarized topic length is {SummaryText.Length} chars in length. Truncating to 45.");
+                SummaryText = SummaryText.Substring(1, 45);
             }
 
-            //call the api which calls the inference server to generate a speech file from the topic response
-            // append a '.' period to the end of the topic before sending it
+            // call the api which calls the inference server to generate a speech file from the response
+            // summary. Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
-            // pronunciation of the one or tqo word topic.
-            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TextTopic);
-            AudioFilename = await _ResponseService.GenerateSpeechFile(TextTopic, TtsVoice);
+            // pronunciation of the one or two word summary.
+            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", SummaryText);
+            AudioFilename = await _ResponseService.GenerateSpeechFile(SummaryText, TtsVoice);
 
             //check if the audio/speech file exists, this is redundant because the file
             //checks are performed in the service layer
@@ -132,17 +177,17 @@ public class HomeController : Controller
             Item = new ResponseItem
             {
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
-                Response = TextResponse,
+                Response = ResponseText,
                 Model = model,
-                Topic = TextTopic.ToString(),
-                Prompt = SystemContent + UserContent,
-                NegativePrompt = NegativePrompt,
+                Topic = SummaryText.ToString(),
+                Prompt = Prompt,
+                NegativePrompt = String.Empty,
                 Active = 1,
                 LastUpdated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
                 AudioFilename = _settings.SpeechFileUrlLocation + AudioFilename,
                 AudioFileSize = fileSizeInBytes.ToString(),
                 ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds),
-                WordCount = _ResponseService.GetWordCount(TextResponse),
+                WordCount = _ResponseService.GetWordCount(ResponseText),
                 Exceptions = ExceptionMessageString,
                 TtsVoice = TtsVoice
             };
@@ -182,15 +227,14 @@ public class HomeController : Controller
         return Ok(ViewModel);
     }
 
-    [HttpPost]
-    public IActionResult GetStartupPrompt()
+    private string GetStartupPrompt()
     {
         try
         {
-            string filePath = "prompts.md";
+            string filePath = Directory.GetCurrentDirectory() + "/wwwroot/assets/prompt.md";
 
             string text = System.IO.File.ReadAllText(filePath);
-            return Ok(text);
+            return text;
         }
         catch (Exception e)
         {
@@ -199,14 +243,14 @@ public class HomeController : Controller
         }
     }
 
-    [HttpPost]
-    public IActionResult GetNegativePrompt()
+    private string GetTopicSummaryPrompt()
     {
         try
         {
-            // Call the service to get the startup prompt
-            string NegativePrompt = _settings.NegativePrompt;
-            return Ok(NegativePrompt);
+            string filePath = Directory.GetCurrentDirectory() + "/wwwroot/assets/summary_prompt.md";
+
+            string text = System.IO.File.ReadAllText(filePath);
+            return text;
         }
         catch (Exception e)
         {
@@ -269,22 +313,6 @@ public class HomeController : Controller
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-
-    public string OpenPromptFile()
-    {
-        string filePath = "prompts.md";
-
-        try
-        {
-            string text = System.IO.File.ReadAllText(filePath);
-            return text;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error opening prompt file: {ex.Message}");
-            return null;
-        }
     }
 
 }

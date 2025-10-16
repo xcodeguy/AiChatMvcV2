@@ -105,22 +105,15 @@ namespace AiChatMvcV2.Services
             return true;
         }
 
-        public async Task<string> GetModelResponseAsync(string Model, string SystemContent, string UserContent, string NegativePrompt)
+        public async Task<string> GetModelResponseAsync(string Model, string Prompt)
         {
             string url = _settings.Url;
             string data;
             string PromptTextDelimiter = _settings.PromptTextDelimiter;
-            string FinalPrompt = SystemContent;
-            //+ " "
-            //+ NegativePrompt
-            //+ " "
-            //+ PromptTextDelimiter
-            //+ UserContent
-            //+ PromptTextDelimiter;
 
             var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
 
-            data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, FinalPrompt);
+            data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, Prompt);
 
             try
             {
@@ -159,7 +152,7 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = String.Format("{0} {1}, {2}\nException: {3}", Model, UserContent, NegativePrompt, response.RequestMessage);
+                        ExceptionMessageString = String.Format("{0} {1},\nException: {2}", Model, Prompt, response.RequestMessage);
                         throw new Exception(ExceptionMessageString);
                     }
                 }
