@@ -38,23 +38,6 @@ $(document).ready(async function () {
     var TtsVoice = "";
     var ExceptionString = "";
 
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-    ConsolLogWindow("******************************");
-
     ConsolLogWindow("Initialized variables");
 
     //get the model names from the appSetting.json file
@@ -314,7 +297,7 @@ $(document).ready(async function () {
             DivChatContainerElement.scrollIntoView(false);
         }
 
-        ConsolLogWindow("Making api call for model response.");
+        ConsolLogWindow("Making api call for model response");
         $.ajax({
             //make the call
             url: 'http://localhost:5022/Home/QueryModelForResponse',
@@ -413,14 +396,6 @@ $(document).ready(async function () {
             EmptyResponseOrException = true;
         }
 
-        //update the prompt table topic cell on the web page
-        $('#TopicLabel').fadeOut('slow', function () {
-            $('#TopicLabel').fadeIn('slow', function () {
-
-            });
-        })
-        $("#TopicLabel").text(TheTopic);
-
         //build the bubble title
         bubble_title = ModelNameString + ": " + TimeString + " [" + TheTopic.trim() + "] [" + TtsVoice + "]";
 
@@ -447,7 +422,7 @@ $(document).ready(async function () {
             DivChatElementForException.style.color = "#ffffff";
         }
 
-        //scroll div chart window to the bottom so
+        //scroll div chat window to the bottom so
         //that the latest post is visible
         DivChatContainerElement = document.getElementById("divChat");
         if (!(DivChatContainerElement === null) && !(DivChatContainerElement === undefined)) {
@@ -553,15 +528,11 @@ $(document).ready(async function () {
     }
 
     function ConsolLogWindow(message) {
-        var tdiv = document.getElementById("console_log_window");
-        var telm = document.createElement("p");
+        const tdiv = document.getElementById("console_log_window");
+        const telm = document.createElement("p");
         telm.textContent = message;
         tdiv.appendChild(telm);
-
-        tdiv = null;
-        telm = null;
-        tdiv = document.getElementById("console_log_window");
-        tdiv.scrollIntoView(false);
+        tdiv.scrollTop = tdiv.scrollHeight;
         console.log(message);
     }
 });

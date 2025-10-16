@@ -84,7 +84,6 @@ p {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  /*max-width: 1000px;*/
   margin: auto;
 }
 
@@ -118,7 +117,6 @@ p {
 }
 
 /* Improve radius for messages group */
-
 .msg.sent:first-child,
 .msg.rcvd+.msg.sent {
   border-top-right-radius: var(--rad);
@@ -131,7 +129,6 @@ p {
 
 
 /* time */
-
 .msg::before {
   content: attr(data-time);
   /*font-size: 0.8rem;*/
@@ -152,9 +149,7 @@ p {
   left: 15px;
 }
 
-
 /* Show time only for first message in group */
-
 .msg:first-child::before,
 .msg.sent+.msg.rcvd::before,
 .msg.rcvd+.msg.sent::before {
@@ -163,7 +158,6 @@ p {
 }
 
 /* END 3rd party CSS */
-
 
 /* custom css */
 .navbar-brand {
@@ -327,66 +321,63 @@ select.ThemeDropdownStyle {
   text-align: right;
 }
 
+/* CONSOLE WINDOW AND SCROLLBAR STYLES */
 .console_log_window {
   font-family: monospace;
   font-size: 13px;
   border: 1px solid var(--ChatBorderColor);
   width: var(--ModelStatsTableWidth);
   height: 185px;
-  max-height: 185px; 
-  overflow-y: scroll;
-  background-color: #000000;
+  max-height: 185px;
+  overflow: auto;
+  background-color: var(--BodyBackgroundColor);
+  color: var(--ModelStatColor);
+  padding-left: 5px;
+  padding-top: 2.5px;
 }
 
 .console_log_window p {
   margin: 0px;
-  padding: 1px;
-  color: #ffffff;
+  padding: 0px;
 }
 
-
 ::-webkit-scrollbar {
-    width: 10px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: white;
+  background: var(--ChatDashboardBackgroundColor);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--ModelStatColor);
-    border-radius: 10px;
+  background: var(--ModelStatColor);
+  border-radius: 10px;
 }
 
 div:hover::-webkit-scrollbar-thumb {
-    background: var(--ModelStatColor);
+  background: var(--ModelStatColor);
 }
 
 /* Not specific enough, will be overridden
    by the rule above. */
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--ModelStatColor);
+  background: var(--ModelStatColor);
 }
 
 /* Fixed. Now specific enough to achieve
    your desired behavior. */
 div:hover::-webkit-scrollbar-thumb:hover {
-    background: var(--ModelStatColor);
+  background: var(--ModelStatColor);
 }
 
-
-
+/* END CONSOLE WINDOW AND SCROLLBAR STYLES */
 
 .header-footer-border-color {
   border-bottom-color: var(--HeaderFooterBorderBottomColor) !important;
   border-top-color: var(--HeaderFooterBorderBottomColor) !important;
 }
 
-/* END custom from developer */
-
-
-
-/* 3rd party CSS */
+/* 3rd party animated elipse CSS */
 /* HTML: <div class="loader"></div> */
 .loader_white {
   width: 60px;
@@ -424,28 +415,6 @@ div:hover::-webkit-scrollbar-thumb:hover {
   66% {
     background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%
   }
-}
-
-
-
-/* drop down menu */
-.styled select {
-  background: transparent;
-  width: 150px;
-  font-size: 16px;
-  border: 1px solid #CCC;
-  height: 34px;
-}
-
-.styled {
-  margin: 50px;
-  width: 120px;
-  height: 34px;
-  border: 1px solid #111;
-  border-radius: 3px;
-  /*overflow: hidden;*/
-  /*background: url(https://stackoverflow.com/favicon.ico) 96% / 20% no-repeat #EEE;*/
-  background-color: #686868;
 }
 
 /* END 3rd party CSS */
