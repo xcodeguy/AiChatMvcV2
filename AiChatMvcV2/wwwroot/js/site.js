@@ -308,7 +308,7 @@ $(document).ready(async function () {
             },
             /*dataType: 'json',*/
             success: function (data) {
-                ConsolLogWindow("Success");
+                ConsolLogWindow("Success <i style=\"color: green;\" class=\"fa-solid fa-circle-check\"></i>");
 
                 //get the response items from the data object that
                 //contains  the responseItemList list. We access

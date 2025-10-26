@@ -43,7 +43,10 @@ SELECT COUNT(*) FROM Response;
 
 TRUNCATE TABLE Response;
 
-SELECT * FROM Response ORDER BY topic;
+SELECT model, topic FROM Response 
+ORDER BY model ASC, topic ASC;
+
+DELETE FROM Response WHERE topic = ''
 
 SELECT COUNT(*)
 FROM `Response`;

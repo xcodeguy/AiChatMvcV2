@@ -25,5 +25,9 @@ namespace AiChatMvcV2.Objects
         public required List<string> LLMs { get; set; }
         public required string PromptTextDelimiter { get; set; }
         public required bool AllowModelToSummarizeOwnResponse { get; set; }
+        public required string PromptFilename { get; set; }
+        public required string SummaryPromptFilename { get; set; }
+        public required string SanitizerPromptFilename { get; set; }
+        public required string SanitizerModelName { get; set; }
     }
 }

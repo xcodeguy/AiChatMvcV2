@@ -51,6 +51,7 @@ public class HomeController : Controller
         string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
         string ResponseText = string.Empty;
         string SummaryText = string.Empty;
+        string SanitizedResponseText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
 
@@ -60,12 +61,12 @@ public class HomeController : Controller
         try
         {
             //////////////////////////////////////////////////////////////////
-            //GET MODEL RESPONSE
+            // GET MODEL RESPONSE
             //////////////////////////////////////////////////////////////////
             //read the prompt from the prompt.md file
             //remove any carriage returns because this causes
             //an exception somewhere in the ollama api
-            var StructuredPrompt = GetStartupPrompt();
+            var StructuredPrompt = ReadPromptFile(_settings.PromptFilename);
             if (StructuredPrompt == null)
             {
                 ExceptionMessageString = $"The structured prompt for the response is missing or empty for model {model}.";
@@ -75,14 +76,42 @@ public class HomeController : Controller
             //remove carriage returns
             StructuredPrompt = StructuredPrompt.ToString()!.Replace("\n", string.Empty);
 
-            //take the Prompt parameter that is passed into the method
-            //and insert it into the <other> element. This provides the
-            //mechanism to allow the model to chhose from w new topic
-            //or to respond to the existing topic found in the <other>
-            //tag.
+            // Do we have prompt text to insert into the structured prompt?
             if ((Prompt != null) && (Prompt != string.Empty))
             {
-                StructuredPrompt = StructuredPrompt.Replace("</other>", Prompt + "</other>");
+                //////////////////////////////////////////////////////////////////
+                // SANITIZE MODEL RESPONSE
+                //////////////////////////////////////////////////////////////////
+                // we santize the response here. we do this by sending it
+                // back to the AI model and ask it to clean it up by
+                // performing the following prompt
+                var SanitizerPrompt = ReadPromptFile(_settings.SanitizerPromptFilename);
+                if (SanitizerPrompt == null)
+                {
+                    ExceptionMessageString = $"The sanitizer prompt for the response is missing or empty for model {model}.";
+                    throw new Exception(ExceptionMessageString);
+                }
+
+                // remove carriage returns and drop in the prompt (response)
+                // from the last model
+                SanitizerPrompt = SanitizerPrompt.ToString()!.Replace("\n", string.Empty);
+                SanitizerPrompt = SanitizerPrompt.ToString()!.Replace("\"", string.Empty);
+                SanitizerPrompt = SanitizerPrompt.ToString()!.Replace("\\", string.Empty);
+
+                SanitizerPrompt = SanitizerPrompt.Replace("</target>", Prompt + "</target>");
+                _logger.LogInformation($"Sanitizer prompt with response text from last model is:\n\n{SanitizerPrompt}");
+
+                _logger.LogInformation("Calling API async for sanitizer {SanitizerModelName} on model response from {ModelName}", _settings.SanitizerModelName, model);
+                SanitizedResponseText = await _ModelService.GetModelResponseAsync
+                (
+                    _settings.SanitizerModelName,
+                    SanitizerPrompt
+                );
+
+                _logger.LogInformation($"Sanitized response text for the structured prompt is:\n\n{SanitizedResponseText}");
+                StructuredPrompt = StructuredPrompt.Replace("</other>", SanitizedResponseText + "</other>");
+                _logger.LogInformation($"Structured prompt with sanitized text is:\n\n{StructuredPrompt}");
+                //////////////////////////////////////////////////////////////////
             }
 
             // call the api which calls the inference server to generate a response
@@ -92,11 +121,12 @@ public class HomeController : Controller
                 model,
                 StructuredPrompt
             );
+            _logger.LogInformation($"The final response is:\n\n{ResponseText}");
             //////////////////////////////////////////////////////////////////
 
 
             //////////////////////////////////////////////////////////////////
-            //GET MODEL RESPONSE FOR SUMMARY
+            // GET MODEL RESPONSE FOR SUMMARY
             //////////////////////////////////////////////////////////////////
             // Best summary models for summary prompt so far:
             // deepseek-r1, gemma3, wizard-vicuna
@@ -114,14 +144,14 @@ public class HomeController : Controller
             }
 
             //get the response summary prompt and make sure it's valid
-            var ResponseSummaryPrompt = GetTopicSummaryPrompt();
+            var ResponseSummaryPrompt = ReadPromptFile(_settings.SummaryPromptFilename);
             if (ResponseSummaryPrompt == null)
             {
                 ExceptionMessageString = $"The prompt for the response summary is missing or empty for model {model}.";
                 throw new Exception(ExceptionMessageString);
             }
 
-            //remove carriage returns
+            //remove carriage returns and drop in the response text to summarize
             ResponseSummaryPrompt = ResponseSummaryPrompt.ToString()!.Replace("\n", string.Empty);
             ResponseSummaryPrompt = ResponseSummaryPrompt.Replace("</target>", ResponseText + "</target>");
 
@@ -227,12 +257,11 @@ public class HomeController : Controller
         return Ok(ViewModel);
     }
 
-    private string GetStartupPrompt()
+    private string ReadPromptFile(string PromptFilename)
     {
         try
         {
-            string filePath = Directory.GetCurrentDirectory() + "/wwwroot/assets/prompt.md";
-
+            string filePath = Directory.GetCurrentDirectory() + "/wwwroot/assets/" + PromptFilename;
             string text = System.IO.File.ReadAllText(filePath);
             return text;
         }
