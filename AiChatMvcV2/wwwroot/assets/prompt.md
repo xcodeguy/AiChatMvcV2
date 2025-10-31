@@ -1,23 +1,32 @@
-Preamble:
-    -You will be given two tasks to choose from.
-    -Select one task and respond only to that task.
-    -Do not attempt to complete both tasks.
+ - Perform Task A and apply the following Instructions. 
 
 Instructions:
-    1. Your response should be limited to the chosen task only.
-    2. Do not tell anyone what task you choose. Only respond to it.
-    3. Your response should **not** contain anything about a word count.
-    4. Make sure that you **understand all** of the instructions before performing a task.
-
+    - Your response should **not** contain anything about a word count.
+    - Remove any sentence that contains the string **“Task A”** or **"Task B"**.
+    - Remove any sentence that contains the word **“topic”**.
+    - Remove any sentence that contains the string **“I understand”**.
+    - Remove any **-** characters.
+    - Remove any duplicate sentences and anything associated with those sentences such as numbers.
+        For example: "1. Some example text.".
+    - Remove any carriage return, line feed characters, and format strings.
+    - All text comparisons are **case insensitive**.
+    - After the response, also summarize the topic using one or two words and put them in the <topic> element.
+    - Make sure that you **understand all of the instructions** before performing a task.
+    
 Task A:
-    1. Pick a topic you know about and generate 25 words or less about the topic.
+    - If the <LastResponse> element is empty then pick a topic about anything you know.
+    - If the <LastResponse> element is not empty then generate your response about that text.
     Notes:
-        1. The topic can be about anything.
-        2. The topic must **not** be about Bioluminescence.
-        3. The topic must **not** be about coffee.
+        - The topic can be about anything.
+        - The topic must **not** be about Bioluminescence.
+        - The topic must **not** be about coffee.
+    <LastResponse>
+    </LastResponse>
+<topic>
+</topic>
 
-Task B:
-    1. Generate 25 words or less about the topic in the <other> element.
-    <other>
-    </other>
-
+Output JSON Format:
+{
+    "response" : [response],
+    "topic" : [<topic></topic>]
+}
