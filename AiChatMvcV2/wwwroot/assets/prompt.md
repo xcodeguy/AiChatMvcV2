@@ -10,8 +10,12 @@ Instructions:
         For example: "1. Some example text.".
     - Remove any carriage return, line feed characters, and format strings.
     - All text comparisons are **case insensitive**.
-    - After the response, also summarize the topic using one or two words and put them in the <topic> element.
+    - After the response, also summarize the response using one or two words. 
+        Put the summary in the "topic" key value of the JSON output.
     - Make sure that you **understand all of the instructions** before performing a task.
+    - The JSON output cannot use arrays.
+    - The JSON output must have all keys and values enclosed in double quotation marks.
+    - Your final output should be valid JSON only.
     
 Task A:
     - If the <LastResponse> element is empty then pick a topic about anything you know.
@@ -27,6 +31,6 @@ Task A:
 
 Output JSON Format:
 {
-    "response" : [response],
-    "topic" : [<topic></topic>]
+    ""response"" : response,
+    ""topic"" : topic
 }

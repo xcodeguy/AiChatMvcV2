@@ -5,6 +5,7 @@ using AiChatMvcV2.Objects;
 using Microsoft.Extensions.Options;
 using System.Reflection;
 using System.Linq;
+using System.Text.Json;
 
 namespace AiChatMvcV2.Services;
 
@@ -49,23 +50,15 @@ public class HomeController : Controller
         string TtsVoice = TtsVoices[rand.Next(TtsVoices.Count)];
         long fileSizeInBytes = 0;
         string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
-        string ResponseText = string.Empty;
-        string SummaryText = string.Empty;
-        string SanitizedResponseText = string.Empty;
+        string? ResponseText = string.Empty;
+        string TopicText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
 
-        //////////////////////////////////////////
         // API Round trip TRY/CATCH block
-        //////////////////////////////////////////
         try
         {
-            //////////////////////////////////////////////////////////////////
-            // GET MODEL RESPONSE
-            //////////////////////////////////////////////////////////////////
-            //read the prompt from the prompt.md file
-            //remove any carriage returns because this causes
-            //an exception somewhere in the ollama api
+            // read the prompt from the prompt.md file
             var StructuredPrompt = ReadPromptFile(_settings.PromptFilename);
             if (StructuredPrompt == null)
             {
@@ -73,45 +66,17 @@ public class HomeController : Controller
                 throw new Exception(ExceptionMessageString);
             }
 
-            //remove carriage returns
+            // remove carriage returns, line feeds and backslashes
             StructuredPrompt = StructuredPrompt.ToString()!.Replace("\n", string.Empty);
+            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\"", string.Empty);
+            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\\", string.Empty);
 
-            // Do we have prompt text to insert into the structured prompt?
+            // do we have prompt text to insert into the structured prompt?
+            // i.e. <LastResponse>...</LastResponse>
             if ((Prompt != null) && (Prompt != string.Empty))
             {
-                //////////////////////////////////////////////////////////////////
-                // SANITIZE MODEL RESPONSE
-                //////////////////////////////////////////////////////////////////
-                // we santize the response here. we do this by sending it
-                // back to the AI model and ask it to clean it up by
-                // performing the following prompt
-                var SanitizerPrompt = ReadPromptFile(_settings.SanitizerPromptFilename);
-                if (SanitizerPrompt == null)
-                {
-                    ExceptionMessageString = $"The sanitizer prompt for the response is missing or empty for model {model}.";
-                    throw new Exception(ExceptionMessageString);
-                }
-
-                // remove carriage returns and drop in the prompt (response)
-                // from the last model
-                SanitizerPrompt = SanitizerPrompt.ToString()!.Replace("\n", string.Empty);
-                SanitizerPrompt = SanitizerPrompt.ToString()!.Replace("\"", string.Empty);
-                SanitizerPrompt = SanitizerPrompt.ToString()!.Replace("\\", string.Empty);
-
-                SanitizerPrompt = SanitizerPrompt.Replace("</target>", Prompt + "</target>");
-                _logger.LogInformation($"Sanitizer prompt with response text from last model is:\n\n{SanitizerPrompt}");
-
-                _logger.LogInformation("Calling API async for sanitizer {SanitizerModelName} on model response from {ModelName}", _settings.SanitizerModelName, model);
-                SanitizedResponseText = await _ModelService.GetModelResponseAsync
-                (
-                    _settings.SanitizerModelName,
-                    SanitizerPrompt
-                );
-
-                _logger.LogInformation($"Sanitized response text for the structured prompt is:\n\n{SanitizedResponseText}");
-                StructuredPrompt = StructuredPrompt.Replace("</other>", SanitizedResponseText + "</other>");
-                _logger.LogInformation($"Structured prompt with sanitized text is:\n\n{StructuredPrompt}");
-                //////////////////////////////////////////////////////////////////
+                StructuredPrompt = StructuredPrompt.Replace("</LastResponse>", Prompt + "</LastResponse>");
+                _logger.LogInformation($"Structured prompt with last response text is:\n\n{StructuredPrompt}");
             }
 
             // call the api which calls the inference server to generate a response
@@ -121,61 +86,20 @@ public class HomeController : Controller
                 model,
                 StructuredPrompt
             );
-            _logger.LogInformation($"The final response is:\n\n{ResponseText}");
-            //////////////////////////////////////////////////////////////////
+            _logger.LogInformation($"The model response is:\n\n{ResponseText}");
 
+            // somewhere in the response is a JSON object - safely parse and handle null
+            ResponseJsonObject? parsedResponse = ExtractAndDeserialize(ResponseText);
+            ResponseText = parsedResponse?.Response ?? String.Empty;
+            TopicText = parsedResponse?.Topic ?? String.Empty;
 
-            //////////////////////////////////////////////////////////////////
-            // GET MODEL RESPONSE FOR SUMMARY
-            //////////////////////////////////////////////////////////////////
-            // Best summary models for summary prompt so far:
-            // deepseek-r1, gemma3, wizard-vicuna
-            // call the api which calls the inference server to summarize the response 
-            // into a one or two word topic
-
-            //allow the model to summarize it's own response by default
-            var ResponseSummaryModelName = model;
-
-            //if the model is not allowed to summarize it's own response
-            //use the default summary model name
-            if (!_settings.AllowModelToSummarizeOwnResponse)
-            {
-                ResponseSummaryModelName = _settings.TopicSummaryModelName;
-            }
-
-            //get the response summary prompt and make sure it's valid
-            var ResponseSummaryPrompt = ReadPromptFile(_settings.SummaryPromptFilename);
-            if (ResponseSummaryPrompt == null)
-            {
-                ExceptionMessageString = $"The prompt for the response summary is missing or empty for model {model}.";
-                throw new Exception(ExceptionMessageString);
-            }
-
-            //remove carriage returns and drop in the response text to summarize
-            ResponseSummaryPrompt = ResponseSummaryPrompt.ToString()!.Replace("\n", string.Empty);
-            ResponseSummaryPrompt = ResponseSummaryPrompt.Replace("</target>", ResponseText + "</target>");
-
-            _logger.LogInformation("Calling API async for response summary using {model}", ResponseSummaryModelName);
-            SummaryText = await _ModelService.GetModelResponseAsync(
-                ResponseSummaryModelName,
-                ResponseSummaryPrompt.ToString()!
-            );
-            //////////////////////////////////////////////////////////////////
-
-
-            //truncate the topic text if the model went off on a tangent response
-            if (SummaryText.Length > 45)
-            {
-                _logger.LogInformation($"The summarized topic length is {SummaryText.Length} chars in length. Truncating to 45.");
-                SummaryText = SummaryText.Substring(1, 45);
-            }
 
             // call the api which calls the inference server to generate a speech file from the response
             // summary. Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
             // pronunciation of the one or two word summary.
-            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", SummaryText);
-            AudioFilename = await _ResponseService.GenerateSpeechFile(SummaryText, TtsVoice);
+            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
+            AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText, TtsVoice);
 
             //check if the audio/speech file exists, this is redundant because the file
             //checks are performed in the service layer
@@ -209,7 +133,7 @@ public class HomeController : Controller
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
                 Response = ResponseText,
                 Model = model,
-                Topic = SummaryText.ToString(),
+                Topic = TopicText.ToString(),
                 Prompt = Prompt,
                 NegativePrompt = String.Empty,
                 Active = 1,
@@ -344,4 +268,29 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
+    public ResponseJsonObject? ExtractAndDeserialize(string plainText)
+    {
+        // Example: Assuming the JSON string is between "START_JSON" and "END_JSON"
+        int startIndex = plainText.IndexOf("{");
+        int endIndex = plainText.IndexOf("}");
+
+        if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
+        {
+            // Handle cases where JSON markers are not found or are invalid
+            return null;
+        }
+
+        string jsonString = plainText.Substring(startIndex, endIndex).Trim();
+
+        try
+        {
+            return JsonSerializer.Deserialize<ResponseJsonObject>(jsonString);
+        }
+        catch (JsonException ex)
+        {
+            // Handle deserialization errors
+            Console.WriteLine($"Error deserializing JSON: {ex.Message}");
+            return null;
+        }
+    }
 }

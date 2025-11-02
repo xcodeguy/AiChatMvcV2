@@ -22,4 +22,10 @@ namespace AiChatMvcV2.Models
     {
         public List<ResponseItem>? ResponseItemList { get; set; } = null;
     }
+
+    public class ResponseJsonObject
+    {
+        public string? Response { get; set; } = string.Empty;
+        public string? Topic { get; set; } = string.Empty;  
+    }
 }

@@ -18,9 +18,10 @@ namespace AiChatMvcV2.Services
         private readonly ILogger<ModelServices> _logger;
         private readonly ResponseServices _responseService;
         private readonly ApplicationSettings _settings;
-        private const float temperature = 0.8f;     //0.8
+        private const float temperature = 0.0f;     //0.8
         private const int num_ctx = 2048;           //2048
         private const int num_predict = -1;         //-1
+        private const int seed = 101;
         private const string sp_insert_table_response = "sp_insert_table_response";
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
         string ExceptionMessageString = string.Empty;
@@ -111,7 +112,7 @@ namespace AiChatMvcV2.Services
             string data;
             string PromptTextDelimiter = _settings.PromptTextDelimiter;
 
-            var options = "\"options\" : {{\"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
+            var options = "\"options\" : {{\"seed\" : " + seed + ", \"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
 
             data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, Prompt);
 
