@@ -13,21 +13,8 @@ namespace AiChatMvcV2.Objects
         public required string PlaybackSpeed { get; set; }
         public required int HttpTtsTimeout { get; set; }
         public required int HttpApiTimeout { get; set; }
-        public required string TopicSummaryModelName { get; set; }
-        public required string TopicSummaryPrompt { get; set; }
-        public required string TopicSummaryNegativePrompt { get; set; }
         public required List<string> TtsVoices { get; set; }
-        public required bool ModelServicesTestException { get; set; }
-        public required bool ResponseServicesTestException { get; set; }
-        public required bool MySqlTestException { get; set; }
-        public required string StartupPrompt { get; set; }
-        public required string NegativePrompt { get; set; }
         public required List<string> LLMs { get; set; }
-        public required string PromptTextDelimiter { get; set; }
-        public required bool AllowModelToSummarizeOwnResponse { get; set; }
         public required string PromptFilename { get; set; }
-        public required string SummaryPromptFilename { get; set; }
-        public required string SanitizerPromptFilename { get; set; }
-        public required string SanitizerModelName { get; set; }
     }
 }

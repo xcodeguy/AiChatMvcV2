@@ -18,10 +18,50 @@ namespace AiChatMvcV2.Services
         private readonly ILogger<ModelServices> _logger;
         private readonly ResponseServices _responseService;
         private readonly ApplicationSettings _settings;
-        private const float temperature = 0.0f;     //0.8
-        private const int num_ctx = 2048;           //2048
-        private const int num_predict = -1;         //-1
-        private const int seed = 101;
+
+        // Enable Mirostat sampling for controlling perplexity. 
+        // (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
+        private readonly double mirostat = 0;
+        //  dInfluences how quickly the algorithm responds to feedback 
+        // from the generated text. A lower learning rate will result 
+        // in slower adjustments, while a higher learning rate will make 
+        // the algorithm more responsive. (Default: 0.1)	
+        private readonly double microstat_eta = 0.1;
+        // Controls the balance between coherence and diversity of the output. 
+        // A lower value will result in more focused and coherent text. (Default: 5.0)˝
+        private readonly double microstat_tau = 5.0;
+        // Sets the size of the context window used to generate the next token. (Default: 2048)	
+        private readonly double num_ctx = 2048;
+        // Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)	
+        private readonly double repeat_last_n = 64;
+        // Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) 
+        // will penalize repetitions more strongly, while a lower value (e.g., 0.9) 
+        // will be more lenient. (Default: 1.1)
+        private readonly double repeat_penalty = 1.1;
+        // The temperature of the model. Increasing the temperature will make the 
+        // model answer more creatively. (Default: 0.8)	
+        private readonly double temperature = 0.8;
+        // Sets the random number seed to use for generation. Setting this to a 
+        // specific number will make the model generate the same text for the same 
+        // prompt. (Default: 0)
+        private readonly double seed = 0;
+        // Maximum number of tokens to predict when generating text. (Default: -1, infinite generation)
+        private readonly double num_predict = -1;
+        // Reduces the probability of generating nonsense. A higher value (e.g. 100) 
+        // will give more diverse answers, while a lower value (e.g. 10) will be more 
+        // conservative. (Default: 40)	
+        private readonly double top_k = 40;
+        // Works together with top-k. A higher value (e.g., 0.95) will lead to more 
+        // diverse text, while a lower value (e.g., 0.5) will generate more focused 
+        // and conservative text. (Default: 0.9)	
+        private readonly double top_p = 0.9;
+        // Alternative to the topp, and aims to ensure a balance of quality and variety. 
+        // The parameter _p represents the minimum probability for a token to be considered, 
+        // relative to the probability of the most likely token. For example, with p=0.05 
+        // and the most likely token having a probability of 0.9, logits with a value less 
+        // than 0.045 are filtered out. (Default: 0.0)
+        private readonly double min_p = 0.0;
+
         private const string sp_insert_table_response = "sp_insert_table_response";
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
         string ExceptionMessageString = string.Empty;
@@ -51,23 +91,6 @@ namespace AiChatMvcV2.Services
 
         public bool InsertResponse(ResponseItem TheResponse)
         {
-            //////////////////////////////////////////
-            // TEST EXCEPTION THROW
-            //////////////////////////////////////////
-            if (_settings.MySqlTestException == true)
-            {
-                Type classType = this.GetType();
-                if (MethodBase.GetCurrentMethod() != null)
-                {
-                    string className = classType.Name.ToString();
-                    string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
-                    ExceptionMessageString = $"Test exception from: {className}.{methodName}";
-                    _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
-                }
-
-                throw new Exception(ExceptionMessageString);
-            }
-
             using (MySqlConnection connection = new(_connectionString))
             {
                 using (MySqlCommand command = new(sp_insert_table_response, connection))
@@ -110,31 +133,29 @@ namespace AiChatMvcV2.Services
         {
             string url = _settings.Url;
             string data;
-            string PromptTextDelimiter = _settings.PromptTextDelimiter;
 
-            var options = "\"options\" : {{\"seed\" : " + seed + ", \"temperature\" : " + temperature + ", \"num_ctx\" : " + num_ctx + ", \"num_predict\" : " + num_predict + "}}";
+            var options = $@"{{""mirostat"" : {mirostat},
+                                    ""microstat_eta"" : {microstat_eta},
+                                    ""microstat_tau"" : {microstat_tau},
+                                    ""num_ctx"" : {num_ctx},
+                                    ""repeat_last_n"" : {repeat_last_n},
+                                    ""repeat_penalty"" : {repeat_penalty},
+                                    ""temperature"" : {temperature},
+                                    ""seed"" : {seed},
+                                    ""num_predict"" : {num_predict},
+                                    ""top_k"" : {top_k},
+                                    ""top_p"" : {top_p},
+                                    ""min_p"" : {min_p}
+                                }}";
 
-            data = String.Format("{{\"model\": \"{0}\", \"prompt\": \"{1}\", \"stream\": false, " + options + "}}", Model, Prompt);
+            data = $@"{{""model"" : ""{Model}"",
+                    ""prompt"" : ""{Prompt}"",
+                    ""stream"" : false,
+                    ""options"" : {options}
+                }}";
 
             try
             {
-                //////////////////////////////////////////
-                // TEST EXCEPTION THROW
-                //////////////////////////////////////////
-                if (_settings.ModelServicesTestException == true)
-                {
-                    Type classType = this.GetType();
-                    if (MethodBase.GetCurrentMethod() != null)
-                    {
-                        string className = classType.Name.ToString();
-                        string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
-                        ExceptionMessageString = $"Test exception from: {className}.{methodName}";
-                        _logger.LogInformation("ModelServicesTestException is true, testing exception throw.");
-                    }
-
-                    throw new Exception(ExceptionMessageString);
-                }
-
                 using (var client = new HttpClient())
                 {
                     client.Timeout = TimeSpan.FromSeconds(_settings.HttpApiTimeout);
@@ -148,7 +169,7 @@ namespace AiChatMvcV2.Services
                         using var reader = new StreamReader(stream);
                         var text = await reader.ReadToEndAsync();
 
-                        text = _responseService.SanitizeResponseFromJson(text).Result;
+                        text = _responseService.RemoveHtmlAndThinkTagsFromModelResponse(text).Result;
                         return text;
                     }
                     else

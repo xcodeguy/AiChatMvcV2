@@ -6,6 +6,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using AiChatMvcV2.Models;
 
 namespace AiChatMvcV2.Services
 {
@@ -19,6 +20,7 @@ namespace AiChatMvcV2.Services
         string _className = string.Empty;
         string _methodName;
         #endregion
+
         #region methods
         public ResponseServices(IOptions<ApplicationSettings> settings, ILogger<ResponseServices> logger)
         {
@@ -42,15 +44,13 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                Type classType = this.GetType();
-                string className = classType.Name.ToString();
-                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
+                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
             }
             return 0;
         }
 
-        public Task<string> SanitizeResponseFromJson(string json)
+        public Task<string> RemoveHtmlAndThinkTagsFromModelResponse(string json)
         {
             List<char> NO_CHARS = new() { '{', '}', '\\' };
             List<char> GOOD_CHARS = new()
@@ -149,44 +149,35 @@ namespace AiChatMvcV2.Services
 
             try
             {
-                //////////////////////////////////////////
-                // TEST EXCEPTION THROW
-                //////////////////////////////////////////
-                if (_settings.ResponseServicesTestException == true)
-                {
-                    Type classType = this.GetType();
-                    if (MethodBase.GetCurrentMethod() != null)
-                    {
-                        string className = classType.Name.ToString();
-                        string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
-                        ExceptionMessageString = $"Test exception from: {className}.{methodName}";
-                        _logger.LogInformation("ResponseServicesTestException is true, testing exception throw.");
-                    }
-
-                    throw new Exception(ExceptionMessageString);
-                }
-
                 Dictionary<string, object> item = JsonSerializer.Deserialize<Dictionary<string, object>>(json)!;
 
                 string HtmlTagPattern = $"(<[^>]*>)";
                 string ThinkTagPattern = $"(?<=<think>).*?(?=</think>)";
-                string OriginalString = item["response"].ToString()!;
-                if (OriginalString.Contains("<think>"))
+                string ResponseString = item["response"].ToString()!;
+
+                if (ResponseString == null)
                 {
-                    Console.WriteLine("Found think tag in response");
+                    return Task.FromResult("Response from the model is null or empty.");
                 }
-                OriginalString = OriginalString.ToString()!.Replace("\n", string.Empty);
-                OriginalString = OriginalString.ToString()!.Replace("\"", string.Empty);
-                OriginalString = OriginalString.ToString()!.Replace("\\", string.Empty);
-                string BetterString = Regex.Replace(OriginalString, ThinkTagPattern, string.Empty);
-                string CleanString = Regex.Replace(BetterString, HtmlTagPattern, string.Empty);
 
+                if (ResponseString.Contains("<think>"))
+                {
+                    _logger.LogInformation("Found think tag in response. Deleting elements.");
+                    ResponseString = Regex.Replace(ResponseString, ThinkTagPattern, string.Empty);
+                }
 
-                int resultLength = CleanString != null ? CleanString.ToString()!.Length : 0;
+                if (ResponseString.Contains("</"))
+                {
+                    _logger.LogInformation("Found html tags in response. Deleting elements.");
+                    ResponseString = Regex.Replace(ResponseString, HtmlTagPattern, string.Empty);
+                }
+
+                // append only good characters to result
+                int resultLength = ResponseString != null ? ResponseString.ToString()!.Length : 0;
                 StringBuilder result = new(resultLength);
                 if (resultLength != 0)
                 {
-                    foreach (char c in CleanString!.ToString()!)
+                    foreach (char c in ResponseString!.ToString()!)
                     {
                         if (GOOD_CHARS.Contains(c))
                         {
@@ -194,17 +185,15 @@ namespace AiChatMvcV2.Services
                         }
                     }
                 }
-                return Task.FromResult(result != null ? result.ToString()! : "Response from the model is null, empty, or invalid.");
+                return Task.FromResult(result != null ? result.ToString()! : "Response from the model is null or empty.");
             }
             catch (Exception ex)
             {
-                Type classType = this.GetType();
-                string className = classType.Name.ToString();
-                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
-                throw;
+                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
             }
 
+            return Task.FromResult(string.Empty);
         }
 
         public async Task<string> GenerateSpeechFile(string TextForSpeech, string Voice)
@@ -234,7 +223,7 @@ namespace AiChatMvcV2.Services
                         string ContentDisposiion;
                         string DropFilename;
                         string WebAssetFilename;
-                        string LocalAssetFilename;
+                        //string LocalAssetFilename;
 
                         //get the content-disposition from the header
                         //Content-Disposition: attachment; filename="your_audio_file.wav"                     ;
@@ -263,7 +252,7 @@ namespace AiChatMvcV2.Services
 
                         //copy the speech file to the website assets location
                         WebAssetFilename = CopySpeechFileToAssets(DropFilename);
-                        LocalAssetFilename = _settings.SpeechFilePlaybackLocation! + WebAssetFilename;
+                        //LocalAssetFilename = _settings.SpeechFilePlaybackLocation! + WebAssetFilename;
 
                         return WebAssetFilename;
                     }
@@ -276,11 +265,11 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-
-                ExceptionMessageString = $"{_className}.{_methodName}: {ex.Message}";
-                _logger.LogCritical(ExceptionMessageString);
-                throw new Exception(ExceptionMessageString);
+                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
             }
+
+            return string.Empty;
         }
 
         public string CopySpeechFileToAssets(string SourceFile)
@@ -309,19 +298,18 @@ namespace AiChatMvcV2.Services
                 File.Copy(SourceFile, DestinationFile, true); // The 'true' parameter enables overwriting if the file exists
                 _logger.LogInformation("File '{f1}' copied to '{f2}' successfully.", SourceFile, DestinationFile);
 
-                //return just the audio filename. No path, url or location information
+                //return just the audio filename to play back from the wwwroot/assets
                 DestinationFile = _settings.SpeechFilePlaybackName!;
 
                 return DestinationFile;
             }
             catch (Exception ex)
             {
-                Type classType = this.GetType();
-                string className = classType.Name.ToString();
-                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "UnknownMethod";
-                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
-                throw;
+                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
+                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
             }
+
+            return string.Empty;
         }
 
         public async Task<bool> PlaySpeechFile()
@@ -355,10 +343,44 @@ namespace AiChatMvcV2.Services
             {
                 _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
                 _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
+            }
+
+            return await Task.FromResult(false);
+        }
+
+        public ResponseJsonObject? ExtractAndDeserialize(string plainText)
+        {
+            // Example: Assuming the JSON string is between "START_JSON" and "END_JSON"
+            int startIndex = plainText.IndexOf("{");
+            int endIndex = (plainText.IndexOf("}") - startIndex) + 1;
+
+            if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
+            {
+                ExceptionMessageString = "JSON boundaries not found in the response text. MODEL FAILS PROMPT";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
+            }
+
+            string jsonString = plainText.Substring(startIndex, endIndex).Trim();
+            if (jsonString == null || jsonString == String.Empty)
+            {
+                ExceptionMessageString = "Extracted JSON string is null or empty. MODEL FAILS PROMPT";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<ResponseJsonObject>(jsonString);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError("JSON Deserialization error: {Message}", ex.Message);
                 throw;
             }
         }
         #endregion
+
     }       //end class
 
 }       //end namespace

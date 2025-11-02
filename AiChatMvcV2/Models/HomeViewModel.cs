@@ -25,7 +25,7 @@ namespace AiChatMvcV2.Models
 
     public class ResponseJsonObject
     {
-        public string? Response { get; set; } = string.Empty;
-        public string? Topic { get; set; } = string.Empty;  
+        public string? response { get; set; } = string.Empty;
+        public string? topic { get; set; } = string.Empty;  
     }
 }

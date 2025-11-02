@@ -55,7 +55,6 @@ public class HomeController : Controller
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
 
-        // API Round trip TRY/CATCH block
         try
         {
             // read the prompt from the prompt.md file
@@ -63,15 +62,17 @@ public class HomeController : Controller
             if (StructuredPrompt == null)
             {
                 ExceptionMessageString = $"The structured prompt for the response is missing or empty for model {model}.";
+                _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
 
             // remove carriage returns, line feeds and backslashes
+            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\r", string.Empty);
             StructuredPrompt = StructuredPrompt.ToString()!.Replace("\n", string.Empty);
             StructuredPrompt = StructuredPrompt.ToString()!.Replace("\"", string.Empty);
             StructuredPrompt = StructuredPrompt.ToString()!.Replace("\\", string.Empty);
 
-            // do we have prompt text to insert into the structured prompt?
+            // do we have any last response text to insert into the structured prompt?
             // i.e. <LastResponse>...</LastResponse>
             if ((Prompt != null) && (Prompt != string.Empty))
             {
@@ -79,7 +80,7 @@ public class HomeController : Controller
                 _logger.LogInformation($"Structured prompt with last response text is:\n\n{StructuredPrompt}");
             }
 
-            // call the api which calls the inference server to generate a response
+            // call the api to get a response from the model
             _logger.LogInformation("Calling API async for model {ModelName}", model);
             ResponseText = await _ModelService.GetModelResponseAsync
             (
@@ -88,25 +89,42 @@ public class HomeController : Controller
             );
             _logger.LogInformation($"The model response is:\n\n{ResponseText}");
 
-            // somewhere in the response is a JSON object - safely parse and handle null
-            ResponseJsonObject? parsedResponse = ExtractAndDeserialize(ResponseText);
-            ResponseText = parsedResponse?.Response ?? String.Empty;
-            TopicText = parsedResponse?.Topic ?? String.Empty;
+            // check for a null or empty response from the API->Inference Server->Model call
+            if (ResponseText == null || ResponseText == String.Empty)
+            {
+                ExceptionMessageString = $"The response is null or empty for model {model}.";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
+            }
 
+            //extract the response and topic from the JSON object embedded in the response text
+            ResponseJsonObject? parsedResponse = _ResponseService.ExtractAndDeserialize(ResponseText);
+            _logger.LogInformation($"Deserialized response JSON object from model response: {parsedResponse}");
+            ResponseText = parsedResponse?.response ?? String.Empty;
+            TopicText = parsedResponse?.topic ?? String.Empty;
+            _logger.LogInformation("Extracted response: {ResponseText}", ResponseText);
+            _logger.LogInformation("Extracted topic: {TopicText}", TopicText);
 
-            // call the api which calls the inference server to generate a speech file from the response
-            // summary. Append a '.' period to the end of the topic before sending it
+            if (TopicText == null || TopicText == String.Empty)
+            {
+                ExceptionMessageString = $"Cannot generate speech file because the topic text is null or empty for model {model}.";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
+            }
+
+            // call the api to generate a speech file from the TopicText summary.
+            // Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
-            // pronunciation of the one or two word summary.
+            // pronunciation of the one or two word topic.
             _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
-            AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText, TtsVoice);
+            AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
 
             //check if the audio/speech file exists, this is redundant because the file
             //checks are performed in the service layer
             if (!System.IO.File.Exists(local_path_to_assets_folder + AudioFilename))
             {
                 ExceptionMessageString = String.Format("Speech/Audio file not found: {0}", AudioFilename);
-                _logger.LogInformation(ExceptionMessageString);
+                _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
             else
@@ -127,7 +145,7 @@ public class HomeController : Controller
         }
         finally
         {
-            // build out the response object
+            // build out the response item object
             Item = new ResponseItem
             {
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
@@ -156,7 +174,7 @@ public class HomeController : Controller
             bool success = _ModelService.InsertResponse(Item);
             if (!success)
             {
-                ExceptionMessageString = String.Format("Error inserting response into database: {0}", Item);
+                ExceptionMessageString = String.Format($"Error inserting response into database: {Item.Model} {Item.Response} {Item.Topic}");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception("Error inserting response into database.");
             }
@@ -165,19 +183,21 @@ public class HomeController : Controller
         {
             ExceptionMessageString = e.Message.ToString();
             _logger.LogCritical(ExceptionMessageString);
+            throw;
         }
         finally
         {
+            //calculate elapsed time
+            TimeSpent = DateTime.Now - StartTime;
 
+            // since this finally block will be executed everytime it is
+            // appropriate to set these values here
+            Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+            Item.Exceptions = ExceptionMessageString;
+            ViewModel.ResponseItemList.Add(Item);
         }
 
-        //calculate elapsed time
-        TimeSpent = DateTime.Now - StartTime;
-
-        //assign the last two properties and return an HTTP OK with the loaded view model
-        Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
-        Item.Exceptions = ExceptionMessageString;
-        ViewModel.ResponseItemList.Add(Item);
+        // return an HTTP OK with the loaded view model
         return Ok(ViewModel);
     }
 
@@ -187,22 +207,13 @@ public class HomeController : Controller
         {
             string filePath = Directory.GetCurrentDirectory() + "/wwwroot/assets/" + PromptFilename;
             string text = System.IO.File.ReadAllText(filePath);
-            return text;
-        }
-        catch (Exception e)
-        {
-            _logger.LogCritical(e.Message.ToString());
-            throw;
-        }
-    }
 
-    private string GetTopicSummaryPrompt()
-    {
-        try
-        {
-            string filePath = Directory.GetCurrentDirectory() + "/wwwroot/assets/summary_prompt.md";
-
-            string text = System.IO.File.ReadAllText(filePath);
+            if (text == null || text == String.Empty)
+            {
+                ExceptionMessageString = $"The prompt file {PromptFilename} is missing or empty.";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
+            }
             return text;
         }
         catch (Exception e)
@@ -268,29 +279,4 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
-    public ResponseJsonObject? ExtractAndDeserialize(string plainText)
-    {
-        // Example: Assuming the JSON string is between "START_JSON" and "END_JSON"
-        int startIndex = plainText.IndexOf("{");
-        int endIndex = plainText.IndexOf("}");
-
-        if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
-        {
-            // Handle cases where JSON markers are not found or are invalid
-            return null;
-        }
-
-        string jsonString = plainText.Substring(startIndex, endIndex).Trim();
-
-        try
-        {
-            return JsonSerializer.Deserialize<ResponseJsonObject>(jsonString);
-        }
-        catch (JsonException ex)
-        {
-            // Handle deserialization errors
-            Console.WriteLine($"Error deserializing JSON: {ex.Message}");
-            return null;
-        }
-    }
 }
