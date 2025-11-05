@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Reflection;
 using AiChatMvcV2.Models;
+using System.Timers;
 
 namespace AiChatMvcV2.Services
 {
@@ -19,6 +20,7 @@ namespace AiChatMvcV2.Services
         Type _classType;
         string _className = string.Empty;
         string _methodName;
+        Func<string, string, string, string> GetClassAndMethodName;
         #endregion
 
         #region methods
@@ -29,6 +31,9 @@ namespace AiChatMvcV2.Services
             _classType = this.GetType();
             _className = _classType.Name.ToString();
             _methodName = string.Empty;
+
+            GetClassAndMethodName = (cls, mth, exp) => $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {exp}";
+
         }
 
         public int GetWordCount(string TheResponse)
@@ -44,10 +49,10 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
+                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                _logger.LogCritical(ExceptionMessageString);
+                throw;
             }
-            return 0;
         }
 
         public Task<string> RemoveHtmlAndThinkTagsFromModelResponse(string json)
@@ -173,7 +178,7 @@ namespace AiChatMvcV2.Services
                 }
 
                 // append only good characters to result
-                int resultLength = ResponseString != null ? ResponseString.ToString()!.Length : 0;
+                int resultLength = ResponseString != null ? ResponseString.Length : 0;
                 StringBuilder result = new(resultLength);
                 if (resultLength != 0)
                 {
@@ -185,15 +190,14 @@ namespace AiChatMvcV2.Services
                         }
                     }
                 }
-                return Task.FromResult(result != null ? result.ToString()! : "Response from the model is null or empty.");
+                return Task.FromResult(result.ToString()!);
             }
             catch (Exception ex)
             {
-                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
+                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                _logger.LogCritical(ExceptionMessageString);
+                throw;
             }
-
-            return Task.FromResult(string.Empty);
         }
 
         public async Task<string> GenerateSpeechFile(string TextForSpeech, string Voice)
@@ -205,12 +209,11 @@ namespace AiChatMvcV2.Services
 
             try
             {
-                TtsRequest = string.Format("{{\"model\": \"{0}\", \"input\": \"{1}\", \"voice\": \"{2}\", \"response_format\" : \"{3}\", \"speed\":\"{4}\"}}",
-                                        ModelName,
-                                        TextForSpeech,
-                                        Voice,
-                                        _settings.SpeechFileFormat,
-                                        _settings.PlaybackSpeed);
+                TtsRequest = $@"{{""model"": ""{ModelName}"", 
+                                    ""input"": ""{TextForSpeech}"", 
+                                    ""voice"": ""{Voice}"", 
+                                    ""response_format"" : ""{_settings.SpeechFileFormat}"", 
+                                    ""speed"": ""{_settings.PlaybackSpeed}""}}";
 
                 using (var client = new HttpClient())
                 {
@@ -223,11 +226,16 @@ namespace AiChatMvcV2.Services
                         string ContentDisposiion;
                         string DropFilename;
                         string WebAssetFilename;
-                        //string LocalAssetFilename;
 
                         //get the content-disposition from the header
                         //Content-Disposition: attachment; filename="your_audio_file.wav"                     ;
-                        ContentDisposiion = response.Content.Headers.GetValues("Content-Disposition").ToList()[0];
+                        if (!response.Content.Headers.Contains("Content-Disposition") ||
+                            !response.Content.Headers.GetValues("Content-Disposition").Any())
+                        {
+                            ExceptionMessageString = "Content-Disposition header is missing or empty";
+                            throw new Exception(ExceptionMessageString);
+                        }
+                        ContentDisposiion = response.Content.Headers.GetValues("Content-Disposition").First();
 
                         //build the filename from the drop location and from the header
                         //if the header is null throw an exception 
@@ -248,11 +256,10 @@ namespace AiChatMvcV2.Services
                         }
 
                         //get the filename and remove the " characters
-                        DropFilename += ContentDispositionArray[1].ToString().Replace("\"", string.Empty);
+                        DropFilename += ContentDispositionArray[1].Replace("\"", string.Empty);
 
                         //copy the speech file to the website assets location
                         WebAssetFilename = CopySpeechFileToAssets(DropFilename);
-                        //LocalAssetFilename = _settings.SpeechFilePlaybackLocation! + WebAssetFilename;
 
                         return WebAssetFilename;
                     }
@@ -265,11 +272,11 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
+                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                _logger.LogCritical(ExceptionMessageString);
+                throw;
             }
 
-            return string.Empty;
         }
 
         public string CopySpeechFileToAssets(string SourceFile)
@@ -283,33 +290,38 @@ namespace AiChatMvcV2.Services
                 //check for null
                 if (SourceFile == null)
                 {
-                    ExceptionMessageString = "Error: Source file is NULL";
+                    ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                    _methodName,
+                                                                    $"Error: Source file is NULL");
+                    _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
 
                 // Check if the source file exists
                 if (!File.Exists(SourceFile))
                 {
-                    ExceptionMessageString = string.Format("Error: Source file not found: {file}", SourceFile);
+                    ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                    _methodName,
+                                                                    $"Error: Source file not found: {SourceFile}");
+                    _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
 
                 // Copy the file
                 File.Copy(SourceFile, DestinationFile, true); // The 'true' parameter enables overwriting if the file exists
-                _logger.LogInformation("File '{f1}' copied to '{f2}' successfully.", SourceFile, DestinationFile);
+                _logger.LogInformation("File '{SourceFile}' copied to '{DestinationFile}' successfully.", SourceFile, DestinationFile);
 
                 //return just the audio filename to play back from the wwwroot/assets
-                DestinationFile = _settings.SpeechFilePlaybackName!;
-
-                return DestinationFile;
+                return _settings.SpeechFilePlaybackName!;
             }
             catch (Exception ex)
             {
-                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message);
+                _logger.LogCritical(ExceptionMessageString);
+                throw;
             }
-
-            return string.Empty;
         }
 
         public async Task<bool> PlaySpeechFile()
@@ -317,10 +329,12 @@ namespace AiChatMvcV2.Services
             try
             {
                 string filePath = _settings.SpeechFilePlaybackLocation + _settings.SpeechFilePlaybackName;
-                if ((filePath == null) || (!File.Exists(filePath)))
+                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 {
-                    ExceptionMessageString = $"Speech file not found at {(filePath != null ? filePath : "Filename is NULL")}";
-                    _logger.LogInformation(ExceptionMessageString);
+                    ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"Speech file not found at {(string.IsNullOrWhiteSpace(filePath) ? "Filename is empty or whitespace" : filePath)}");
+                    _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
 
@@ -341,43 +355,184 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{_className}.{_methodName}: {ex.Message}");
+                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                _logger.LogCritical(ExceptionMessageString);
+                throw;
             }
 
-            return await Task.FromResult(false);
         }
 
-        public ResponseJsonObject? ExtractAndDeserialize(string plainText)
+        public ResponseJsonObjectFlat? ExtractAndDeserialize(string plainText)
         {
-            // Example: Assuming the JSON string is between "START_JSON" and "END_JSON"
-            int startIndex = plainText.IndexOf("{");
-            int endIndex = (plainText.IndexOf("}") - startIndex) + 1;
+            Dictionary<string, object> jsonCandidate = [];
+            ResponseJsonObjectFlat responseFlat = new()
+            {
+                reasons = [],
+                score = _settings.MaxScore
+            };
+
+            int startIndex = plainText.IndexOf('{');
+            int endIndex = plainText.IndexOf('}') - startIndex + 1;
 
             if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
             {
-                ExceptionMessageString = "JSON boundaries not found in the response text. MODEL FAILS PROMPT";
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"JSON boundaries not found in the response text.");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
 
-            string jsonString = plainText.Substring(startIndex, endIndex).Trim();
-            if (jsonString == null || jsonString == String.Empty)
+            // Extract a substring that is assumed to be JSON, but may not always be valid JSON.
+            string extractedJsonCandidate = plainText.Substring(startIndex, endIndex).Trim();
+
+
+            if (string.IsNullOrEmpty(extractedJsonCandidate))
             {
-                ExceptionMessageString = "Extracted JSON string is null or empty. MODEL FAILS PROMPT";
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $": Extracted JSON candidate string is null or empty.");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
 
             try
             {
-                return JsonSerializer.Deserialize<ResponseJsonObject>(jsonString);
+                // Attempt to deserialize the extracted JSON candidate
+                _logger.LogInformation($"Attempting to deserialize extracted JSON candidate.");
+                jsonCandidate = JsonSerializer.Deserialize<Dictionary<string, object>>(extractedJsonCandidate)!;
+
+                /// If deserialization is successful, determine the typeof the response and topic properties
+                if (jsonCandidate != null)
+                {
+                    // Handle missing response property
+                    if (!jsonCandidate.ContainsKey("response"))
+                    {
+                        responseFlat.score -= 1;
+                        responseFlat.reasons.Add("Deducting point for: Missing response property");
+                    }
+
+                    // Handle missing topic property
+                    if (!jsonCandidate.ContainsKey("topic"))
+                    {
+                        responseFlat.score -= 1;
+                        responseFlat.reasons.Add("Deducting point for: Missing topic property");
+                    }
+
+                    // Handle null response property
+                    if (jsonCandidate.ContainsKey("response")
+                                        && jsonCandidate["response"]
+                                        is JsonElement jsonElementResponseNull
+                                        && jsonElementResponseNull.ValueKind == JsonValueKind.Null)
+                    {
+                        responseFlat.score -= 1;
+                        responseFlat.reasons.Add("Deducting point for: Null response property");
+                    }
+
+                    // Handle null topic property  
+                    if (jsonCandidate.ContainsKey("topic")
+                                        && jsonCandidate["topic"]
+                                        is JsonElement jsonElementTopicStringNull
+                                        && jsonElementTopicStringNull.ValueKind == JsonValueKind.Null)
+                    {
+                        responseFlat.score -= 1;
+                        responseFlat.reasons.Add("Deducting point for: Null topic property");
+                    }
+
+                    // Handle response as string
+                    if (jsonCandidate.ContainsKey("response")
+                                        && jsonCandidate["response"]
+                                        is JsonElement jsonElementResponseString
+                                        && jsonElementResponseString.ValueKind == JsonValueKind.String)
+                    {
+                        responseFlat.response = jsonElementResponseString.ToString()!;
+                    }
+
+                    // Handle topic as string
+                    if (jsonCandidate.ContainsKey("topic")
+                                        && jsonCandidate["topic"]
+                                        is JsonElement jsonElementTopicString
+                                        && jsonElementTopicString.ValueKind == JsonValueKind.String)
+                    {
+                        responseFlat.topic = jsonElementTopicString.ToString()!;
+                    }
+
+                    // Handle response as array
+                    if (jsonCandidate.ContainsKey("response")
+                                        && jsonCandidate["response"]
+                                        is JsonElement jsonElementResponseArray
+                                        && jsonElementResponseArray.ValueKind == JsonValueKind.Array)
+                    {
+                        var responseArray = jsonElementResponseArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
+                        responseFlat.response = string.Join(" ", responseArray);
+                        responseFlat.score -= 1; //reduce grade by 1 for response being an array
+                        responseFlat.reasons.Add("Deducting point for: Response property is an array");
+                    }
+
+                    // Handle topic as array
+                    if (jsonCandidate.ContainsKey("topic")
+                                        && jsonCandidate["topic"]
+                                        is JsonElement jsonElementTopicArray
+                                        && jsonElementTopicArray.ValueKind == JsonValueKind.Array)
+                    {
+                        var topicArray = jsonElementTopicArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
+                        responseFlat.topic = string.Join(" ", topicArray);
+                        responseFlat.score -= 1; //reduce grade by 1 for topic being an array
+                        responseFlat.reasons.Add("Deducting point for: Topic property is an array");
+                    }
+                }
+                else
+                {
+                    // jsonCandidate is null, set grade to 0
+                    responseFlat.response = string.Empty;
+                    responseFlat.topic = string.Empty;
+                    responseFlat.score = 0;
+                    responseFlat.reasons.Add("Deducting point for: Deserialized object is null");
+                }
+                return responseFlat;
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                _logger.LogError("JSON Deserialization error: {Message}", ex.Message);
-                throw;
+                // On exception, set grade to 0
+                responseFlat.response = string.Empty;
+                responseFlat.topic = string.Empty;
+                responseFlat.score = 0;
+
+                if (ex is JsonException jsonEx)
+                {
+                    // Log JSON-specific errors
+                    ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                    _methodName,
+                                                                    $"JSON deserialization failed. Error: {jsonEx.Message}");
+                    _logger.LogCritical(ExceptionMessageString);
+                    responseFlat.reasons.Add("Deducting 0 points: JSON deserialization failed");
+                }
+                else
+                {
+                    // Log other types of exceptions
+                    ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                    _methodName,
+                                                                    $"An error occurred during JSON deserialization: {ex.Message}");
+                    _logger.LogCritical(ExceptionMessageString);
+                    responseFlat.reasons.Add("Deducting 0 points: General exception during deserialization");
+                }
             }
+            finally
+            {
+                _logger.LogInformation($"Deserialization attempt completed for extracted JSON candidate.");
+            }
+
+            return responseFlat;
+        }
+
+        public string RemoveFormatStrings(string text)
+        {
+            // remove carriage returns, line feeds and backslashes
+            text = text.ToString()!.Replace("\r", string.Empty);
+            text = text.ToString()!.Replace("\n", string.Empty);
+            text = text.ToString()!.Replace("\"", string.Empty);
+            text = text.ToString()!.Replace("\\", string.Empty);
+            return text;
         }
         #endregion
 

@@ -16,5 +16,7 @@ namespace AiChatMvcV2.Objects
         public required List<string> TtsVoices { get; set; }
         public required List<string> LLMs { get; set; }
         public required string PromptFilename { get; set; }
+        public required bool PlayAudioFile { get; set; }
+        public required int MaxScore { get; set; }
     }
 }

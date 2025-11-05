@@ -16,6 +16,8 @@ namespace AiChatMvcV2.Models
         public string AudioFileSize { get; set; } = string.Empty;
         public required string Exceptions { get; set; } = string.Empty;
         public required string TtsVoice { get; set; } = string.Empty;
+        public required int Score { get; set; } = 10;
+        public required List<string> ScoreReasons { get; set; } = [];
     }
 
     public class HomeViewModel
@@ -23,9 +25,23 @@ namespace AiChatMvcV2.Models
         public List<ResponseItem>? ResponseItemList { get; set; } = null;
     }
 
-    public class ResponseJsonObject
+    public class ResponseJsonObjectFlat
     {
         public string? response { get; set; } = string.Empty;
-        public string? topic { get; set; } = string.Empty;  
+        public string? topic { get; set; } = string.Empty;
+        public int score { get; set; } = 10;
+        public List<String> reasons { get; set; } = [];
+    }
+
+    public class ResponseJsonObjectArray1
+    {
+        public List<string>? response { get; set; } = [];
+        public string? topic { get; set; } = string.Empty;
+    }
+    
+    public class ResponseJsonObjectArray2
+    {
+        public string[]? response { get; set; } = [];
+        public string[]? topic { get; set; } = [];
     }
 }

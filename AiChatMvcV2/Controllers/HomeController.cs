@@ -54,6 +54,8 @@ public class HomeController : Controller
         string TopicText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
+        int Score = 10;
+        List<string> ScoreReasons = new();
 
         try
         {
@@ -67,10 +69,7 @@ public class HomeController : Controller
             }
 
             // remove carriage returns, line feeds and backslashes
-            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\r", string.Empty);
-            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\n", string.Empty);
-            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\"", string.Empty);
-            StructuredPrompt = StructuredPrompt.ToString()!.Replace("\\", string.Empty);
+            StructuredPrompt = _ResponseService.RemoveFormatStrings(StructuredPrompt);
 
             // do we have any last response text to insert into the structured prompt?
             // i.e. <LastResponse>...</LastResponse>
@@ -98,12 +97,20 @@ public class HomeController : Controller
             }
 
             //extract the response and topic from the JSON object embedded in the response text
-            ResponseJsonObject? parsedResponse = _ResponseService.ExtractAndDeserialize(ResponseText);
+            ResponseJsonObjectFlat? parsedResponse = _ResponseService.ExtractAndDeserialize(ResponseText);
             _logger.LogInformation($"Deserialized response JSON object from model response: {parsedResponse}");
             ResponseText = parsedResponse?.response ?? String.Empty;
             TopicText = parsedResponse?.topic ?? String.Empty;
+            Score = parsedResponse?.score ?? 10;
+            ScoreReasons = parsedResponse?.reasons ?? [];
+
             _logger.LogInformation("Extracted response: {ResponseText}", ResponseText);
             _logger.LogInformation("Extracted topic: {TopicText}", TopicText);
+            _logger.LogInformation("Extracted score: {Score}", Score);
+            foreach(var itm in parsedResponse?.reasons ?? [])
+            {
+                _logger.LogInformation("Score reason: {Reason}", itm);
+            }
 
             if (TopicText == null || TopicText == String.Empty)
             {
@@ -116,6 +123,15 @@ public class HomeController : Controller
             // Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
             // pronunciation of the one or two word topic.
+            if (_settings.PlayAudioFile == false)
+            {
+                _logger.LogInformation("Skipping speech file generation as per application settings.");
+                AudioFilename = "N/A";
+                // we still fall into the finall{} block to build out the response item
+                // and return to the browser
+                return Ok(ViewModel);
+            }
+
             _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
             AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
 
@@ -161,7 +177,9 @@ public class HomeController : Controller
                 ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds),
                 WordCount = _ResponseService.GetWordCount(ResponseText),
                 Exceptions = ExceptionMessageString,
-                TtsVoice = TtsVoice
+                TtsVoice = TtsVoice,
+                Score = Score,
+                ScoreReasons = ScoreReasons
             };
         }
 
@@ -183,7 +201,6 @@ public class HomeController : Controller
         {
             ExceptionMessageString = e.Message.ToString();
             _logger.LogCritical(ExceptionMessageString);
-            throw;
         }
         finally
         {

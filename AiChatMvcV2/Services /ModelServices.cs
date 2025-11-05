@@ -21,7 +21,7 @@ namespace AiChatMvcV2.Services
 
         // Enable Mirostat sampling for controlling perplexity. 
         // (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
-        private readonly double mirostat = 0;
+        private readonly double microstat = 0;
         //  dInfluences how quickly the algorithm responds to feedback 
         // from the generated text. A lower learning rate will result 
         // in slower adjustments, while a higher learning rate will make 
@@ -134,7 +134,7 @@ namespace AiChatMvcV2.Services
             string url = _settings.Url;
             string data;
 
-            var options = $@"{{""mirostat"" : {mirostat},
+            var options = $@"{{""microstat"" : {microstat},
                                     ""microstat_eta"" : {microstat_eta},
                                     ""microstat_tau"" : {microstat_tau},
                                     ""num_ctx"" : {num_ctx},
@@ -151,9 +151,9 @@ namespace AiChatMvcV2.Services
             data = $@"{{""model"" : ""{Model}"",
                     ""prompt"" : ""{Prompt}"",
                     ""stream"" : false,
-                    ""options"" : {options}
+                    ""format"" : ""json""
                 }}";
-
+                 
             try
             {
                 using (var client = new HttpClient())
@@ -174,7 +174,7 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = String.Format("{0} {1},\nException: {2}", Model, Prompt, response.RequestMessage);
+                        ExceptionMessageString = String.Format("{0} {1},\nException: {2}", Model, Prompt, response.ReasonPhrase);
                         throw new Exception(ExceptionMessageString);
                     }
                 }

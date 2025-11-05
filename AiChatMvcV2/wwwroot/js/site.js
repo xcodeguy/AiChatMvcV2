@@ -37,6 +37,8 @@ $(document).ready(async function () {
     var WavfileName = "";
     var TtsVoice = "";
     var ExceptionString = "";
+    var Score = 10;
+    var ScoreReasons = [];
 
     ConsolLogWindow("Initialized variables");
 
@@ -321,8 +323,16 @@ $(document).ready(async function () {
                 WavfileName = data.responseItemList[0].audioFilename;
                 TtsVoice = data.responseItemList[0].ttsVoice;
                 ExceptionString = data.responseItemList[0].exceptions;
-                ConsolLogWindow("Got reaponse items");
+                Score = data.responseItemList[0].score;
+                ScoreReasons = data.responseItemList[0].scoreReasons;
+
+                ConsolLogWindow("Got response: " + TheResponse);
+                ConsolLogWindow("Got response items");
                 ConsolLogWindow("TOPIC: " + TheTopic);
+                ConsolLogWindow("Score: " + Score);
+                for (var i = 0; i < ScoreReasons.length; i++) {
+                    ConsolLogWindow("Score Reason " + (i + 1) + ": " + ScoreReasons[i]);
+                }
 
                 //method that updates the web UI if call is successful
                 //or not. It is also used in the error: handler
