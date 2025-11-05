@@ -15,9 +15,13 @@ namespace AiChatMvcV2.Services
 {
     public class ModelServices : IModelServices
     {
+        #region Declarations
         private readonly ILogger<ModelServices> _logger;
         private readonly ResponseServices _responseService;
         private readonly ApplicationSettings _settings;
+        string _className = string.Empty;
+        string _methodName = string.Empty;
+        Func<string, string, string, string> GetClassAndMethodName;
 
         // Enable Mirostat sampling for controlling perplexity. 
         // (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
@@ -65,12 +69,14 @@ namespace AiChatMvcV2.Services
         private const string sp_insert_table_response = "sp_insert_table_response";
         private static string _connectionString = "Server=localhost;Database=WakeNbake;Uid=root;Pwd=";
         string ExceptionMessageString = string.Empty;
+        #endregion
 
         public ModelServices(IOptions<ApplicationSettings> settings, ILogger<ModelServices> logger, ResponseServices responseService)
         {
             _logger = logger;
             _responseService = responseService;
             _settings = settings.Value;
+            GetClassAndMethodName = (cls, mth, exp) => $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {exp}";
         }
 
         private MySqlConnection? GetConnection()
@@ -117,11 +123,11 @@ namespace AiChatMvcV2.Services
                     }
                     catch (MySqlException ex)
                     {
-                        Type classType = this.GetType();
-                        string className = classType.Name.ToString();
-                        string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                        _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
-                        throw;
+                        ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                        _methodName,
+                                                                        ex.Message);
+                        _logger.LogCritical(ExceptionMessageString);
+                        throw new Exception(ExceptionMessageString);
                     }
                 }
             }
@@ -153,7 +159,7 @@ namespace AiChatMvcV2.Services
                     ""stream"" : false,
                     ""format"" : ""json""
                 }}";
-                 
+
             try
             {
                 using (var client = new HttpClient())
@@ -174,18 +180,21 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = String.Format("{0} {1},\nException: {2}", Model, Prompt, response.ReasonPhrase);
+                        ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                        _methodName,
+                                                                        $"HTTP Request failed with status code: {response.StatusCode}\n\nModel->{Model}\n\nPromt->{Prompt}");
+                        _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Type classType = this.GetType();
-                string className = classType.Name.ToString();
-                string methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
-                _logger.LogCritical($"{className}.{methodName}: {ex.Message}");
-                throw;
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                        _methodName,
+                                                                        ex.Message);
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
             }
         }
 

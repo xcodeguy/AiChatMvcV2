@@ -51,7 +51,7 @@ namespace AiChatMvcV2.Services
             {
                 ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
                 _logger.LogCritical(ExceptionMessageString);
-                throw;
+                throw new Exception(ExceptionMessageString);
             }
         }
 
@@ -194,9 +194,11 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message);
                 _logger.LogCritical(ExceptionMessageString);
-                throw;
+                throw new Exception(ExceptionMessageString);
             }
         }
 
@@ -232,7 +234,10 @@ namespace AiChatMvcV2.Services
                         if (!response.Content.Headers.Contains("Content-Disposition") ||
                             !response.Content.Headers.GetValues("Content-Disposition").Any())
                         {
-                            ExceptionMessageString = "Content-Disposition header is missing or empty";
+                            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                "Content-Disposition header is missing or empty");
+                            _logger.LogCritical(ExceptionMessageString);
                             throw new Exception(ExceptionMessageString);
                         }
                         ContentDisposiion = response.Content.Headers.GetValues("Content-Disposition").First();
@@ -242,7 +247,10 @@ namespace AiChatMvcV2.Services
                         DropFilename = _settings.SpeechFileDropLocation!;
                         if (ContentDisposiion.ToString() is null)
                         {
-                            ExceptionMessageString = string.Format("Content-Disposition header is null");
+                            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                "Content-Disposition header is null");
+                            _logger.LogCritical(ExceptionMessageString);
                             throw new Exception(ExceptionMessageString);
                         }
 
@@ -251,7 +259,10 @@ namespace AiChatMvcV2.Services
                         var ContentDispositionArray = ContentDisposiion.Split("=");
                         if (ContentDispositionArray.Length < 2)
                         {
-                            ExceptionMessageString = string.Format("Content-Disposition header is invalid (split array < 2): {0}", ContentDisposiion);
+                            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"Content-Disposition header is invalid (split array < 2): {ContentDisposiion}");
+                            _logger.LogCritical(ExceptionMessageString);
                             throw new Exception(ExceptionMessageString);
                         }
 
@@ -265,18 +276,22 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = response.RequestMessage != null ? response.RequestMessage.ToString() : "RequestMessage is null";
+                        ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                response.RequestMessage != null ? response.RequestMessage.ToString() : "RequestMessage is null");
+                        _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
                 }
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message);
                 _logger.LogCritical(ExceptionMessageString);
-                throw;
+                throw new Exception(ExceptionMessageString);
             }
-
         }
 
         public string CopySpeechFileToAssets(string SourceFile)
@@ -320,7 +335,7 @@ namespace AiChatMvcV2.Services
                                                                 _methodName,
                                                                 ex.Message);
                 _logger.LogCritical(ExceptionMessageString);
-                throw;
+                throw new Exception(ExceptionMessageString);
             }
         }
 
@@ -357,7 +372,7 @@ namespace AiChatMvcV2.Services
             {
                 ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
                 _logger.LogCritical(ExceptionMessageString);
-                throw;
+                throw new Exception(ExceptionMessageString);
             }
 
         }
@@ -516,13 +531,13 @@ namespace AiChatMvcV2.Services
                     _logger.LogCritical(ExceptionMessageString);
                     responseFlat.reasons.Add("Deducting 0 points: General exception during deserialization");
                 }
+
+                throw new Exception(ExceptionMessageString);
             }
             finally
             {
                 _logger.LogInformation($"Deserialization attempt completed for extracted JSON candidate.");
             }
-
-            return responseFlat;
         }
 
         public string RemoveFormatStrings(string text)

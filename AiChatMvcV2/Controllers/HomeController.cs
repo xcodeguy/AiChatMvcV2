@@ -63,7 +63,9 @@ public class HomeController : Controller
             var StructuredPrompt = ReadPromptFile(_settings.PromptFilename);
             if (StructuredPrompt == null)
             {
-                ExceptionMessageString = $"The structured prompt for the response is missing or empty for model {model}.";
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"The structured prompt for the response is missing or empty for model {model}.");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -91,7 +93,9 @@ public class HomeController : Controller
             // check for a null or empty response from the API->Inference Server->Model call
             if (ResponseText == null || ResponseText == String.Empty)
             {
-                ExceptionMessageString = $"The response is null or empty for model {model}.";
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"The response is null or empty for model {model}.");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -107,14 +111,16 @@ public class HomeController : Controller
             _logger.LogInformation("Extracted response: {ResponseText}", ResponseText);
             _logger.LogInformation("Extracted topic: {TopicText}", TopicText);
             _logger.LogInformation("Extracted score: {Score}", Score);
-            foreach(var itm in parsedResponse?.reasons ?? [])
+            foreach (var itm in parsedResponse?.reasons ?? [])
             {
                 _logger.LogInformation("Score reason: {Reason}", itm);
             }
 
             if (TopicText == null || TopicText == String.Empty)
             {
-                ExceptionMessageString = $"Cannot generate speech file because the topic text is null or empty for model {model}.";
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"Cannot generate speech file because the topic text is null or empty for model {model}.");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -139,7 +145,9 @@ public class HomeController : Controller
             //checks are performed in the service layer
             if (!System.IO.File.Exists(local_path_to_assets_folder + AudioFilename))
             {
-                ExceptionMessageString = String.Format("Speech/Audio file not found: {0}", AudioFilename);
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"Speech/Audio file not found: {AudioFilename}");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -150,14 +158,17 @@ public class HomeController : Controller
                 _logger.LogInformation("Audio file generated: {file}, size: {size} bytes", AudioFilename, fileSizeInBytes);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             //don't throw the exception. this is the last method in the call chain
             //and we always return an Http OK to the browser. we use the finally block
             //to assemble the response with all meta-data including any exceptions from
             //the backend services
-            ExceptionMessageString = e.Message.ToString();
+            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message.ToString());
             _logger.LogCritical(ExceptionMessageString);
+            throw new Exception(ExceptionMessageString);
         }
         finally
         {
@@ -192,15 +203,20 @@ public class HomeController : Controller
             bool success = _ModelService.InsertResponse(Item);
             if (!success)
             {
-                ExceptionMessageString = String.Format($"Error inserting response into database: {Item.Model} {Item.Response} {Item.Topic}");
+                ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                $"Error inserting response into database: {Item.Model} {Item.Response} {Item.Topic}");
                 _logger.LogCritical(ExceptionMessageString);
-                throw new Exception("Error inserting response into database.");
+                throw new Exception(ExceptionMessageString);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            ExceptionMessageString = e.Message.ToString();
+            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message.ToString());
             _logger.LogCritical(ExceptionMessageString);
+            throw new Exception(ExceptionMessageString);
         }
         finally
         {
@@ -233,10 +249,13 @@ public class HomeController : Controller
             }
             return text;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogCritical(e.Message.ToString());
-            throw;
+            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message.ToString());
+            _logger.LogCritical(ExceptionMessageString);
+            throw new Exception(ExceptionMessageString);
         }
     }
 
@@ -248,10 +267,13 @@ public class HomeController : Controller
             List<string> ModelNameList = _settings.LLMs;
             return Ok(ModelNameList);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogCritical(e.Message.ToString());
-            throw;
+            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message.ToString());
+            _logger.LogCritical(ExceptionMessageString);
+            throw new Exception(ExceptionMessageString);
         }
     }
 
@@ -270,10 +292,13 @@ public class HomeController : Controller
                 throw new Exception(ExceptionMessageString);
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogCritical(e.Message.ToString());
-            throw;
+            ExceptionMessageString = GetClassAndMethodName(_className,
+                                                                _methodName,
+                                                                ex.Message.ToString());
+            _logger.LogCritical(ExceptionMessageString);
+            throw new Exception(ExceptionMessageString);
         }
 
         return Ok();
