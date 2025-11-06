@@ -78,11 +78,11 @@ $(document).ready(async function () {
     $("#btnLlmSettings").click(function () {
     });
 
-    $("#ThFasterColumn").click(function () {
+    $("#TheFasterColumn").click(function () {
         sortTable(1);
     });
 
-    $("#ThWordColumn").click(function () {
+    $("#TheWordColumn").click(function () {
         sortTable(2);
     });
 
@@ -191,7 +191,10 @@ $(document).ready(async function () {
             var ModelWordCountCell = $("<td class=\"ModelStatsTableCell\"></td>");
             ModelWordCountCell.attr('id', 'ModelStatsTablCell3_' + i);
 
-            tr.append(ModelNameCell, ModelTimeCell, ModelWordCountCell);
+            var ModelScoreCell = $("<td class=\"ModelStatsTableCell\"></td>");
+            ModelScoreCell.attr('id', 'ModelStatsTablCell4_' + i);
+
+            tr.append(ModelNameCell, ModelTimeCell, ModelWordCountCell, ModelScoreCell);
             $('#ModelStatsTable tbody:last').append(tr);
         }
         ConsolLogWindow("Model stats table created");
@@ -310,7 +313,7 @@ $(document).ready(async function () {
             },
             /*dataType: 'json',*/
             success: function (data) {
-                ConsolLogWindow("Success <i style=\"color: green;\" class=\"fa-solid fa-circle-check\"></i>");
+                ConsolLogWindow("Successfully got response from API");
 
                 //get the response items from the data object that
                 //contains  the responseItemList list. We access
@@ -348,7 +351,7 @@ $(document).ready(async function () {
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
                     DivChatElementForException.style.color = "#ffffff";
-
+                    TheResponse = "";
                     DisplayExceptionCountStatistic();
                 }
                 else {
@@ -362,10 +365,7 @@ $(document).ready(async function () {
             },
             error: function (xhr, status, error) {
                 ConsolLogWindow(xhr.statusText);
-
-                //method that updates the web UI if call is successful
-                //or not. It is also used in the success: handler
-                //to update the web page with the model meta-data
+/*
                 TheTopic = "Http Exception!";
                 UpdateWebUiElements(xhr.statusText, false);
                 DivChatElementForException = document.getElementById(GlobalChatDivId);
@@ -384,7 +384,7 @@ $(document).ready(async function () {
                     //try again after the exception
                     ConsolLogWindow("Continuing with api calls after exception");
                     CallApiEndpoint("");
-                }
+                }*/
             },
             complete: function () {
                 ConsolLogWindow("Done");
@@ -449,10 +449,16 @@ $(document).ready(async function () {
         //search all td elements and find current model
         //update td to the right with seconds
         //update td right and right again with word count
+        //update td right and right and right again with score
         const wordsArray = DivText.trim().split(/\s+/).filter(word => word.length > 0);
         var thisWord = ZeroPad(wordsArray.length, 4);
+        switch (Score) {
+            case (10 / Score <= 10 ? "" : ""):
+                break;
+        }
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().next().text(Score);
 
         //sort the table by call time
         sortTable(1);

@@ -17,10 +17,7 @@ namespace AiChatMvcV2.Services
         private readonly ILogger<ResponseServices> _logger;
         private readonly ApplicationSettings _settings;
         private string ExceptionMessageString = string.Empty;
-        Type _classType;
-        string _className = string.Empty;
-        string _methodName;
-        Func<string, string, string, string> GetClassAndMethodName;
+        string _className = nameof(ResponseServices);
         #endregion
 
         #region methods
@@ -28,12 +25,9 @@ namespace AiChatMvcV2.Services
         {
             _logger = logger;
             _settings = settings.Value;
-            _classType = this.GetType();
-            _className = _classType.Name.ToString();
-            _methodName = string.Empty;
-
-            GetClassAndMethodName = (cls, mth, exp) => $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {exp}";
-
+            _className = this.GetType().Name;
+            Type declaringType = MethodBase.GetCurrentMethod()!.DeclaringType!;
+            _className = declaringType.Name;
         }
 
         public int GetWordCount(string TheResponse)
@@ -49,7 +43,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -194,9 +188,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                ex.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -204,7 +196,6 @@ namespace AiChatMvcV2.Services
 
         public async Task<string> GenerateSpeechFile(string TextForSpeech, string Voice)
         {
-            _methodName = MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method";
             string TtsEndpointUrl = _settings.TTSApiEndpointUrl;
             string ModelName = _settings.TTSModelName;
             string TtsRequest;
@@ -234,9 +225,7 @@ namespace AiChatMvcV2.Services
                         if (!response.Content.Headers.Contains("Content-Disposition") ||
                             !response.Content.Headers.GetValues("Content-Disposition").Any())
                         {
-                            ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                "Content-Disposition header is missing or empty");
+                            ExceptionMessageString = "Content-Disposition header is missing or empty";
                             _logger.LogCritical(ExceptionMessageString);
                             throw new Exception(ExceptionMessageString);
                         }
@@ -247,9 +236,7 @@ namespace AiChatMvcV2.Services
                         DropFilename = _settings.SpeechFileDropLocation!;
                         if (ContentDisposiion.ToString() is null)
                         {
-                            ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                "Content-Disposition header is null");
+                            ExceptionMessageString = "Content-Disposition header is null";
                             _logger.LogCritical(ExceptionMessageString);
                             throw new Exception(ExceptionMessageString);
                         }
@@ -259,9 +246,7 @@ namespace AiChatMvcV2.Services
                         var ContentDispositionArray = ContentDisposiion.Split("=");
                         if (ContentDispositionArray.Length < 2)
                         {
-                            ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                $"Content-Disposition header is invalid (split array < 2): {ContentDisposiion}");
+                            ExceptionMessageString = $"Content-Disposition header is invalid (split array < 2): {ContentDisposiion}";
                             _logger.LogCritical(ExceptionMessageString);
                             throw new Exception(ExceptionMessageString);
                         }
@@ -276,9 +261,7 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                response.RequestMessage != null ? response.RequestMessage.ToString() : "RequestMessage is null");
+                        ExceptionMessageString = response.RequestMessage != null ? response.RequestMessage.ToString() : "RequestMessage is null";
                         _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
@@ -286,9 +269,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                ex.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -305,9 +286,7 @@ namespace AiChatMvcV2.Services
                 //check for null
                 if (SourceFile == null)
                 {
-                    ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                    _methodName,
-                                                                    $"Error: Source file is NULL");
+                    ExceptionMessageString = $"Error: Source file is NULL";
                     _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
@@ -315,9 +294,7 @@ namespace AiChatMvcV2.Services
                 // Check if the source file exists
                 if (!File.Exists(SourceFile))
                 {
-                    ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                    _methodName,
-                                                                    $"Error: Source file not found: {SourceFile}");
+                    ExceptionMessageString = $"Error: Source file not found: {SourceFile}";
                     _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
@@ -331,9 +308,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                ex.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -346,9 +321,7 @@ namespace AiChatMvcV2.Services
                 string filePath = _settings.SpeechFilePlaybackLocation + _settings.SpeechFilePlaybackName;
                 if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
                 {
-                    ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                $"Speech file not found at {(string.IsNullOrWhiteSpace(filePath) ? "Filename is empty or whitespace" : filePath)}");
+                    ExceptionMessageString = $"Speech file not found at {(string.IsNullOrWhiteSpace(filePath) ? "Filename is empty or whitespace" : filePath)}";
                     _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
@@ -370,7 +343,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className, _methodName, ex.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -391,9 +364,7 @@ namespace AiChatMvcV2.Services
 
             if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                $"JSON boundaries not found in the response text.");
+                ExceptionMessageString = $"JSON boundaries not found in the response text.";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -404,9 +375,7 @@ namespace AiChatMvcV2.Services
 
             if (string.IsNullOrEmpty(extractedJsonCandidate))
             {
-                ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                _methodName,
-                                                                $": Extracted JSON candidate string is null or empty.");
+                ExceptionMessageString = $"Extracted JSON candidate string is null or empty.";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -516,18 +485,14 @@ namespace AiChatMvcV2.Services
                 if (ex is JsonException jsonEx)
                 {
                     // Log JSON-specific errors
-                    ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                    _methodName,
-                                                                    $"JSON deserialization failed. Error: {jsonEx.Message}");
+                    ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: A JSON Exception occurred during deserialization: {jsonEx.Message}";
                     _logger.LogCritical(ExceptionMessageString);
                     responseFlat.reasons.Add("Deducting 0 points: JSON deserialization failed");
                 }
                 else
                 {
                     // Log other types of exceptions
-                    ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                    _methodName,
-                                                                    $"An error occurred during JSON deserialization: {ex.Message}");
+                    ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: An Exception occurred during deserialization: {ex.Message}";
                     _logger.LogCritical(ExceptionMessageString);
                     responseFlat.reasons.Add("Deducting 0 points: General exception during deserialization");
                 }

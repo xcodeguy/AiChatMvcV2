@@ -20,8 +20,6 @@ namespace AiChatMvcV2.Services
         private readonly ResponseServices _responseService;
         private readonly ApplicationSettings _settings;
         string _className = string.Empty;
-        string _methodName = string.Empty;
-        Func<string, string, string, string> GetClassAndMethodName;
 
         // Enable Mirostat sampling for controlling perplexity. 
         // (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
@@ -76,7 +74,9 @@ namespace AiChatMvcV2.Services
             _logger = logger;
             _responseService = responseService;
             _settings = settings.Value;
-            GetClassAndMethodName = (cls, mth, exp) => $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {exp}";
+            _className = this.GetType().Name;
+            Type declaringType = MethodBase.GetCurrentMethod()!.DeclaringType!;
+            _className = declaringType.Name;
         }
 
         private MySqlConnection? GetConnection()
@@ -87,12 +87,12 @@ namespace AiChatMvcV2.Services
 
                 return new MySqlConnection(_connectionString);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.LogCritical(e.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
             }
-
-            return null;
         }
 
         public bool InsertResponse(ResponseItem TheResponse)
@@ -123,9 +123,7 @@ namespace AiChatMvcV2.Services
                     }
                     catch (MySqlException ex)
                     {
-                        ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                        _methodName,
-                                                                        ex.Message);
+                        ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                         _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
@@ -180,9 +178,7 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                        _methodName,
-                                                                        $"HTTP Request failed with status code: {response.StatusCode}\n\nModel->{Model}\n\nPromt->{Prompt}");
+                        ExceptionMessageString = $"HTTP Request failed with status code: {response.StatusCode}\n\nModel->{Model}\n\nPromt->{Prompt}";
                         _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
@@ -190,14 +186,10 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = GetClassAndMethodName(_className,
-                                                                        _methodName,
-                                                                        ex.Message);
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
         }
-
     }       //end class
-
 }       //end namespace
