@@ -16,7 +16,7 @@ public class HomeController : Controller
     private readonly ModelServices _ModelService;
     private readonly ResponseServices _ResponseService;
     private string ExceptionMessageString = String.Empty;
-    string _className = string.Empty;
+    string _className = "HomeController";
 
     public HomeController(IOptions<ApplicationSettings> settings,
                             ILogger<HomeController> logger,
@@ -27,7 +27,7 @@ public class HomeController : Controller
         _ModelService = callController;
         _ResponseService = responseService;
         _settings = settings.Value;
-        
+
         Type declaringType = MethodBase.GetCurrentMethod()!.DeclaringType!;
         _className = declaringType.Name;
     }
@@ -93,11 +93,11 @@ public class HomeController : Controller
             }
 
             //extract the response and topic from the JSON object embedded in the response text
-            ResponseJsonObjectFlat? parsedResponse = _ResponseService.ExtractAndDeserialize(ResponseText);
+            ResponseJsonObjectFlat? parsedResponse = _ResponseService.ExtractAndDeserialize(Prompt!, ResponseText);
             _logger.LogInformation($"Deserialized response JSON object from model response: {parsedResponse}");
             ResponseText = parsedResponse?.response ?? String.Empty;
             TopicText = parsedResponse?.topic ?? String.Empty;
-            Score = parsedResponse?.score ?? 10;
+            Score = (int)(parsedResponse?.score)!;
             ScoreReasons = parsedResponse?.reasons ?? [];
 
             _logger.LogInformation("Extracted response: {ResponseText}", ResponseText);
@@ -108,42 +108,40 @@ public class HomeController : Controller
                 _logger.LogInformation("Score reason: {Reason}", itm);
             }
 
-            if (TopicText == null || TopicText == String.Empty)
-            {
-                ExceptionMessageString = $"Cannot generate speech file because the topic text is null or empty for model {model}.";
-                _logger.LogCritical(ExceptionMessageString);
-                throw new Exception(ExceptionMessageString);
-            }
-
             // call the api to generate a speech file from the TopicText summary.
             // Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
             // pronunciation of the one or two word topic.
-            if (_settings.PlayAudioFile == false)
+            if (_settings.PlayAudioFile == true)
             {
-                _logger.LogInformation("Skipping speech file generation as per application settings.");
+                _logger.LogInformation("Generating speech file as per application settings.");
                 AudioFilename = "N/A";
-                // we still fall into the finall{} block to build out the response item
-                // and return to the browser
-                return Ok(ViewModel);
-            }
 
-            _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
-            AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
+                if (TopicText == null || TopicText == String.Empty)
+                {
+                    ExceptionMessageString = $"Cannot generate speech file because the topic text is null or empty for model {model}.";
+                    _logger.LogCritical(ExceptionMessageString);
+                    throw new Exception(ExceptionMessageString);
+                }
 
-            //check if the audio/speech file exists, this is redundant because the file
-            //checks are performed in the service layer
-            if (!System.IO.File.Exists(local_path_to_assets_folder + AudioFilename))
-            {
-                ExceptionMessageString = $"Speech/Audio file not found: {AudioFilename}";
-                _logger.LogCritical(ExceptionMessageString);
-                throw new Exception(ExceptionMessageString);
-            }
-            else
-            {
-                FileInfo fileInfo = new FileInfo(local_path_to_assets_folder + AudioFilename);
-                fileSizeInBytes = fileInfo.Length;
-                _logger.LogInformation("Audio file generated: {file}, size: {size} bytes", AudioFilename, fileSizeInBytes);
+                _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
+                AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
+
+                //check if the audio/speech file exists, this is redundant because the file
+                //checks are performed in the service layer as well, but we do it here to
+                //gather the file size for the response item
+                if (!System.IO.File.Exists(local_path_to_assets_folder + AudioFilename))
+                {
+                    ExceptionMessageString = $"Speech/Audio file not found: {AudioFilename}.";
+                    _logger.LogCritical(ExceptionMessageString);
+                    throw new Exception(ExceptionMessageString);
+                }
+                else
+                {
+                    FileInfo fileInfo = new FileInfo(local_path_to_assets_folder + AudioFilename);
+                    fileSizeInBytes = fileInfo.Length;
+                    _logger.LogInformation("Audio file generated: {file}, size: {size} bytes", AudioFilename, fileSizeInBytes);
+                }
             }
         }
         catch (Exception ex)
@@ -152,7 +150,7 @@ public class HomeController : Controller
             //and we always return an Http OK to the browser. we use the finally block
             //to assemble the response with all meta-data including any exceptions from
             //the backend services
-            ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()}: {ex.Message}";
+            ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
             _logger.LogCritical(ExceptionMessageString);
         }
         finally
@@ -188,14 +186,14 @@ public class HomeController : Controller
             bool success = _ModelService.InsertResponse(Item);
             if (!success)
             {
-                ExceptionMessageString = $"Error inserting response into database: {Item.Model} {Item.Response} {Item.Topic}";
+                ExceptionMessageString = $"Error inserting response into database: {Item.Model}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
         }
         catch (Exception ex)
         {
-            ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()}:{ex.Message.ToString()}";
+            ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
             _logger.LogCritical(ExceptionMessageString);
         }
         finally

@@ -281,6 +281,8 @@ $(document).ready(async function () {
         if (ModelPointer > MaxModels) {
             //reset pointer to first array element
             ModelPointer = 0;
+            // set the prompt to empty which forces a new topic/conversation
+            prompt = "";
         }
 
         //add a div that has an animated elipse to display
@@ -365,26 +367,26 @@ $(document).ready(async function () {
             },
             error: function (xhr, status, error) {
                 ConsolLogWindow(xhr.statusText);
-/*
-                TheTopic = "Http Exception!";
-                UpdateWebUiElements(xhr.statusText, false);
-                DivChatElementForException = document.getElementById(GlobalChatDivId);
-                DivChatElementForException.style.backgroundColor = "#ff0000";
-                DivChatElementForException.style.color = "#ffffff";
-
-                DisplayExceptionCountStatistic();
-
-                //-1 overrides the max exception logic
-                if (GlobalMaxErrors == -1) {
-                    ConsolLogWindow("GlobalMaxErros=-1: Ignoring retry logic and calling CallApiEndpoint().");
-                    CallApiEndpoint("");
-                } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
-                    return;
-                } else {
-                    //try again after the exception
-                    ConsolLogWindow("Continuing with api calls after exception");
-                    CallApiEndpoint("");
-                }*/
+                /*
+                                TheTopic = "Http Exception!";
+                                UpdateWebUiElements(xhr.statusText, false);
+                                DivChatElementForException = document.getElementById(GlobalChatDivId);
+                                DivChatElementForException.style.backgroundColor = "#ff0000";
+                                DivChatElementForException.style.color = "#ffffff";
+                
+                                DisplayExceptionCountStatistic();
+                
+                                //-1 overrides the max exception logic
+                                if (GlobalMaxErrors == -1) {
+                                    ConsolLogWindow("GlobalMaxErros=-1: Ignoring retry logic and calling CallApiEndpoint().");
+                                    CallApiEndpoint("");
+                                } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
+                                    return;
+                                } else {
+                                    //try again after the exception
+                                    ConsolLogWindow("Continuing with api calls after exception");
+                                    CallApiEndpoint("");
+                                }*/
             },
             complete: function () {
                 ConsolLogWindow("Done");
@@ -452,13 +454,21 @@ $(document).ready(async function () {
         //update td right and right and right again with score
         const wordsArray = DivText.trim().split(/\s+/).filter(word => word.length > 0);
         var thisWord = ZeroPad(wordsArray.length, 4);
-        switch (Score) {
-            case (10 / Score <= 10 ? "" : ""):
-                break;
+        var Rating = getRating(Score);
+        var FaStars = '';
+        for (var i = 0; i < Rating; i++) {
+            FaStars += '<span class="fa-solid fa-star"></span>';
+        }
+        ConsolLogWindow("Score: " + Score);
+        ConsolLogWindow("Rating: " + Rating);
+        if (Array.isArray(ScoreReasons)) {
+            ScoreReasons.forEach(function (element, idx) {
+                ConsolLogWindow("Score Reason " + (idx + 1) + ": " + element);
+            });
         }
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
-        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().next().text(Score);
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().next().html(FaStars);
 
         //sort the table by call time
         sortTable(1);
@@ -483,6 +493,21 @@ $(document).ready(async function () {
                     DisplayExceptionCountStatistic();
                 }
             });
+        }
+    }
+
+    //ai generated code for 5 star rating
+    function getRating(input) {
+        if (input >= 9) {
+            return 5;
+        } else if (input >= 7) {
+            return 4;
+        } else if (input >= 5) {
+            return 3;
+        } else if (input >= 3) {
+            return 2;
+        } else {
+            return 1;
         }
     }
 

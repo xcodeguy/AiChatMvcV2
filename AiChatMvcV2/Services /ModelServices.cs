@@ -24,25 +24,25 @@ namespace AiChatMvcV2.Services
         // Enable Mirostat sampling for controlling perplexity. 
         // (default: 0, 0 = disabled, 1 = Mirostat, 2 = Mirostat 2.0)
         private readonly double microstat = 0;
-        //  dInfluences how quickly the algorithm responds to feedback 
+        // Influences how quickly the algorithm responds to feedback 
         // from the generated text. A lower learning rate will result 
         // in slower adjustments, while a higher learning rate will make 
         // the algorithm more responsive. (Default: 0.1)	
-        private readonly double microstat_eta = 0.1;
+        private readonly double microstat_eta = 0.5;
         // Controls the balance between coherence and diversity of the output. 
         // A lower value will result in more focused and coherent text. (Default: 5.0)˝
         private readonly double microstat_tau = 5.0;
         // Sets the size of the context window used to generate the next token. (Default: 2048)	
-        private readonly double num_ctx = 2048;
+        private readonly double num_ctx = 10000;
         // Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)	
         private readonly double repeat_last_n = 64;
         // Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) 
         // will penalize repetitions more strongly, while a lower value (e.g., 0.9) 
         // will be more lenient. (Default: 1.1)
-        private readonly double repeat_penalty = 1.1;
+        private readonly double repeat_penalty = 1.5;
         // The temperature of the model. Increasing the temperature will make the 
         // model answer more creatively. (Default: 0.8)	
-        private readonly double temperature = 0.8;
+        private readonly double temperature = 1.5;
         // Sets the random number seed to use for generation. Setting this to a 
         // specific number will make the model generate the same text for the same 
         // prompt. (Default: 0)
@@ -89,7 +89,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
+                ExceptionMessageString = $"{_className}.GetConnection: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -123,7 +123,7 @@ namespace AiChatMvcV2.Services
                     }
                     catch (MySqlException ex)
                     {
-                        ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
+                        ExceptionMessageString = $"{_className}.InsertResponse: {ex.Message}";
                         _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
@@ -186,7 +186,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: {ex.Message}";
+                ExceptionMessageString = $"{_className}.GetModelResponseAsync:{ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }

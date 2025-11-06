@@ -350,7 +350,7 @@ namespace AiChatMvcV2.Services
 
         }
 
-        public ResponseJsonObjectFlat? ExtractAndDeserialize(string plainText)
+        public ResponseJsonObjectFlat? ExtractAndDeserialize(string prompt, string plainText)
         {
             Dictionary<string, object> jsonCandidate = [];
             ResponseJsonObjectFlat responseFlat = new()
@@ -362,26 +362,25 @@ namespace AiChatMvcV2.Services
             int startIndex = plainText.IndexOf('{');
             int endIndex = plainText.IndexOf('}') - startIndex + 1;
 
-            if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
-            {
-                ExceptionMessageString = $"JSON boundaries not found in the response text.";
-                _logger.LogCritical(ExceptionMessageString);
-                throw new Exception(ExceptionMessageString);
-            }
-
-            // Extract a substring that is assumed to be JSON, but may not always be valid JSON.
-            string extractedJsonCandidate = plainText.Substring(startIndex, endIndex).Trim();
-
-
-            if (string.IsNullOrEmpty(extractedJsonCandidate))
-            {
-                ExceptionMessageString = $"Extracted JSON candidate string is null or empty.";
-                _logger.LogCritical(ExceptionMessageString);
-                throw new Exception(ExceptionMessageString);
-            }
-
             try
             {
+                if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex)
+                {
+                    ExceptionMessageString = $"JSON boundaries not found in the response text.";
+                    _logger.LogCritical(ExceptionMessageString);
+                    throw new Exception(ExceptionMessageString);
+                }
+
+                // Extract a substring that is assumed to be JSON, but may not always be valid JSON.
+                string extractedJsonCandidate = plainText.Substring(startIndex, endIndex).Trim();
+
+                if (string.IsNullOrEmpty(extractedJsonCandidate))
+                {
+                    ExceptionMessageString = $"Extracted JSON candidate string is null or empty.";
+                    _logger.LogCritical(ExceptionMessageString);
+                    throw new Exception(ExceptionMessageString);
+                }
+
                 // Attempt to deserialize the extracted JSON candidate
                 _logger.LogInformation($"Attempting to deserialize extracted JSON candidate.");
                 jsonCandidate = JsonSerializer.Deserialize<Dictionary<string, object>>(extractedJsonCandidate)!;
@@ -463,6 +462,12 @@ namespace AiChatMvcV2.Services
                         responseFlat.topic = string.Join(" ", topicArray);
                         responseFlat.score -= 1; //reduce grade by 1 for topic being an array
                         responseFlat.reasons.Add("Deducting point for: Topic property is an array");
+                    }
+
+                    // Now we will call the model to compare the previous response to this response 
+                    if (!String.IsNullOrEmpty(prompt))
+                    {
+
                     }
                 }
                 else
