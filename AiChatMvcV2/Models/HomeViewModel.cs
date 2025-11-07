@@ -38,10 +38,16 @@ namespace AiChatMvcV2.Models
         public List<string>? response { get; set; } = [];
         public string? topic { get; set; } = string.Empty;
     }
-    
+
     public class ResponseJsonObjectArray2
     {
         public string[]? response { get; set; } = [];
         public string[]? topic { get; set; } = [];
+    }
+    
+    public class ResponseItemExceptionObject
+    {
+        public required string Message { get; set; } = string.Empty;
+        public required ResponseJsonObjectFlat responseItem { get; set; }
     }
 }

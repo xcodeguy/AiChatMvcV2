@@ -50,7 +50,7 @@ public class HomeController : Controller
         string TopicText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
-        int Score = 10;
+        int Score = 0;
         List<string> ScoreReasons = new();
 
         try
@@ -108,6 +108,31 @@ public class HomeController : Controller
                 _logger.LogInformation("Score reason: {Reason}", itm);
             }
 
+            // call the api to compare the previous response to the current
+            // response and produce a grade between 1 and 8. That grade gets
+            // subtracted from the score and become the actual score.
+            // Now we will call the model to compare the previous response to this response 
+            if (!String.IsNullOrEmpty(Prompt))
+            {
+                // above grade can only get a max result of 10 - 2 (2 checks faild) = 8
+                // we are looking for the model to return a score of 1 - 8 for the 
+                // text comparison. So the math looks like:
+                //      1. Model returns a 4. 
+                //      2. Score: 8 from above grading subtracted from the models score
+                //      3. NewScore = 8 - 4 = 4
+                //      4. Grade is 4
+                // read the comparisoin prompt from the prompt.md file
+                var ComparisonPrompt = ReadPromptFile(_settings.CompareFileName);
+                if (ComparisonPrompt == null)
+                {
+                    ExceptionMessageString = $"The comparison prompt for the AI grading is missing or empty for model {model}.";
+                    _logger.LogCritical(ExceptionMessageString);
+                    throw new Exception(ExceptionMessageString);
+                }
+            }
+
+
+
             // call the api to generate a speech file from the TopicText summary.
             // Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
@@ -152,6 +177,20 @@ public class HomeController : Controller
             //the backend services
             ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
             _logger.LogCritical(ExceptionMessageString);
+
+            // if there is a response item json exception object in the normal exception
+            // then fetch the properties to send back to the web UI
+            if (ex.Data.Contains("ResponseItemExceptionObject"))
+            {
+                ResponseItemExceptionObject? rex = ex.Data["ResponseItemExceptionObject"] as ResponseItemExceptionObject;
+                if (rex != null)
+                {
+                    ResponseText = rex.Message;
+                    TopicText = rex.responseItem.topic!;
+                    Score = rex.responseItem.score;
+                    ScoreReasons = rex.responseItem.reasons;
+                }
+            }
         }
         finally
         {
@@ -194,6 +233,8 @@ public class HomeController : Controller
         catch (Exception ex)
         {
             ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
+            Item.Score = 0;
+            Item.ScoreReasons.Add($"0 points for an exception. {ExceptionMessageString}");
             _logger.LogCritical(ExceptionMessageString);
         }
         finally

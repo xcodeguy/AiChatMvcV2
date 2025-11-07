@@ -89,7 +89,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = $"{_className}.GetConnection: {ex.Message}";
+                ExceptionMessageString = $"ModelServices.GetConnection: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -119,11 +119,11 @@ namespace AiChatMvcV2.Services
                         connection.Open();
                         command.ExecuteNonQuery(); // Use ExecuteReader if the SP returns data
                         connection.Close();
-                        _logger.LogInformation("Query ({}) executed and connection closed.", sp_insert_table_response);
+                        _logger.LogInformation($"Query ({sp_insert_table_response}) executed and connection closed.");
                     }
                     catch (MySqlException ex)
                     {
-                        ExceptionMessageString = $"{_className}.InsertResponse: {ex.Message}";
+                        ExceptionMessageString = $"ModelServices.InsertResponse: {ex.Message}";
                         _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }
@@ -186,7 +186,7 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                ExceptionMessageString = $"{_className}.GetModelResponseAsync:{ex.Message}";
+                ExceptionMessageString = $"ModelServices.GetMethodResponseAsync: {ex.Message}";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }

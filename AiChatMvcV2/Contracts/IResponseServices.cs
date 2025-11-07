@@ -6,6 +6,6 @@ namespace AiChatMvcV2.Contracts
     {
         public Task<string> RemoveHtmlAndThinkTagsFromModelResponse(string json);
         public Task<bool> PlaySpeechFile();
-        public ResponseJsonObjectFlat? ExtractAndDeserialize(string plainText);
+        public ResponseJsonObjectFlat? ExtractAndDeserialize(string prompt, string plainText);
     }
 }

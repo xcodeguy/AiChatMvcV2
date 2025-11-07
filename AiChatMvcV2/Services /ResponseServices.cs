@@ -463,12 +463,6 @@ namespace AiChatMvcV2.Services
                         responseFlat.score -= 1; //reduce grade by 1 for topic being an array
                         responseFlat.reasons.Add("Deducting point for: Topic property is an array");
                     }
-
-                    // Now we will call the model to compare the previous response to this response 
-                    if (!String.IsNullOrEmpty(prompt))
-                    {
-
-                    }
                 }
                 else
                 {
@@ -490,19 +484,31 @@ namespace AiChatMvcV2.Services
                 if (ex is JsonException jsonEx)
                 {
                     // Log JSON-specific errors
-                    ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: A JSON Exception occurred during deserialization: {jsonEx.Message}";
+                    ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
+                                    ?? "Unknown Method"}: A JSON Exception occurred during deserialization: {jsonEx.Message}";
                     _logger.LogCritical(ExceptionMessageString);
                     responseFlat.reasons.Add("Deducting 0 points: JSON deserialization failed");
                 }
                 else
                 {
                     // Log other types of exceptions
-                    ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name ?? "Unknown Method"}: An Exception occurred during deserialization: {ex.Message}";
+                    ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
+                                    ?? "Unknown Method"}: An Exception occurred during deserialization: {ex.Message}";
                     _logger.LogCritical(ExceptionMessageString);
                     responseFlat.reasons.Add("Deducting 0 points: General exception during deserialization");
                 }
 
-                throw new Exception(ExceptionMessageString);
+                // add a custom object to the regular exception object
+                // this object is the response object which contains
+                // the score, exception message, and reasons for exception
+                ResponseItemExceptionObject rex = new()
+                {
+                    Message = ExceptionMessageString,
+                    responseItem = responseFlat
+                };
+                Exception e = new(ExceptionMessageString);
+                e.Data.Add("ResponseItemExceptionObject", rex);
+                throw e;
             }
             finally
             {
