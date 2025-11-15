@@ -18,18 +18,32 @@ Instructions:
     - Make sure that you **understand all of the instructions** before performing 
         the task.
 
+Task 1:
+    - If the <LastResponse> element is empty, generate a response about any topic you choose. 
+    - If the <LastResponse> element is not empty then generate a response about the text in the <LastResponse> element. 
+    - Your response cannot more than 100 words and not less than 50 words.
+    - If the <LastResponse> element is not empty then compare
+
+Task 2:
+    - If the <LastResponse> element is not empty then compare the text 
+    in the <LastResponse> element with your response and determine
+    how relevant your response is to the <LastResponse> element text.
+    - Your comparison should result in a weighted number between 1 and 5 and this number will be called "grade". 
+    The more relevant the <LastResponse> is to your response should produce a
+    higher grade.
+    - Your grade can only be a number between 1 and 5.
+    - Your grade should be added to the expected JSON output.
+
 
 Template of the expected JSON output:
     {
         "response": "[response]",
-        "topic": "[summary]"
+        "topic": "[summary]",
+        "grade": "[grade]"
     }
 
 
-Task:
-    - If the <LastResponse> element is empty, generate a response about any topic you choose. 
-    - If the <LastResponse> element is not empty then generate a response about the text in the <LastResponse> element. 
-    - Your response cannot more than 100 words and not less than 50 words.
+
 
 <LastResponse></LastResponse>
 

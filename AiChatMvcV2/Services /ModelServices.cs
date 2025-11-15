@@ -10,6 +10,7 @@ using MySql.Data.MySqlClient;
 using AiChatMvcV2.Models;
 using System.Data;
 using System.Reflection;
+using System.ComponentModel.DataAnnotations;
 
 namespace AiChatMvcV2.Services
 {
@@ -33,16 +34,16 @@ namespace AiChatMvcV2.Services
         // A lower value will result in more focused and coherent text. (Default: 5.0)˝
         private readonly double microstat_tau = 5.0;
         // Sets the size of the context window used to generate the next token. (Default: 2048)	
-        private readonly double num_ctx = 10000;
+        private readonly double num_ctx = 2048;
         // Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)	
         private readonly double repeat_last_n = 64;
         // Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) 
         // will penalize repetitions more strongly, while a lower value (e.g., 0.9) 
         // will be more lenient. (Default: 1.1)
-        private readonly double repeat_penalty = 1.5;
+        private readonly double repeat_penalty = 1.1;
         // The temperature of the model. Increasing the temperature will make the 
         // model answer more creatively. (Default: 0.8)	
-        private readonly double temperature = 1.5;
+        private readonly double temperature = 0.8;
         // Sets the random number seed to use for generation. Setting this to a 
         // specific number will make the model generate the same text for the same 
         // prompt. (Default: 0)
@@ -151,7 +152,8 @@ namespace AiChatMvcV2.Services
                                     ""top_p"" : {top_p},
                                     ""min_p"" : {min_p}
                                 }}";
-
+            /* ,
+            ""options"" : {options} */
             data = $@"{{""model"" : ""{Model}"",
                     ""prompt"" : ""{Prompt}"",
                     ""stream"" : false,

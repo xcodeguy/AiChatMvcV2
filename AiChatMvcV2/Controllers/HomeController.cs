@@ -47,10 +47,12 @@ public class HomeController : Controller
         long fileSizeInBytes = 0;
         string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
         string? ResponseText = string.Empty;
+        string GradeText = string.Empty;
         string TopicText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
         int Score = 0;
+        int Grade = 0;
         List<string> ScoreReasons = new();
 
         try
@@ -84,7 +86,7 @@ public class HomeController : Controller
             );
             _logger.LogInformation($"The model response is:\n\n{ResponseText}");
 
-            // check for a null or empty response from the API->Inference Server->Model call
+            // Check for a null or empty response from the API->Inference Server->Model call
             if (ResponseText == null || ResponseText == String.Empty)
             {
                 ExceptionMessageString = $"The response is null or empty for model {model}.";
@@ -92,46 +94,43 @@ public class HomeController : Controller
                 throw new Exception(ExceptionMessageString);
             }
 
-            //extract the response and topic from the JSON object embedded in the response text
-            ResponseJsonObjectFlat? parsedResponse = _ResponseService.ExtractAndDeserialize(Prompt!, ResponseText);
-            _logger.LogInformation($"Deserialized response JSON object from model response: {parsedResponse}");
-            ResponseText = parsedResponse?.response ?? String.Empty;
-            TopicText = parsedResponse?.topic ?? String.Empty;
-            Score = (int)(parsedResponse?.score)!;
-            ScoreReasons = parsedResponse?.reasons ?? [];
+            // Extract the possible JSON object embedded in the response text
+            Dictionary<string, object> responseAsDictionary = _ResponseService.ExtractAndDeserialize(Prompt!, ResponseText);
+            _logger.LogInformation($"Deserialized response JSON object from model response: {responseAsDictionary}");
 
-            _logger.LogInformation("Extracted response: {ResponseText}", ResponseText);
-            _logger.LogInformation("Extracted topic: {TopicText}", TopicText);
-            _logger.LogInformation("Extracted score: {Score}", Score);
-            foreach (var itm in parsedResponse?.reasons ?? [])
+            // Perform a grading algorithym on the Json Object 
+            // and get a response object if available
+            ResponseJsonObjectFlat responseAsObject = new ResponseJsonObjectFlat();
+            responseAsObject = _ResponseService.GradeJsonForResponseObject(responseAsDictionary, responseAsObject);
+
+            // Extract the properties
+            ResponseText = responseAsObject?.ResponseText ?? String.Empty;
+            TopicText = responseAsObject?.TopicText ?? String.Empty;
+            Score = (int)(responseAsObject?.JsonScore)!;
+            ScoreReasons = responseAsObject?.PonitDeductionReasons ?? [];
+            Grade = (int)(responseAsObject?.ComparisonGrade)!;
+
+            _logger.LogInformation($"Extracted response: {ResponseText}");
+            _logger.LogInformation($"Extracted topic: {TopicText}");
+            _logger.LogInformation($"Extracted score: {Score}");
+            _logger.LogInformation($"Extracted grade: {Grade}");
+            if (Score > Grade)
             {
-                _logger.LogInformation("Score reason: {Reason}", itm);
+                Score -= Grade;
             }
-
-            // call the api to compare the previous response to the current
-            // response and produce a grade between 1 and 8. That grade gets
-            // subtracted from the score and become the actual score.
-            // Now we will call the model to compare the previous response to this response 
-            if (!String.IsNullOrEmpty(Prompt))
+            else if (Score < Grade)
             {
-                // above grade can only get a max result of 10 - 2 (2 checks faild) = 8
-                // we are looking for the model to return a score of 1 - 8 for the 
-                // text comparison. So the math looks like:
-                //      1. Model returns a 4. 
-                //      2. Score: 8 from above grading subtracted from the models score
-                //      3. NewScore = 8 - 4 = 4
-                //      4. Grade is 4
-                // read the comparisoin prompt from the prompt.md file
-                var ComparisonPrompt = ReadPromptFile(_settings.CompareFileName);
-                if (ComparisonPrompt == null)
-                {
-                    ExceptionMessageString = $"The comparison prompt for the AI grading is missing or empty for model {model}.";
-                    _logger.LogCritical(ExceptionMessageString);
-                    throw new Exception(ExceptionMessageString);
-                }
+                Score = Grade - Score;
             }
-
-
+            else if (Score == Grade)
+            {
+                Score = Grade;
+            }
+            
+            foreach (var itm in responseAsObject?.PonitDeductionReasons ?? [])
+            {
+                _logger.LogInformation($"Score reason: {itm}");
+            }
 
             // call the api to generate a speech file from the TopicText summary.
             // Append a '.' period to the end of the topic before sending it
@@ -177,20 +176,8 @@ public class HomeController : Controller
             //the backend services
             ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
             _logger.LogCritical(ExceptionMessageString);
-
-            // if there is a response item json exception object in the normal exception
-            // then fetch the properties to send back to the web UI
-            if (ex.Data.Contains("ResponseItemExceptionObject"))
-            {
-                ResponseItemExceptionObject? rex = ex.Data["ResponseItemExceptionObject"] as ResponseItemExceptionObject;
-                if (rex != null)
-                {
-                    ResponseText = rex.Message;
-                    TopicText = rex.responseItem.topic!;
-                    Score = rex.responseItem.score;
-                    ScoreReasons = rex.responseItem.reasons;
-                }
-            }
+            Score = 0;
+            ScoreReasons.Add(ExceptionMessageString);
         }
         finally
         {
@@ -226,6 +213,8 @@ public class HomeController : Controller
             if (!success)
             {
                 ExceptionMessageString = $"Error inserting response into database: {Item.Model}";
+                Item.Score = 0;
+                Item.ScoreReasons.Add($"Deducting {_settings.MaxScore} for an unsuccessful Insert {ExceptionMessageString}");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -234,7 +223,7 @@ public class HomeController : Controller
         {
             ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
             Item.Score = 0;
-            Item.ScoreReasons.Add($"0 points for an exception. {ExceptionMessageString}");
+            Item.ScoreReasons.Add($"Deducting {_settings.MaxScore} points for an exception. {ExceptionMessageString}");
             _logger.LogCritical(ExceptionMessageString);
         }
         finally
@@ -253,7 +242,7 @@ public class HomeController : Controller
         return Ok(ViewModel);
     }
 
-    private string ReadPromptFile(string PromptFilename)
+    private string? ReadPromptFile(string PromptFilename)
     {
         try
         {
@@ -289,6 +278,41 @@ public class HomeController : Controller
             ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()}: {ex.Message.ToString()}";
             _logger.LogCritical(ExceptionMessageString);
             throw new Exception(ExceptionMessageString);
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ReadLogFile()
+    {
+        string logFilePath = $"/Users/dferrell/Documents/GitHub/AiChatMvcV2/AiChatMvcV2/bin/Debug/{DateTime.Now.ToString("yyyy/MM/dd")}.log";
+        int numberOfLines = 20;
+
+        try
+        {
+            // Read the last 'numberOfLines' lines from the log file
+            var lastLines = System.IO.File.ReadLines(logFilePath)
+                                .Reverse() // Read lines in reverse order
+                                .Take(numberOfLines) // Take the specified number of lines
+                                .Reverse() // Reverse again to get them in original order
+                                .ToList(); // Convert to a List
+
+            _logger.LogInformation("Last {count} lines of {file}", numberOfLines, logFilePath);
+            foreach (string line in lastLines)
+            {
+                _logger.LogInformation(line);
+            }
+
+            return Ok(lastLines);
+        }
+        catch (System.IO.FileNotFoundException)
+        {
+            _logger.LogWarning("Error: The file '{file}' was not found.", logFilePath);
+            return NotFound($"Error: The file '{logFilePath}' was not found.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred reading the log file.");
+            return BadRequest($"An error occurred: {ex.Message}");
         }
     }
 

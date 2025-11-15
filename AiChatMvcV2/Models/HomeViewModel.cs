@@ -27,27 +27,10 @@ namespace AiChatMvcV2.Models
 
     public class ResponseJsonObjectFlat
     {
-        public string? response { get; set; } = string.Empty;
-        public string? topic { get; set; } = string.Empty;
-        public int score { get; set; } = 10;
-        public List<String> reasons { get; set; } = [];
-    }
-
-    public class ResponseJsonObjectArray1
-    {
-        public List<string>? response { get; set; } = [];
-        public string? topic { get; set; } = string.Empty;
-    }
-
-    public class ResponseJsonObjectArray2
-    {
-        public string[]? response { get; set; } = [];
-        public string[]? topic { get; set; } = [];
-    }
-    
-    public class ResponseItemExceptionObject
-    {
-        public required string Message { get; set; } = string.Empty;
-        public required ResponseJsonObjectFlat responseItem { get; set; }
+        public string? ResponseText { get; set; } = string.Empty;
+        public string? TopicText { get; set; } = string.Empty;
+        public int JsonScore { get; set; } = 0;
+        public int ComparisonGrade { get; set; } = 0;
+        public List<String> PonitDeductionReasons { get; set; } = [];
     }
 }

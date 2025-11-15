@@ -459,7 +459,6 @@ $(document).ready(async function () {
         for (var i = 0; i < Rating; i++) {
             FaStars += '<span class="fa-solid fa-star"></span>';
         }
-        ConsolLogWindow("Score: " + Score);
         ConsolLogWindow("Rating: " + Rating);
         if (Array.isArray(ScoreReasons)) {
             ScoreReasons.forEach(function (element, idx) {
