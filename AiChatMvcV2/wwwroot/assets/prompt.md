@@ -1,4 +1,4 @@
- - Perform the Task and apply the following Instructions. 
+ - Perform tTast 1 and Task 2 and apply the following Instructions. 
 
 Instructions:
     - All output **must** be in the specified JSON format.

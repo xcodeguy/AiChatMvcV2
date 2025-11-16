@@ -351,124 +351,133 @@ namespace AiChatMvcV2.Services
 
         public ResponseJsonObjectFlat GradeJsonForResponseObject(Dictionary<string, object> jsonCandidate, ResponseJsonObjectFlat responseFlat)
         {
+            responseFlat.JsonScore = _settings.MaxJsonScore;
 
-            responseFlat.JsonScore = _settings.MaxScore;
-
-            // Handle missing response property
-            if (!jsonCandidate.ContainsKey("response"))
+            try
             {
-                responseFlat.JsonScore -= 1;
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Missing response property");
-            }
+                // Handle missing response property
+                if (!jsonCandidate.ContainsKey("response"))
+                {
+                    responseFlat.JsonScore -= 1;
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Missing response property");
+                }
 
-            // Handle missing topic property
-            if (!jsonCandidate.ContainsKey("topic"))
+                // Handle missing topic property
+                if (!jsonCandidate.ContainsKey("topic"))
+                {
+                    responseFlat.JsonScore -= 1;
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Missing topic property");
+                }
+
+                // Handle missing grade property
+                if (!jsonCandidate.ContainsKey("grade"))
+                {
+                    responseFlat.JsonScore -= 1;
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Missing grade property");
+                }
+
+                // Handle null response property
+                if (jsonCandidate.ContainsKey("response")
+                                    && jsonCandidate["response"]
+                                    is JsonElement jsonElementResponseNull
+                                    && jsonElementResponseNull.ValueKind == JsonValueKind.Null)
+                {
+                    responseFlat.JsonScore -= 1;
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Null response property");
+                }
+
+                // Handle null topic property  
+                if (jsonCandidate.ContainsKey("topic")
+                                    && jsonCandidate["topic"]
+                                    is JsonElement jsonElementTopicStringNull
+                                    && jsonElementTopicStringNull.ValueKind == JsonValueKind.Null)
+                {
+                    responseFlat.JsonScore -= 1;
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Null topic property");
+                }
+
+                // Handle null grade property  
+                if (jsonCandidate.ContainsKey("grade")
+                                    && jsonCandidate["grade"]
+                                    is JsonElement jsonElementGradeStringNull
+                                    && jsonElementGradeStringNull.ValueKind == JsonValueKind.Null)
+                {
+                    responseFlat.JsonScore -= 1;
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Null grade property");
+                }
+
+                // Handle response as string
+                if (jsonCandidate.ContainsKey("response")
+                                    && jsonCandidate["response"]
+                                    is JsonElement jsonElementResponseString
+                                    && jsonElementResponseString.ValueKind == JsonValueKind.String)
+                {
+                    responseFlat.ResponseText = jsonElementResponseString.ToString()!;
+                }
+
+                // Handle topic as string
+                if (jsonCandidate.ContainsKey("topic")
+                                    && jsonCandidate["topic"]
+                                    is JsonElement jsonElementTopicString
+                                    && jsonElementTopicString.ValueKind == JsonValueKind.String)
+                {
+                    responseFlat.TopicText = jsonElementTopicString.ToString()!;
+                }
+
+                // Handle grade as int
+                if (jsonCandidate.ContainsKey("grade")
+                                    && jsonCandidate["grade"]
+                                    is JsonElement jsonElementGradeInt
+                                    && jsonElementGradeInt.ValueKind == JsonValueKind.Number)
+                {
+                    responseFlat.ComparisonGrade = int.Parse(jsonElementGradeInt.ToString()!);
+                }
+
+                // Handle response as array
+                if (jsonCandidate.ContainsKey("response")
+                                    && jsonCandidate["response"]
+                                    is JsonElement jsonElementResponseArray
+                                    && jsonElementResponseArray.ValueKind == JsonValueKind.Array)
+                {
+                    var responseArray = jsonElementResponseArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
+                    responseFlat.ResponseText = string.Join(" ", responseArray);
+                    responseFlat.JsonScore -= 1; //reduce grade by 1 for response being an array
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Response property is an array");
+                }
+
+                // Handle topic as array
+                if (jsonCandidate.ContainsKey("topic")
+                                    && jsonCandidate["topic"]
+                                    is JsonElement jsonElementTopicArray
+                                    && jsonElementTopicArray.ValueKind == JsonValueKind.Array)
+                {
+                    var topicArray = jsonElementTopicArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
+                    responseFlat.TopicText = string.Join(" ", topicArray);
+                    responseFlat.JsonScore -= 1; //reduce grade by 1 for topic being an array
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Topic property is an array");
+                }
+
+                // Handle grade as array
+                if (jsonCandidate.ContainsKey("grade")
+                                    && jsonCandidate["grade"]
+                                    is JsonElement jsonElementGradeArray
+                                    && jsonElementGradeArray.ValueKind == JsonValueKind.Array)
+                {
+                    var gradeArray = jsonElementGradeArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
+                    responseFlat.TopicText = string.Join(" ", gradeArray);
+                    responseFlat.JsonScore -= 1; //reduce grade by 1 for topic being an array
+                    responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Grade property is an array");
+                }
+
+                return responseFlat;
+            }
+            catch (Exception ex)
             {
-                responseFlat.JsonScore -= 1;
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Missing topic property");
+                ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
+                                                    ?? "GradeJsonFDorResponseObject"}: An Exception occurred during the json grading: {ex.Message}";
+                _logger.LogCritical(ExceptionMessageString);
+                throw new Exception(ExceptionMessageString);
             }
-
-            // Handle missing grade property
-            if (!jsonCandidate.ContainsKey("grade"))
-            {
-                responseFlat.JsonScore -= 1;
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Missing grade property");
-            }
-
-            // Handle null response property
-            if (jsonCandidate.ContainsKey("response")
-                                && jsonCandidate["response"]
-                                is JsonElement jsonElementResponseNull
-                                && jsonElementResponseNull.ValueKind == JsonValueKind.Null)
-            {
-                responseFlat.JsonScore -= 1;
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Null response property");
-            }
-
-            // Handle null topic property  
-            if (jsonCandidate.ContainsKey("topic")
-                                && jsonCandidate["topic"]
-                                is JsonElement jsonElementTopicStringNull
-                                && jsonElementTopicStringNull.ValueKind == JsonValueKind.Null)
-            {
-                responseFlat.JsonScore -= 1;
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Null topic property");
-            }
-
-            // Handle null grade property  
-            if (jsonCandidate.ContainsKey("grade")
-                                && jsonCandidate["grade"]
-                                is JsonElement jsonElementGradeStringNull
-                                && jsonElementGradeStringNull.ValueKind == JsonValueKind.Null)
-            {
-                responseFlat.JsonScore -= 1;
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Null grade property");
-            }
-
-            // Handle response as string
-            if (jsonCandidate.ContainsKey("response")
-                                && jsonCandidate["response"]
-                                is JsonElement jsonElementResponseString
-                                && jsonElementResponseString.ValueKind == JsonValueKind.String)
-            {
-                responseFlat.ResponseText = jsonElementResponseString.ToString()!;
-            }
-
-            // Handle topic as string
-            if (jsonCandidate.ContainsKey("topic")
-                                && jsonCandidate["topic"]
-                                is JsonElement jsonElementTopicString
-                                && jsonElementTopicString.ValueKind == JsonValueKind.String)
-            {
-                responseFlat.TopicText = jsonElementTopicString.ToString()!;
-            }
-
-            // Handle grade as int
-            if (jsonCandidate.ContainsKey("grade")
-                                && jsonCandidate["grade"]
-                                is JsonElement jsonElementGradeInt
-                                && jsonElementGradeInt.ValueKind == JsonValueKind.Number)
-            {
-                responseFlat.ComparisonGrade = int.Parse(jsonElementGradeInt.ToString()!);
-            }
-
-            // Handle response as array
-            if (jsonCandidate.ContainsKey("response")
-                                && jsonCandidate["response"]
-                                is JsonElement jsonElementResponseArray
-                                && jsonElementResponseArray.ValueKind == JsonValueKind.Array)
-            {
-                var responseArray = jsonElementResponseArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
-                responseFlat.ResponseText = string.Join(" ", responseArray);
-                responseFlat.JsonScore -= 1; //reduce grade by 1 for response being an array
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Response property is an array");
-            }
-
-            // Handle topic as array
-            if (jsonCandidate.ContainsKey("topic")
-                                && jsonCandidate["topic"]
-                                is JsonElement jsonElementTopicArray
-                                && jsonElementTopicArray.ValueKind == JsonValueKind.Array)
-            {
-                var topicArray = jsonElementTopicArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
-                responseFlat.TopicText = string.Join(" ", topicArray);
-                responseFlat.JsonScore -= 1; //reduce grade by 1 for topic being an array
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Topic property is an array");
-            }
-
-            // Handle grade as array
-            if (jsonCandidate.ContainsKey("grade")
-                                && jsonCandidate["grade"]
-                                is JsonElement jsonElementGradeArray
-                                && jsonElementGradeArray.ValueKind == JsonValueKind.Array)
-            {
-                var gradeArray = jsonElementGradeArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray();
-                responseFlat.TopicText = string.Join(" ", gradeArray);
-                responseFlat.JsonScore -= 1; //reduce grade by 1 for topic being an array
-                responseFlat.PonitDeductionReasons.Add("Deducting 1 point for: Grade property is an array");
-            }
-
-            return responseFlat;
         }
 
         public Dictionary<string, object> ExtractAndDeserialize(string prompt, string plainText)
@@ -477,7 +486,7 @@ namespace AiChatMvcV2.Services
             ResponseJsonObjectFlat responseFlat = new()
             {
                 PonitDeductionReasons = [],
-                JsonScore = _settings.MaxScore
+                JsonScore = _settings.MaxJsonScore
             };
 
             int startIndex = plainText.IndexOf('{');
@@ -508,26 +517,19 @@ namespace AiChatMvcV2.Services
             }
             catch (Exception ex)
             {
-                // On exception, set grade to 0
-                responseFlat.ResponseText = string.Empty;
-                responseFlat.TopicText = string.Empty;
-                responseFlat.JsonScore = 0;
-
                 if (ex is JsonException jsonEx)
                 {
                     // Log JSON-specific errors
                     ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
-                                    ?? "Unknown Method"}: A JSON Exception occurred during deserialization: {jsonEx.Message}";
+                                    ?? "ExtractAndDeserialize"}: A JSON Exception occurred during deserialization: {jsonEx.Message}";
                     _logger.LogCritical(ExceptionMessageString);
-                    responseFlat.PonitDeductionReasons.Add($"Deducting {_settings.MaxScore} points: JSON deserialization failed");
                 }
                 else
                 {
                     // Log other types of exceptions
                     ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
-                                    ?? "Unknown Method"}: An Exception occurred during deserialization: {ex.Message}";
+                                    ?? "ExtractAndDeserialize"}: An Exception occurred during deserialization: {ex.Message}";
                     _logger.LogCritical(ExceptionMessageString);
-                    responseFlat.PonitDeductionReasons.Add($"Deducting {_settings.MaxScore} points: General exception during deserialization");
                 }
 
                 throw new Exception(ExceptionMessageString); ;

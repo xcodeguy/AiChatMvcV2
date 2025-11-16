@@ -37,7 +37,8 @@ $(document).ready(async function () {
     var WavfileName = "";
     var TtsVoice = "";
     var ExceptionString = "";
-    var Score = 10;
+    var Score = 0;
+    var Grade = 0;
     var ScoreReasons = [];
 
     ConsolLogWindow("Initialized variables");
@@ -194,7 +195,10 @@ $(document).ready(async function () {
             var ModelScoreCell = $("<td class=\"ModelStatsTableCell\"></td>");
             ModelScoreCell.attr('id', 'ModelStatsTablCell4_' + i);
 
-            tr.append(ModelNameCell, ModelTimeCell, ModelWordCountCell, ModelScoreCell);
+            var ModelGradeCell = $("<td class=\"ModelStatsTableCell\"></td>");
+            ModelScoreCell.attr('id', 'ModelStatsTablCell5_' + i);
+
+            tr.append(ModelNameCell, ModelTimeCell, ModelWordCountCell, ModelScoreCell, ModelGradeCell);
             $('#ModelStatsTable tbody:last').append(tr);
         }
         ConsolLogWindow("Model stats table created");
@@ -329,12 +333,14 @@ $(document).ready(async function () {
                 TtsVoice = data.responseItemList[0].ttsVoice;
                 ExceptionString = data.responseItemList[0].exceptions;
                 Score = data.responseItemList[0].score;
+                Grade = data.responseItemList[0].grade;
                 ScoreReasons = data.responseItemList[0].scoreReasons;
 
                 ConsolLogWindow("Got response: " + TheResponse);
                 ConsolLogWindow("Got response items");
                 ConsolLogWindow("TOPIC: " + TheTopic);
                 ConsolLogWindow("Score: " + Score);
+                ConsolLogWindow("Grade: " + Grade);
                 for (var i = 0; i < ScoreReasons.length; i++) {
                     ConsolLogWindow("Score Reason " + (i + 1) + ": " + ScoreReasons[i]);
                 }
@@ -348,12 +354,12 @@ $(document).ready(async function () {
                 //the HomeController.cs
                 if (ExceptionString.trim() != "") {
                     ConsolLogWindow(ExceptionString);
-                    TheTopic = "Service Exception!";
+                    TheTopic = "Exception!";
                     UpdateWebUiElements(ExceptionString, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
                     DivChatElementForException.style.color = "#ffffff";
-                    TheResponse = "";
+                    TheResponse = "";           // force start a new topic
                     DisplayExceptionCountStatistic();
                 }
                 else {
@@ -367,26 +373,6 @@ $(document).ready(async function () {
             },
             error: function (xhr, status, error) {
                 ConsolLogWindow(xhr.statusText);
-                /*
-                                TheTopic = "Http Exception!";
-                                UpdateWebUiElements(xhr.statusText, false);
-                                DivChatElementForException = document.getElementById(GlobalChatDivId);
-                                DivChatElementForException.style.backgroundColor = "#ff0000";
-                                DivChatElementForException.style.color = "#ffffff";
-                
-                                DisplayExceptionCountStatistic();
-                
-                                //-1 overrides the max exception logic
-                                if (GlobalMaxErrors == -1) {
-                                    ConsolLogWindow("GlobalMaxErros=-1: Ignoring retry logic and calling CallApiEndpoint().");
-                                    CallApiEndpoint("");
-                                } else if (KillProcess || (GlobalErrorCount >= GlobalMaxErrors)) {
-                                    return;
-                                } else {
-                                    //try again after the exception
-                                    ConsolLogWindow("Continuing with api calls after exception");
-                                    CallApiEndpoint("");
-                                }*/
             },
             complete: function () {
                 ConsolLogWindow("Done");
@@ -454,7 +440,7 @@ $(document).ready(async function () {
         //update td right and right and right again with score
         const wordsArray = DivText.trim().split(/\s+/).filter(word => word.length > 0);
         var thisWord = ZeroPad(wordsArray.length, 4);
-        var Rating = getRating(Score);
+        var Rating = getRating(Grade);
         var FaStars = '';
         for (var i = 0; i < Rating; i++) {
             FaStars += '<span class="fa-solid fa-star"></span>';
@@ -467,7 +453,8 @@ $(document).ready(async function () {
         }
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().text(ElapsedCallTime);
         $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().text(thisWord);
-        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().next().html(FaStars);
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().next().text(Score);
+        $("#ModelStatsTable td:contains(" + ModelNameString + ")").next().next().next().next().html(FaStars);
 
         //sort the table by call time
         sortTable(1);
@@ -497,13 +484,13 @@ $(document).ready(async function () {
 
     //ai generated code for 5 star rating
     function getRating(input) {
-        if (input >= 9) {
+        if (input >= 4) {
             return 5;
-        } else if (input >= 7) {
-            return 4;
-        } else if (input >= 5) {
-            return 3;
         } else if (input >= 3) {
+            return 4;
+        } else if (input >= 2) {
+            return 3;
+        } else if (input >= 1) {
             return 2;
         } else {
             return 1;

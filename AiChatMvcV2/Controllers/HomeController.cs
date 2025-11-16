@@ -40,19 +40,18 @@ public class HomeController : Controller
         HomeViewModel ViewModel = new HomeViewModel();
         ViewModel.ResponseItemList = new List<ResponseItem>();
         TimeSpan TimeSpent = new TimeSpan();
-        ResponseItem Item;
+        ResponseItem ResponseItem;
         List<string> TtsVoices = _settings.TtsVoices;
         Random rand = new Random();
         string TtsVoice = TtsVoices[rand.Next(TtsVoices.Count)];
         long fileSizeInBytes = 0;
         string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
         string? ResponseText = string.Empty;
-        string GradeText = string.Empty;
         string TopicText = string.Empty;
         string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
-        int Score = 0;
-        int Grade = 0;
+        int JsonScore = 0;
+        int GradeScore = 0;
         List<string> ScoreReasons = new();
 
         try
@@ -94,39 +93,30 @@ public class HomeController : Controller
                 throw new Exception(ExceptionMessageString);
             }
 
-            // Extract the possible JSON object embedded in the response text
+            // Extract the possible JSON object embedded in the response text.
+            // If this fails, an exception is thrown.
             Dictionary<string, object> responseAsDictionary = _ResponseService.ExtractAndDeserialize(Prompt!, ResponseText);
             _logger.LogInformation($"Deserialized response JSON object from model response: {responseAsDictionary}");
 
-            // Perform a grading algorithym on the Json Object 
-            // and get a response object if available
+            // Perform a grading algorythym on the Json Object 
+            // and get a response object if available.
+            // If this fails, an exception is thrown.
+            // I'm not too happy about passing in an object and
+            // getting same object returned..but it works for now
             ResponseJsonObjectFlat responseAsObject = new ResponseJsonObjectFlat();
             responseAsObject = _ResponseService.GradeJsonForResponseObject(responseAsDictionary, responseAsObject);
 
             // Extract the properties
             ResponseText = responseAsObject?.ResponseText ?? String.Empty;
             TopicText = responseAsObject?.TopicText ?? String.Empty;
-            Score = (int)(responseAsObject?.JsonScore)!;
+            JsonScore = (int)(responseAsObject?.JsonScore)!;
             ScoreReasons = responseAsObject?.PonitDeductionReasons ?? [];
-            Grade = (int)(responseAsObject?.ComparisonGrade)!;
+            GradeScore = (int)(responseAsObject?.ComparisonGrade)!;
 
             _logger.LogInformation($"Extracted response: {ResponseText}");
             _logger.LogInformation($"Extracted topic: {TopicText}");
-            _logger.LogInformation($"Extracted score: {Score}");
-            _logger.LogInformation($"Extracted grade: {Grade}");
-            if (Score > Grade)
-            {
-                Score -= Grade;
-            }
-            else if (Score < Grade)
-            {
-                Score = Grade - Score;
-            }
-            else if (Score == Grade)
-            {
-                Score = Grade;
-            }
-            
+            _logger.LogInformation($"Extracted score: {JsonScore}");
+            _logger.LogInformation($"Extracted grade: {GradeScore}");
             foreach (var itm in responseAsObject?.PonitDeductionReasons ?? [])
             {
                 _logger.LogInformation($"Score reason: {itm}");
@@ -176,13 +166,14 @@ public class HomeController : Controller
             //the backend services
             ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
             _logger.LogCritical(ExceptionMessageString);
-            Score = 0;
+            JsonScore = 0;
+            GradeScore = 0;
             ScoreReasons.Add(ExceptionMessageString);
         }
         finally
         {
             // build out the response item object
-            Item = new ResponseItem
+            ResponseItem = new ResponseItem
             {
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
                 Response = ResponseText,
@@ -198,7 +189,8 @@ public class HomeController : Controller
                 WordCount = _ResponseService.GetWordCount(ResponseText),
                 Exceptions = ExceptionMessageString,
                 TtsVoice = TtsVoice,
-                Score = Score,
+                Score = JsonScore,
+                Grade = GradeScore,
                 ScoreReasons = ScoreReasons
             };
         }
@@ -209,12 +201,12 @@ public class HomeController : Controller
         try
         {
             //insert the response and meta-data into the database
-            bool success = _ModelService.InsertResponse(Item);
+            bool success = _ModelService.InsertResponse(ResponseItem);
             if (!success)
             {
-                ExceptionMessageString = $"Error inserting response into database: {Item.Model}";
-                Item.Score = 0;
-                Item.ScoreReasons.Add($"Deducting {_settings.MaxScore} for an unsuccessful Insert {ExceptionMessageString}");
+                ExceptionMessageString = $"Error inserting response into database: {ResponseItem.Model}";
+                ResponseItem.Score = 0;
+                ResponseItem.ScoreReasons.Add($"Deducting {_settings.MaxJsonScore} for an unsuccessful Insert {ExceptionMessageString}");
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -222,8 +214,9 @@ public class HomeController : Controller
         catch (Exception ex)
         {
             ExceptionMessageString = $"HomeController.cs->QueryModelForResponse: {ex.Message}";
-            Item.Score = 0;
-            Item.ScoreReasons.Add($"Deducting {_settings.MaxScore} points for an exception. {ExceptionMessageString}");
+            ResponseItem.Score = 0;
+            ResponseItem.Grade = 0;
+            ResponseItem.ScoreReasons.Add($"Deducting {_settings.MaxJsonScore} points for an exception. {ExceptionMessageString}");
             _logger.LogCritical(ExceptionMessageString);
         }
         finally
@@ -233,9 +226,9 @@ public class HomeController : Controller
 
             // since this finally block will be executed everytime it is
             // appropriate to set these values here
-            Item.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
-            Item.Exceptions = ExceptionMessageString;
-            ViewModel.ResponseItemList.Add(Item);
+            ResponseItem.ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds);
+            ResponseItem.Exceptions = ExceptionMessageString;
+            ViewModel.ResponseItemList.Add(ResponseItem);
         }
 
         // return an HTTP OK with the loaded view model

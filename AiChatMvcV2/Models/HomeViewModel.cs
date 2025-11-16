@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Net.Http.Headers;
+
 namespace AiChatMvcV2.Models
 {
     public class ResponseItem
@@ -16,7 +19,8 @@ namespace AiChatMvcV2.Models
         public string AudioFileSize { get; set; } = string.Empty;
         public required string Exceptions { get; set; } = string.Empty;
         public required string TtsVoice { get; set; } = string.Empty;
-        public required int Score { get; set; } = 10;
+        public required int Score { get; set; } = 0;
+        public required int Grade { get; set; } = 0;
         public required List<string> ScoreReasons { get; set; } = [];
     }
 

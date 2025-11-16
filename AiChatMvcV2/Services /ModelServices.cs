@@ -180,7 +180,7 @@ namespace AiChatMvcV2.Services
                     }
                     else
                     {
-                        ExceptionMessageString = $"HTTP Request failed with status code: {response.StatusCode}\n\nModel->{Model}\n\nPromt->{Prompt}";
+                        ExceptionMessageString = $"HTTP Request failed with status code: {response.StatusCode}";
                         _logger.LogCritical(ExceptionMessageString);
                         throw new Exception(ExceptionMessageString);
                     }

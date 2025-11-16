@@ -327,8 +327,8 @@ select.ThemeDropdownStyle {
   font-size: 13px;
   border: 1px solid var(--ChatBorderColor);
   width: var(--ModelStatsTableWidth);
-  height: 185px;
-  max-height: 185px;
+  height: 250px;
+  max-height: 250px;
   overflow: auto;
   background-color: var(--BodyBackgroundColor);
   color: var(--ModelStatColor);

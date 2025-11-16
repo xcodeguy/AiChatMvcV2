@@ -20,6 +20,7 @@ namespace AiChatMvcV2.Objects
         public required string PromptFilename { get; set; }
         public required string CompareFileName { get; set; }
         public required bool PlayAudioFile { get; set; }
-        public required int MaxScore { get; set; }
+        public required int MaxJsonScore { get; set; }
+        public required int MaxGradeScore { get; set; }
     }
 }
