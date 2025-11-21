@@ -12,7 +12,6 @@ $(document).ready(async function () {
 
     const ZeroPad = (num, places) => String(num).padStart(places, '0')
     const xor = (a, b) => (a && !b) || (!a && b);
-    const MaxModels = 12;
     const GlobalMaxErrors = 3;
     //const ApplicationStartTime = new Date();        //elapsed time on page commented out
     var KillProcess = false;
@@ -282,11 +281,13 @@ $(document).ready(async function () {
         //If the ModelPointer is greater than the maximum number of models
         //then reset it to 0 so the next model called is the first
         //this creates a round robin effect
-        if (ModelPointer > MaxModels) {
+        if (ModelPointer > ModelNamesArray.length - 1) {
             //reset pointer to first array element
             ModelPointer = 0;
             // set the prompt to empty which forces a new topic/conversation
             prompt = "";
+            BuildModelStatsTable();
+            ConsolLogWindow("Starting a new topic after model iteration complete.");
         }
 
         //add a div that has an animated elipse to display
