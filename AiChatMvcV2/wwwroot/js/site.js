@@ -122,18 +122,9 @@ $(document).ready(async function () {
     }
 
     //elapsed time clock on web page
-    /*
     setInterval(function () {
-        if (KillProcess) {
-            lastElapsedTime = new Date();
-        }
-        var str = GetElapsedTime(ApplicationStartTime);
-        if (KillProcess) {
-            return;
-        }
-        $('#RealTimeClock').text(str);
+        GetLogFileEntries(25);
     }, 1000); // 1000 milliseconds = 1 second 
-    */
 
     //calculates elapsed time
     function GetElapsedTime(StartTime) {
@@ -182,7 +173,7 @@ $(document).ready(async function () {
             var tr = $("<tr class=\"ModelStatsTableRow\"></tr>");
             tr.attr('id', 'ModelStatsTableRow' + i);
 
-            var ModelNameCell = $("<td style='text-align: left;' class=\"ModelStatsTableCell\">" + ModelNamesArray[i] + "</td>");
+            var ModelNameCell = $("<td style='text-align: left;' class=\"ModelStatsTableCell truncate-text\">" + ModelNamesArray[i] + "</td>");
             ModelNameCell.attr('id', 'ModelStatsTablCell1_' + i);
 
             var ModelTimeCell = $("<td class=\"ModelStatsTableCell\"></td>");
@@ -337,8 +328,7 @@ $(document).ready(async function () {
                 Grade = data.responseItemList[0].grade;
                 ScoreReasons = data.responseItemList[0].scoreReasons;
 
-                ConsolLogWindow("Got response: " + TheResponse);
-                ConsolLogWindow("Got response items");
+                ConsolLogWindow("The response: " + TheResponse);
                 ConsolLogWindow("TOPIC: " + TheTopic);
                 ConsolLogWindow("Score: " + Score);
                 ConsolLogWindow("Grade: " + Grade);
@@ -361,6 +351,7 @@ $(document).ready(async function () {
                     DivChatElementForException.style.backgroundColor = "#ff0000";
                     DivChatElementForException.style.color = "#ffffff";
                     TheResponse = "";           // force start a new topic
+                    ConsolLogWindow("Resetting prompt/response to empty because of exception.");
                     DisplayExceptionCountStatistic();
                 }
                 else {
@@ -391,7 +382,7 @@ $(document).ready(async function () {
         //element red with white text
         var EmptyResponseOrException = false;
         if (DivText == null || DivText == undefined || DivText.trim() == "") {
-            DivText = "Empty Response or Exception!";
+            DivText = "&#128565 I'm at a loss for words &#128534";
             EmptyResponseOrException = true;
         }
 
@@ -443,8 +434,11 @@ $(document).ready(async function () {
         var thisWord = ZeroPad(wordsArray.length, 4);
         var Rating = getRating(Grade);
         var FaStars = '';
-        for (var i = 0; i < Rating; i++) {
+        for (var i = 1; i <= Grade; i++) {
             FaStars += '<span class="fa-solid fa-star"></span>';
+        }
+        if(FaStars == '' ) {
+            FaStars = "<span class=\"fa-regular fa-star\"></span>";
         }
         ConsolLogWindow("Rating: " + Rating);
         if (Array.isArray(ScoreReasons)) {
@@ -550,6 +544,22 @@ $(document).ready(async function () {
         });
     }
 
+    async function GetLogFileEntries(NumLines)
+    {
+        // read the log file from the back-end
+        await $.ajax({
+            url: 'http://localhost:5022/Home/ReadLogFile',
+            type: 'POST',
+            data: {NumLines: NumLines},
+            success: function (response) {
+                ConsolLogWindow(response);
+            },
+            error: function (xhr, status, error) {
+                ConsolLogWindow(xhr.responseText);
+            }
+        });
+    }
+
     async function DisplayExceptionCountStatistic() {
         GlobalErrorCount++;
         $("#ModelExceptions").text(ZeroPad(GlobalErrorCount, 6));
@@ -558,7 +568,7 @@ $(document).ready(async function () {
     function ConsolLogWindow(message) {
         const tdiv = document.getElementById("console_log_window");
         const telm = document.createElement("p");
-        telm.textContent = message;
+        telm.textContent = "JAVASCRIPT: " + message;
         tdiv.appendChild(telm);
         tdiv.scrollTop = tdiv.scrollHeight;
         console.log(message);

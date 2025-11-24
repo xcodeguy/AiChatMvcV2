@@ -88,7 +88,7 @@ public class HomeController : Controller
             // Check for a null or empty response from the API->Inference Server->Model call
             if (ResponseText == null || ResponseText == String.Empty)
             {
-                ExceptionMessageString = $"The response is null or empty for model {model}.";
+                ExceptionMessageString = $"The response is null or empty from the API for model {model}.";
                 _logger.LogCritical(ExceptionMessageString);
                 throw new Exception(ExceptionMessageString);
             }
@@ -275,10 +275,11 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> ReadLogFile()
+    public async Task<IActionResult> ReadLogFile(int NumLines)
     {
-        string logFilePath = $"/Users/dferrell/Documents/GitHub/AiChatMvcV2/AiChatMvcV2/bin/Debug/{DateTime.Now.ToString("yyyy/MM/dd")}.log";
-        int numberOfLines = 20;
+        ///Users/dferrell/Documents/GitHub/AiChatMvcV2/AiChatMvcV2/bin/Debug/net9.0/logs
+        string logFilePath = $"/Users/dferrell/Documents/GitHub/AiChatMvcV2/AiChatMvcV2/bin/Debug/net9.0/logs/{DateTime.Now.ToString("yyyy-MM-dd")}.log";
+        int numberOfLines = NumLines;
 
         try
         {
@@ -290,11 +291,6 @@ public class HomeController : Controller
                                 .ToList(); // Convert to a List
 
             _logger.LogInformation("Last {count} lines of {file}", numberOfLines, logFilePath);
-            foreach (string line in lastLines)
-            {
-                _logger.LogInformation(line);
-            }
-
             return Ok(lastLines);
         }
         catch (System.IO.FileNotFoundException)
@@ -314,6 +310,9 @@ public class HomeController : Controller
     {
         try
         {
+            if (! _settings.PlayAudioFile) return Ok();
+
+            
             //call the service to play the speech file
             //the service returns true or false
             bool result = await _ResponseService.PlaySpeechFile();

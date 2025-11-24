@@ -309,6 +309,7 @@ select.ThemeDropdownStyle {
   padding: 0px 10px 0px 10px;
   color: var(--ModelLabelColor);
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .ModelStatsTableRow {
@@ -319,16 +320,25 @@ select.ThemeDropdownStyle {
   padding: 0px 10px 0px 10px;
   border: 1px solid var(--ChatBorderColor);
   text-align: right;
+  white-space: nowrap;
 }
+
+.truncate-text {
+  max-width: 150px; /* Set a specific max width for the cell */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* Prevents text from wrapping to a new line */
+}
+
 
 /* CONSOLE WINDOW AND SCROLLBAR STYLES */
 .console_log_window {
   font-family: monospace;
   font-size: 13px;
   border: 1px solid var(--ChatBorderColor);
-  width: var(--ModelStatsTableWidth);
-  height: 250px;
-  max-height: 250px;
+  width: var(--ModelStatsTableWidth)+14;
+  height: 140px;
+  max-height: 140px;
   overflow: auto;
   background-color: var(--BodyBackgroundColor);
   color: var(--ModelStatColor);

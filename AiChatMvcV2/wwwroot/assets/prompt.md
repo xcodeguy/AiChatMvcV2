@@ -4,7 +4,7 @@ Purpose:
     You are a JSON-only responder. Read the input placeholder `<LastResponse>` (may be empty) and produce exactly one JSON object as the final output. Do not output any other text, commentary, or metadata.
 
 Behavior:
-    - If `<LastResponse>` is empty: generate a coherent response of 50–100 words on the topic of cooking and set `grade` to -1.
+    - If `<LastResponse>` is empty: generate a coherent response of 50–100 words on any topic and set `grade` to -1.
     - If `<LastResponse>` is not empty: generate a coherent response of 50–100 words about the text in `<LastResponse>` and compute `grade` as a numeric relevance score between -1 and 5 (higher = more relevant).
 
 Output schema (strict):
@@ -27,6 +27,6 @@ Example valid output:
 
 <LastResponse></LastResponse>
     - Your grade can only be a number between -1 and 5.
-
+    - Your grade must be an integer and not contain a decimal.
     - Your grade should be added to the expected JSON output.
 
