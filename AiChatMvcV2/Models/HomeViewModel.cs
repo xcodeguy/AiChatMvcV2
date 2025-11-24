@@ -37,4 +37,10 @@ namespace AiChatMvcV2.Models
         public int ComparisonGrade { get; set; } = 0;
         public List<String> PonitDeductionReasons { get; set; } = [];
     }
+
+    public class ModelParameters
+    {
+        public string ParameterName { get; set; } = string.Empty;
+        public Double ParameterValue { get; set; } = 0;
+    }
 }

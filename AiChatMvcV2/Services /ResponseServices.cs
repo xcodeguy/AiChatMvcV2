@@ -541,12 +541,15 @@ namespace AiChatMvcV2.Services
             return jsonCandidate;
         }
 
-        public string RemoveFormatStrings(string text)
+        public string RemoveFormatStrings(string text, bool PreserveQuotes = false)
         {
             // remove carriage returns, line feeds and backslashes
             text = text.ToString()!.Replace("\r", string.Empty);
             text = text.ToString()!.Replace("\n", string.Empty);
-            text = text.ToString()!.Replace("\"", string.Empty);
+            if (!PreserveQuotes)
+            {
+                text = text.ToString()!.Replace("\"", string.Empty);
+            }
             text = text.ToString()!.Replace("\\", string.Empty);
             return text;
         }

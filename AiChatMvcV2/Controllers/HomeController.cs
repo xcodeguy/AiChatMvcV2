@@ -66,7 +66,7 @@ public class HomeController : Controller
             }
 
             // remove carriage returns, line feeds and backslashes
-            StructuredPrompt = _ResponseService.RemoveFormatStrings(StructuredPrompt);
+            StructuredPrompt = _ResponseService.RemoveFormatStrings(StructuredPrompt, false);
 
             // do we have any last response text to insert into the structured prompt?
             // i.e. <LastResponse>...</LastResponse>
@@ -275,7 +275,7 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> ReadLogFile(int NumLines)
+    public IActionResult ReadLogFile(int NumLines)
     {
         ///Users/dferrell/Documents/GitHub/AiChatMvcV2/AiChatMvcV2/bin/Debug/net9.0/logs
         string logFilePath = $"/Users/dferrell/Documents/GitHub/AiChatMvcV2/AiChatMvcV2/bin/Debug/net9.0/logs/{DateTime.Now.ToString("yyyy-MM-dd")}.log";

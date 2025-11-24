@@ -1,0 +1,13 @@
+
+{
+        "microstat": 0,
+        "num_ctx": 2048,
+        "repeat_last_n": 64,
+        "repeat_penalty": 1.1,
+        "temperature": 1.5,
+        "seed": 0,
+        "num_predict": -1,
+        "top_k": 40,
+        "top_p": 0.9,
+        "min_p": 0.0
+}
