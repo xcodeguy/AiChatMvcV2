@@ -6,7 +6,6 @@
 
 DROP TABLE Response;
 
-DROP PROCEDURE citycount;
 
 SELECT EXISTS(SELECT * 
     FROM information_schema.tables
@@ -23,28 +22,15 @@ SELECT IF (EXISTS(SELECT *
         ), 0) 
 
 
-CALL sp_create_table_response("A", "B");
-
-
-CALL sp_insert_table_response(
-    NOW(),
-    'response',
-    'model',
-    'topic',
-    'prompt',
-    'negative_prompt',
-    1,
-    NOW(),
-    '2025-08-26 00:00:02',
-    450
-);
-
 SELECT COUNT(*) FROM Response;
 
 TRUNCATE TABLE Response;
 
 SELECT model, topic FROM Response 
 ORDER BY model ASC, topic ASC;
+
+DROP TABLE Response;
+DROP TABLE ScoreReasons;
 
 DELETE FROM Response WHERE topic = ''
 

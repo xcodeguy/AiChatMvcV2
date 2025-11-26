@@ -1,0 +1,18 @@
+/*
+... 
+...
+*/
+USE WakeNbake;
+
+CREATE TABLE ScoreReasons (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    response_id INT UNSIGNED,
+    reason TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+
+    
+

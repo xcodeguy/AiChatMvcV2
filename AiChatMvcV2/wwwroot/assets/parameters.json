@@ -1,7 +1,7 @@
 
 {
         "microstat": 0,
-        "num_ctx": 2048,
+        "num_ctx": 9600,
         "repeat_last_n": 64,
         "repeat_penalty": 1.1,
         "temperature": 1.5,

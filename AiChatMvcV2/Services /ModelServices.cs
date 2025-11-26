@@ -61,17 +61,21 @@ namespace AiChatMvcV2.Services
                 using (MySqlCommand command = new(sp_insert_table_response, connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("timestamp", TheResponse.TimeStamp);
                     command.Parameters.AddWithValue("response", TheResponse.Response);
                     command.Parameters.AddWithValue("model", TheResponse.Model);
                     command.Parameters.AddWithValue("topic", TheResponse.Topic);
                     command.Parameters.AddWithValue("prompt", TheResponse.Prompt);
                     command.Parameters.AddWithValue("negative_prompt", TheResponse.NegativePrompt);
                     command.Parameters.AddWithValue("active", TheResponse.Active);
-                    command.Parameters.AddWithValue("last_updated", TheResponse.LastUpdated);
-                    command.Parameters.AddWithValue("response_time", DateTime.Now.ToString("yyyy-MM-dd ") +
-                                                    TheResponse.ResponseTime);
+                    command.Parameters.AddWithValue("audio_file_name", TheResponse.AudioFilename);
+                    command.Parameters.AddWithValue("audio_file_size", TheResponse.AudioFileSize);
+                    command.Parameters.AddWithValue("exceptions", TheResponse.Exceptions);
+                    command.Parameters.AddWithValue("response_time", DateTime.Now.ToString("yyyy-MM-dd ") + TheResponse.ResponseTime);
                     command.Parameters.AddWithValue("word_count", TheResponse.WordCount);
+                    command.Parameters.AddWithValue("tts_voice", TheResponse.TtsVoice);
+                    command.Parameters.AddWithValue("score", TheResponse.Score);
+                    command.Parameters.AddWithValue("grade", TheResponse.Grade);
+                    command.Parameters.AddWithValue("score_reasons", JsonSerializer.Serialize(TheResponse.ScoreReasons));
 
                     try
                     {

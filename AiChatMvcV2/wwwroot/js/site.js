@@ -123,8 +123,8 @@ $(document).ready(async function () {
 
     //elapsed time clock on web page
     setInterval(function () {
-        GetLogFileEntries(25);
-    }, 1000); // 1000 milliseconds = 1 second 
+        GetLogFileEntries(5);
+    }, 3000); // 1000 milliseconds = 1 second 
 
     //calculates elapsed time
     function GetElapsedTime(StartTime) {

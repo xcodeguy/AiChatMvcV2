@@ -193,7 +193,7 @@ namespace AiChatMvcV2.Services
             }
         }
 
-        public async Task<string> GenerateSpeechFile(string TextForSpeech, string Voice)
+        public async Task<(string WebAssetFilename, string DropFilename)> GenerateSpeechFile(string TextForSpeech, string Voice)
         {
             string TtsEndpointUrl = _settings.TTSApiEndpointUrl;
             string ModelName = _settings.TTSModelName;
@@ -256,7 +256,7 @@ namespace AiChatMvcV2.Services
                         //copy the speech file to the website assets location
                         WebAssetFilename = CopySpeechFileToAssets(DropFilename);
 
-                        return WebAssetFilename;
+                        return (WebAssetFilename, DropFilename);
                     }
                     else
                     {
@@ -491,6 +491,7 @@ namespace AiChatMvcV2.Services
 
             int startIndex = plainText.IndexOf('{');
             int endIndex = plainText.IndexOf('}') - startIndex + 1;
+            string extractedJsonCandidate = string.Empty;
 
             try
             {
@@ -503,7 +504,7 @@ namespace AiChatMvcV2.Services
                 }
 
                 // Extract a substring that is assumed to be JSON, but may not always be valid JSON.
-                string extractedJsonCandidate = plainText.Substring(startIndex, endIndex).Trim();
+                extractedJsonCandidate = plainText.Substring(startIndex, endIndex).Trim();
                 if (string.IsNullOrEmpty(extractedJsonCandidate))
                 {
                     ExceptionMessageString = $"Extracted JSON candidate string is null or empty.";
@@ -521,14 +522,14 @@ namespace AiChatMvcV2.Services
                 {
                     // Log JSON-specific errors
                     ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
-                                    ?? "ExtractAndDeserialize"}: A JSON Exception occurred during deserialization: {jsonEx.Message}";
+                                    ?? "ExtractAndDeserialize"}: A JSON Exception occurred during deserialization: {jsonEx.Message}. JsonCandidate={extractedJsonCandidate}";
                     _logger.LogCritical(ExceptionMessageString);
                 }
                 else
                 {
                     // Log other types of exceptions
                     ExceptionMessageString = $"{_className}.{MethodBase.GetCurrentMethod()?.Name
-                                    ?? "ExtractAndDeserialize"}: An Exception occurred during deserialization: {ex.Message}";
+                                    ?? "ExtractAndDeserialize"}: An Exception occurred during deserialization: {ex.Message} Input Text: {plainText}";
                     _logger.LogCritical(ExceptionMessageString);
                 }
 

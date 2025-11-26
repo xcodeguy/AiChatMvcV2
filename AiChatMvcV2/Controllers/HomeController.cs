@@ -48,16 +48,18 @@ public class HomeController : Controller
         string local_path_to_assets_folder = _settings.SpeechFilePlaybackLocation!;
         string? ResponseText = string.Empty;
         string TopicText = string.Empty;
-        string AudioFilename = string.Empty;
         string ExceptionMessageString = string.Empty;
+        string WebAssetFilename = string.Empty;
+        string DropFilename = string.Empty;
         int JsonScore = 0;
         int GradeScore = 0;
         List<string> ScoreReasons = new();
+        String StructuredPrompt = String.Empty;
 
         try
         {
             // read the prompt from the prompt.md file
-            var StructuredPrompt = ReadPromptFile(_settings.PromptFilename);
+            StructuredPrompt = ReadPromptFile(_settings.PromptFilename)!;
             if (StructuredPrompt == null)
             {
                 ExceptionMessageString = $"The structured prompt for the response is missing or empty for model {model}.";
@@ -129,7 +131,7 @@ public class HomeController : Controller
             if (_settings.PlayAudioFile == true)
             {
                 _logger.LogInformation("Generating speech file as per application settings.");
-                AudioFilename = "N/A";
+                (WebAssetFilename, DropFilename) = ("N/A", "N/A");
 
                 if (TopicText == null || TopicText == String.Empty)
                 {
@@ -139,22 +141,22 @@ public class HomeController : Controller
                 }
 
                 _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
-                AudioFilename = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
+                (WebAssetFilename, DropFilename) = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
 
                 //check if the audio/speech file exists, this is redundant because the file
                 //checks are performed in the service layer as well, but we do it here to
                 //gather the file size for the response item
-                if (!System.IO.File.Exists(local_path_to_assets_folder + AudioFilename))
+                if (!System.IO.File.Exists(local_path_to_assets_folder + WebAssetFilename))
                 {
-                    ExceptionMessageString = $"Speech/Audio file not found: {AudioFilename}.";
+                    ExceptionMessageString = $"Speech/Audio file not found: {WebAssetFilename}.";
                     _logger.LogCritical(ExceptionMessageString);
                     throw new Exception(ExceptionMessageString);
                 }
                 else
                 {
-                    FileInfo fileInfo = new FileInfo(local_path_to_assets_folder + AudioFilename);
+                    FileInfo fileInfo = new FileInfo(local_path_to_assets_folder + WebAssetFilename);
                     fileSizeInBytes = fileInfo.Length;
-                    _logger.LogInformation("Audio file generated: {file}, size: {size} bytes", AudioFilename, fileSizeInBytes);
+                    _logger.LogInformation("Audio file generated: {file}, size: {size} bytes", WebAssetFilename, fileSizeInBytes);
                 }
             }
         }
@@ -173,18 +175,19 @@ public class HomeController : Controller
         finally
         {
             // build out the response item object
+            ScoreReasons.Add("Initial score reasons list.");
             ResponseItem = new ResponseItem
             {
                 TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
                 Response = ResponseText,
                 Model = model,
                 Topic = TopicText.ToString(),
-                Prompt = Prompt,
-                NegativePrompt = String.Empty,
+                Prompt = StructuredPrompt,
+                NegativePrompt = "N/A",
                 Active = 1,
                 LastUpdated = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
-                AudioFilename = _settings.SpeechFileUrlLocation + AudioFilename,
-                AudioFileSize = fileSizeInBytes.ToString(),
+                AudioFilename = DropFilename,
+                AudioFileSize = fileSizeInBytes,
                 ResponseTime = String.Format("{0:00}:{1:00}:{2:00}", TimeSpent.Hours, TimeSpent.Minutes, TimeSpent.Seconds),
                 WordCount = _ResponseService.GetWordCount(ResponseText),
                 Exceptions = ExceptionMessageString,
@@ -310,9 +313,9 @@ public class HomeController : Controller
     {
         try
         {
-            if (! _settings.PlayAudioFile) return Ok();
+            if (!_settings.PlayAudioFile) return Ok();
 
-            
+
             //call the service to play the speech file
             //the service returns true or false
             bool result = await _ResponseService.PlaySpeechFile();
