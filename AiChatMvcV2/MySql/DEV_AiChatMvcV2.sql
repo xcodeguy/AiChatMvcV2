@@ -6,6 +6,8 @@
 
 DROP TABLE Response;
 
+DROP TABLE transfer;
+
 
 SELECT EXISTS(SELECT * 
     FROM information_schema.tables
@@ -49,4 +51,6 @@ ALTER TABLE Response
 MODIFY topic TEXT;
 
 
-SELECT * FROM Response WHERE exceptions = ''
+SELECT model, exceptions FROM Response WHERE exceptions != '' OR exceptions != NULL;
+
+SELECT model, grade, score FROM Response WHERE grade >= 0;

@@ -205,7 +205,7 @@ $(document).ready(async function () {
     //seed prompt
     $("#btnClearChatWindow").click(function () {
         ClearChatDisplay();
-        BuildModelStatsTable();
+        ResetTopicWithStatsTable(true);
         ModelPointer = 0;
         ConsolLogWindow("Chat window cleared");
     });
@@ -370,10 +370,11 @@ $(document).ready(async function () {
     }
 
     async function ResetTopicWithStatsTable(resetPrompt = true) {
-        // set the prompt to empty which forces a new topic/conversation
+        // set the prompt and topic to empty which forces a new topic/conversation
         prompt = "";
         TheResponse = "";
-        ConsolLogWindow("STARTING A NEW TOPIC DUE TO MODEL EXCEPTION OR ITERATION.");
+        TheTopic = "";
+        ConsolLogWindow("STARTING A NEW TOPIC DUE TO MODEL EXCEPTION OR ITERATION THRESHOLD.");
 
         //rebuild the stats table
         if (resetPrompt == true) {
