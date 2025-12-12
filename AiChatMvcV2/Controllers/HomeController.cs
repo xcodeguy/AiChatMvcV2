@@ -34,7 +34,8 @@ public class HomeController : Controller
 
     [HttpPost]
     public async Task<IActionResult> QueryModelForResponse(string model,
-                                                            string Prompt)
+                                                            string Prompt,
+                                                            string Topic)
     {
         DateTime StartTime = DateTime.Now;
         HomeViewModel ViewModel = new HomeViewModel();
@@ -72,10 +73,12 @@ public class HomeController : Controller
 
             // do we have any last response text to insert into the structured prompt?
             // i.e. <LastResponse>...</LastResponse>
-            if ((Prompt != null) && (Prompt != string.Empty))
+            // 12-10-2025 switch to using the last topic text instead of the full response
+            // to produce a more focused conversation thread
+            if ((Topic != null) && (Topic != string.Empty))
             {
-                StructuredPrompt = StructuredPrompt.Replace("</LastResponse>", Prompt + "</LastResponse>");
-                _logger.LogInformation($"Structured prompt with last response text is:\n\n{StructuredPrompt}");
+                StructuredPrompt = StructuredPrompt.Replace("</LastResponse>", Topic + "</LastResponse>");
+                _logger.LogInformation($"Structured prompt with last response TOPIC text is:\n\n{StructuredPrompt}");
             }
 
             // call the api to get a response from the model
@@ -128,19 +131,11 @@ public class HomeController : Controller
             // Append a '.' period to the end of the topic before sending it
             // for audio render. This helps the model produce a more natural
             // pronunciation of the one or two word topic.
-            if (_settings.PlayAudioFile == true)
+            if (_settings.PlayAudioFile == true && (TopicText != null && TopicText != String.Empty))
             {
-                _logger.LogInformation("Generating speech file as per application settings.");
-                (WebAssetFilename, DropFilename) = ("N/A", "N/A");
-
-                if (TopicText == null || TopicText == String.Empty)
-                {
-                    ExceptionMessageString = $"Cannot generate speech file because the topic text is null or empty for model {model}.";
-                    _logger.LogCritical(ExceptionMessageString);
-                    throw new Exception(ExceptionMessageString);
-                }
-
                 _logger.LogInformation("Calling API async to generate speech file for topic {Topic}.", TopicText);
+
+                (WebAssetFilename, DropFilename) = ("N/A", "N/A");
                 (WebAssetFilename, DropFilename) = await _ResponseService.GenerateSpeechFile(TopicText + ".", TtsVoice);
 
                 //check if the audio/speech file exists, this is redundant because the file
@@ -291,6 +286,7 @@ public class HomeController : Controller
                                 .Reverse() // Read lines in reverse order
                                 .Take(numberOfLines) // Take the specified number of lines
                                 .Reverse() // Reverse again to get them in original order
+                                .Where(line => !line.Contains("ReadLogFile"))
                                 .ToList(); // Convert to a List
 
             _logger.LogInformation("Last {count} lines of {file}", numberOfLines, logFilePath);

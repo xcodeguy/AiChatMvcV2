@@ -33,7 +33,6 @@ $(document).ready(async function () {
     var TimeString = "";
     var ElapsedCallTime = "";
     var TheTopic = "";
-    var WavfileName = "";
     var TtsVoice = "";
     var ExceptionString = "";
     var Score = 0;
@@ -164,7 +163,7 @@ $(document).ready(async function () {
         return TimeElapsedCalculatedSeconds;
     }
 
-    function BuildModelStatsTable() {
+    async function BuildModelStatsTable() {
         $('#ModelStatsTable > tbody').html('');
 
         //build the model list on the dashboard
@@ -268,19 +267,6 @@ $(document).ready(async function () {
         $("#ModelStats").text(ModelNameString);
         ModelPointer++;
 
-        //test for end of model array
-        //If the ModelPointer is greater than the maximum number of models
-        //then reset it to 0 so the next model called is the first
-        //this creates a round robin effect
-        if (ModelPointer > ModelNamesArray.length - 1) {
-            //reset pointer to first array element
-            ModelPointer = 0;
-            // set the prompt to empty which forces a new topic/conversation
-            prompt = "";
-            BuildModelStatsTable();
-            ConsolLogWindow("Starting a new topic after model iteration complete.");
-        }
-
         //add a div that has an animated elipse to display
         //a waiting... effect, determine which side to show
         //it on based on the JustificationPointer
@@ -307,7 +293,8 @@ $(document).ready(async function () {
             type: 'POST',
             data: {
                 'Model': ModelNameString,
-                'Prompt': prompt
+                'Prompt': prompt,
+                'Topic': TheTopic
             },
             /*dataType: 'json',*/
             success: function (data) {
@@ -346,17 +333,27 @@ $(document).ready(async function () {
                 if (ExceptionString.trim() != "") {
                     ConsolLogWindow(ExceptionString);
                     TheTopic = "Exception!";
+                    //update the web UI elements with the exception string
                     UpdateWebUiElements(ExceptionString, false);
                     DivChatElementForException = document.getElementById(GlobalChatDivId);
                     DivChatElementForException.style.backgroundColor = "#ff0000";
                     DivChatElementForException.style.color = "#ffffff";
-                    TheResponse = "";           // force start a new topic
-                    ConsolLogWindow("Resetting prompt/response to empty because of exception.");
+                    //increment and display the exception count statistic
                     DisplayExceptionCountStatistic();
+                    //reset the topic and stats table
+                    ResetTopicWithStatsTable(false);
                 }
                 else {
                     UpdateWebUiElements(TheResponse, true);
                     ConsolLogWindow("Updated web UI elements");
+                }
+
+                //test for end of model array
+                //If the ModelPointer is greater than the maximum number of models
+                //then reset it to 0 so the next model called is the first
+                //this creates a round robin effect
+                if (ModelPointer > ModelNamesArray.length - 1) {
+                    ResetTopicWithStatsTable();
                 }
 
                 //make another call with returned response
@@ -372,6 +369,22 @@ $(document).ready(async function () {
         });
     }
 
+    async function ResetTopicWithStatsTable(resetPrompt = true) {
+        // set the prompt to empty which forces a new topic/conversation
+        prompt = "";
+        TheResponse = "";
+        ConsolLogWindow("STARTING A NEW TOPIC DUE TO MODEL EXCEPTION OR ITERATION.");
+
+        //rebuild the stats table
+        if (resetPrompt == true) {
+            //reset pointer to first array element
+            ModelPointer = 0;
+            ConsolLogWindow("Waiting 3 seconds before refreshing stats table.");
+            await new Promise(r => setTimeout(r, 5000));
+            BuildModelStatsTable();
+        }
+    }
+
     //updates the web UI elements
     //called from both the success: and error: handlers
     //of the ajax call
@@ -383,6 +396,7 @@ $(document).ready(async function () {
         var EmptyResponseOrException = false;
         if (DivText == null || DivText == undefined || DivText.trim() == "") {
             DivText = "&#128565 I'm at a loss for words &#128534";
+            PlaySpeechFile = false;
             EmptyResponseOrException = true;
         }
 
@@ -437,7 +451,7 @@ $(document).ready(async function () {
         for (var i = 1; i <= Grade; i++) {
             FaStars += '<span class="fa-solid fa-star"></span>';
         }
-        if(FaStars == '' ) {
+        if (FaStars == '') {
             FaStars = "<span class=\"fa-regular fa-star\"></span>";
         }
         ConsolLogWindow("Rating: " + Rating);
@@ -544,13 +558,12 @@ $(document).ready(async function () {
         });
     }
 
-    async function GetLogFileEntries(NumLines)
-    {
+    async function GetLogFileEntries(NumLines) {
         // read the log file from the back-end
         await $.ajax({
             url: 'http://localhost:5022/Home/ReadLogFile',
             type: 'POST',
-            data: {NumLines: NumLines},
+            data: { NumLines: NumLines },
             success: function (response) {
                 ConsolLogWindow(response);
             },
@@ -566,9 +579,24 @@ $(document).ready(async function () {
     }
 
     function ConsolLogWindow(message) {
+
+        if (message == "" || message == null || message == undefined) {
+            return;
+        }
+
         const tdiv = document.getElementById("console_log_window");
         const telm = document.createElement("p");
-        telm.textContent = "JAVASCRIPT: " + message;
+
+        var m = new Date();
+        var dateString =
+            m.getUTCFullYear() + "/" +
+            ("0" + (m.getUTCMonth() + 1)).slice(-2) + "/" +
+            ("0" + m.getUTCDate()).slice(-2) + " " +
+            ("0" + m.getUTCHours()).slice(-2) + ":" +
+            ("0" + m.getUTCMinutes()).slice(-2) + ":" +
+            ("0" + m.getUTCSeconds()).slice(-2);
+
+        telm.textContent = dateString + ": " + message;
         tdiv.appendChild(telm);
         tdiv.scrollTop = tdiv.scrollHeight;
         console.log(message);

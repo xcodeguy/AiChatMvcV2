@@ -47,3 +47,6 @@ SHOW COLUMNS FROM Response;
 
 ALTER TABLE Response
 MODIFY topic TEXT;
+
+
+SELECT * FROM Response WHERE exceptions = ''

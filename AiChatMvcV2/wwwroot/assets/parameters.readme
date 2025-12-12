@@ -15,7 +15,7 @@
 // private readonly double microstat_tau = 5.0;
 
 // Sets the size of the context window used to generate the next token. (Default: 2048)	
-// private readonly double num_ctx = 2048;
+private readonly double num_ctx = 2048;
 
 // Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)	
 // private readonly double repeat_last_n = 64;
